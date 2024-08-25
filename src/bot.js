@@ -1,9 +1,9 @@
-require('dotenv').config();
+import { config } from 'dotenv';
+import { InitCommands } from './commands/init.mjs';
+import {Client, GatewayIntentBits, Events, Collection} from 'discord.js';
 
-const fs = require('node:fs');
-const path = require('node:path');
+config();
 
-const {Client, Collection, GatewayIntentBits, Events} = require('discord.js');
 const client = new Client({ intents:
     GatewayIntentBits.Guilds |
     GatewayIntentBits.GuildMembers |
@@ -17,23 +17,7 @@ const client = new Client({ intents:
 });
 
 client.commands = new Collection();
-const foldersPath = path.join(__dirname, 'commands');
-const commandFolders = fs.readdirSync(foldersPath);
-
-for (const folder of commandFolders) {
-	const commandsPath = path.join(foldersPath, folder);
-	const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('.js'));
-	for (const file of commandFiles) {
-		const filePath = path.join(commandsPath, file);
-		const command = require(filePath);
-		if ('data' in command && 'execute' in command) {
-            console.log(`Registering command ${command.data.name}`);
-			client.commands.set(command.data.name, command);
-		} else {
-			console.log(`[WARNING] The command at ${filePath} is missing a required "data" or "execute" property.`);
-		}
-	}
-}
+InitCommands(client.commands);
 
 client.once(Events.ClientReady,() => {
     console.log(`${client.user.username} has logged in.`);
