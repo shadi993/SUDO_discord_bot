@@ -29,3 +29,6 @@ wrangler.toml
 
 # Rebase conflict files
 *.orig
+
+# Used by docker for its data volumes (database)
+data/

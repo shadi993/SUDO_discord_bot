@@ -1,0 +1,19 @@
+services:
+  sudo-bot:
+    image: node:22
+    volumes:
+      - ./src:/src
+      - ./package.json:/package.json
+      - ./package-lock.json:/package-lock.json
+      - ./.env:/.env
+    command: >
+      bash -c "npm install && npm start"
+    restart: always
+  #sudo-bot-db:
+  #  image: postgres:16
+  #  volumes:
+  #    - ./data/postgres:/var/lib/postgresql/data
+  #  environment:
+  #    - POSTGRES_USER=admin
+  #    - POSTGRES_PASSWORD=my-secret-dev-password
+  #  restart: always
