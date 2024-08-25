@@ -1,8 +1,10 @@
 import { config } from 'dotenv';
 import { InitCommands } from './commands/init.mjs';
 import { Client, GatewayIntentBits, Events } from 'discord.js';
+import { InitLogger, Logger } from './core/logger.mjs';
 
 config();
+InitLogger();
 
 const client = new Client({
     intents:
@@ -20,11 +22,11 @@ const client = new Client({
 InitCommands(client);
 
 client.once(Events.ClientReady, () => {
-    console.log(`${client.user.username} has logged in.`);
+    Logger.log('info', `${client.user.username} has logged in.`);
 });
 
 client.on(Events.MessageCreate, async (message) => {
-    console.log(`[${message.author.tag}]: ${message.content}`);
+    Logger.log('info', `[${message.author.tag}]: ${message.content}`);
     if (message.content === 'hello') {
         message.reply('Hello');
     }

@@ -43,3 +43,11 @@ Type the following:
 ```
 npm run dev
 ```
+
+## Logging
+
+By default the log level is `info`. This is fine for normal use. During debugging you may want to use `debug` as a log level. You can add the following to your .env file for this:
+
+```
+LOG_LEVEL=debug
+```
