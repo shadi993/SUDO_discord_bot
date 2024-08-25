@@ -18,15 +18,31 @@ export const InitDiscordClient = () => {
     });
 
     DiscordClient.once(Events.ClientReady, () => {
-        Logger.log('info', `${DiscordClient.user.username} has logged in.`);
+        for (const module of ClientReadyModules) {
+            module.onDiscordReady();
+        }
     });
 
     DiscordClient.on(Events.MessageCreate, async (message) => {
-        Logger.log('info', `[${message.author.tag}]: ${message.content}`);
-        if (message.content === 'hello') {
-            message.reply('Hello');
+        for (const module of MessageCreateModules) {
+            module.onDiscordMessage(message);
         }
     });
 
     DiscordClient.login(process.env.DISCORD_BOT_TOKEN);
+}
+
+var ClientReadyModules = [];
+var MessageCreateModules = [];
+
+export const RegisterDiscordModule = (module) => {
+    Logger.log('info', `Registering module: ${module.constructor.name}`);
+
+    if (module.onDiscordReady) {
+        ClientReadyModules.push(module);
+    }
+
+    if (module.onDiscordMessage) {
+        MessageCreateModules.push(module);
+    }
 }
