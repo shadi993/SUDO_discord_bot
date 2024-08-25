@@ -9,7 +9,7 @@ import * as url from 'node:url';
 
 const commands = [];
 const currentDirectory = path.dirname(url.fileURLToPath(import.meta.url));
-const foldersPath = path.join(currentDirectory, 'commands');
+const foldersPath = path.join(currentDirectory, '..', 'commands');
 const commandFolders = fs.readdirSync(foldersPath);
 
 for (const folder of commandFolders) {

@@ -1,11 +1,12 @@
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import * as url from 'node:url';
+import { Logger } from '../core/logger.mjs';
 
 import { Events, Collection } from 'discord.js';
 
 export const InitCommands = async (client) => {
-    console.log('Initializing commands...');
+    Logger.log('info', 'Initializing commands');
 
     client.commands = new Collection();
 
@@ -22,10 +23,10 @@ export const InitCommands = async (client) => {
             const command = await import(filePath);
 
             if ('data' in command && 'execute' in command) {
-                console.log(`Registering command ${command.data.name}`);
+                Logger.log('info', `Registering command ${command.data.name}`);
                 client.commands.set(command.data.name, command);
             } else {
-                console.log(`[WARNING] The command at ${filePath} is missing a required "data" or "execute" property.`);
+                Logger.log('warn', `[WARNING] The command at ${filePath} is missing a required "data" or "execute" property.`);
             }
         }
     }
@@ -35,14 +36,14 @@ export const InitCommands = async (client) => {
         const command = interaction.client.commands.get(interaction.commandName);
 
         if (!command) {
-            console.error(`No command matching ${interaction.commandName} was found.`);
+            Logger.log('error', `No command matching ${interaction.commandName} was found.`);
             return;
         }
 
         try {
             await command.execute(interaction);
         } catch (error) {
-            console.error(error);
+            Logger.log('error', `There was an error while executing ${interaction.commandName}: ${error}`);
             if (interaction.replied || interaction.deferred) {
                 await interaction.followUp({ content: 'There was an error while executing this command!', ephemeral: true });
             } else {
@@ -51,5 +52,5 @@ export const InitCommands = async (client) => {
         }
     });
 
-    console.log('Finished initializing commands.');
+    Logger.log('info', 'Finished initializing commands.');
 }

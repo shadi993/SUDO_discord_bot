@@ -43,3 +43,19 @@ Type the following:
 ```
 npm run dev
 ```
+
+## Submitting changes
+
+Before submitting a Pull Request, please run the following command and fix all errors (if any):
+
+```
+npm run lint
+```
+
+## Logging
+
+By default the log level is `info`. This is fine for normal use. During debugging you may want to use `debug` as a log level. You can add the following to your .env file for this:
+
+```
+LOG_LEVEL=debug
+```
