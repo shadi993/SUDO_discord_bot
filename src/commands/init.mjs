@@ -43,7 +43,7 @@ export const InitCommands = async (client) => {
         try {
             await command.execute(interaction);
         } catch (error) {
-            Logger.log('error', `There was an error while executing ${interaction.commandName}.`);
+            Logger.log('error', `There was an error while executing ${interaction.commandName}: ${error}`);
             if (interaction.replied || interaction.deferred) {
                 await interaction.followUp({ content: 'There was an error while executing this command!', ephemeral: true });
             } else {
