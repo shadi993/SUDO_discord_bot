@@ -5,7 +5,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start":"node ./src/bot.js",
-    "dev":"nodemon ./src/bot.js"
+    "dev":"nodemon ./src/bot.js",
+    "deploycommands":"node ./src/deploy-commands.js"
   },
   "keywords": [],
   "author": "",
