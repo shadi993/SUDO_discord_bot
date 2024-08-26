@@ -8,7 +8,8 @@ export const DisboardModule = class {
         this.logger = CreateLogger('DisboardModule');
     }
 
-    async onDiscordReady() {
+    /*eslint no-unused-vars: ["error", {"args": "none"}]*/
+    async onDiscordReady(guild, channels, roles) {
         this.logger.log('info', 'Disboard module is ready.');
     }
 
