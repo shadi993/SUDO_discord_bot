@@ -55,7 +55,7 @@ export const RolesModule = class {
         if (message) {
             //Update message if it already exists.
             this.#logger.log('info', `Message found: ${role.title}. Updating...`);
-            message.edit(generatedMessage);
+            await message.edit(generatedMessage);
         }
         else
         {
