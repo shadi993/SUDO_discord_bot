@@ -24,9 +24,11 @@ export const InitDiscordClient = () => {
     });
 
     DiscordClient.on(Events.MessageCreate, async (message) => {
+        var promises = [];
         for (const module of MessageCreateModules) {
-            module.onDiscordMessage(message);
+             promises.push(module.onDiscordMessage(message));
         }
+        await Promise.all(promises);
     });
 
     DiscordClient.login(process.env.DISCORD_BOT_TOKEN);
