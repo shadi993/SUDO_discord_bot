@@ -52,10 +52,15 @@ Before submitting a Pull Request, please run the following command and fix all e
 npm run lint
 ```
 
-## Logging
+## Configuration
 
-By default the log level is `info`. This is fine for normal use. During debugging you may want to use `debug` as a log level. You can add the following to your .env file for this:
+The .env file is the configuration of secrets that should never be known publicly. However we also have a lot
+of settings that can just be shared publicly. For this you can change the `config.json` file.
+
+### Log Level
+
+By default the log level is `info`. This is fine for normal use. During debugging you may want to use `debug` as a log level. You can change this in `config.json`
 
 ```
-LOG_LEVEL=debug
+"log_level": "debug"
 ```
