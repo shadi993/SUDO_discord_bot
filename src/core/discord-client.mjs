@@ -18,15 +18,17 @@ export const InitDiscordClient = () => {
     });
 
     DiscordClient.once(Events.ClientReady, () => {
+        var promises = [];
         for (const module of ClientReadyModules) {
-            module.onDiscordReady();
+            promises.push(module.onDiscordReady());
         }
+        Promise.all(promises);
     });
 
     DiscordClient.on(Events.MessageCreate, async (message) => {
         var promises = [];
         for (const module of MessageCreateModules) {
-             promises.push(module.onDiscordMessage(message));
+            promises.push(module.onDiscordMessage(message));
         }
         await Promise.all(promises);
     });

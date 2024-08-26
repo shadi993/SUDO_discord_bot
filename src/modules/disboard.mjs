@@ -8,7 +8,7 @@ export const DisboardModule = class {
         this.logger = CreateLogger('DisboardModule');
     }
 
-    onDiscordReady() {
+    async onDiscordReady() {
         this.logger.log('info', 'Disboard module is ready.');
     }
 

@@ -7,7 +7,7 @@ export const LevelingModule = class {
         this.logger = CreateLogger('LevelingModule');
     }
 
-    onDiscordReady() {
+    async onDiscordReady() {
         this.logger.log('info', 'Leveling module is ready.');
     }
 
