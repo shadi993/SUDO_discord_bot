@@ -145,8 +145,14 @@ export const RolesModule = class {
         const discordRole = this.discordRoles.find((discordRole) => discordRole.name === option.role_name);
 
         if (member.roles.cache.find((memberRole) => memberRole.id === discordRole.id)) {
-            this.logger.log('info', `User ${interaction.user.tag} already has role '${option.role_name}'. Removing...`);
-            member.roles.remove(discordRole);
+            // Only remove if toggle is set to false.
+            // This is used by the accept rules button which should not be removed.
+            if (option.toggle !== false) {
+                this.logger.log('info', `User ${interaction.user.tag} already has role '${option.role_name}'. Removing...`);
+                member.roles.remove(discordRole);
+            } else {
+                this.logger.log('info', `User ${interaction.user.tag} already has role '${option.role_name}'. Ignoring due to toggle=false`);
+            }
         } else {
             this.logger.log('info', `User ${interaction.user.tag} does not have role '${option.role_name}'. Adding...`);
             member.roles.add(discordRole);

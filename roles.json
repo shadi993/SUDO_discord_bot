@@ -128,7 +128,8 @@
                 "role_name": "SUDO Member",
                 "button_text": "",
                 "button_emoji": "✅",
-                "button_style": "Success"
+                "button_style": "Success",
+                "toggle": false
             }
         ]
     }
