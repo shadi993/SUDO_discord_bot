@@ -145,17 +145,11 @@ export const RolesModule = class {
 
         if (member.roles.cache.find((memberRole) => memberRole.id === discordRole.id)) {
             this.logger.log('info', `User ${interaction.user.tag} already has role '${option.role_name}'. Removing...`);
-
-            member.roles.remove(discordRole)
-
-            return;
-        }else{
+            member.roles.remove(discordRole);
+        } else {
+            this.logger.log('info', `User ${interaction.user.tag} does not have role '${option.role_name}'. Adding...`);
+            member.roles.add(discordRole);
         }
-
-        /*if (member.roles.cache.has(role.role_id)) {
-            this.logger.log('info', `User ${interaction.user.tag} already has role '${role.title}'`);
-            return;
-        }*/
     }
 
     getButtonStyleFromString(style) {

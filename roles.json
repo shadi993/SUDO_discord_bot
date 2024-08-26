@@ -13,7 +13,7 @@
             },
             {
                 "description": "📜. JavaScript",
-                "role_name": "Javascript",
+                "role_name": "JavaScript",
                 "button_text": "",
                 "button_emoji": "📜",
                 "button_style": "Secondary"
@@ -83,7 +83,7 @@
             },
             {
                 "description": "🔵. Go",
-                "role_name": "Go",
+                "role_name": "GO",
                 "button_text": "",
                 "button_emoji": "🔵",
                 "button_style": "Secondary"
@@ -125,7 +125,7 @@
         "options": [
             {
                 "description": "if you accept the conditions press the ✅",
-                "role_name": "SUDU Member",
+                "role_name": "SUDO Member",
                 "button_text": "",
                 "button_emoji": "✅",
                 "button_style": "Success"
