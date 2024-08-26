@@ -135,6 +135,7 @@ export const RolesModule = class {
         this.logger.log('info', `Received button press from user ${interaction.user.tag} for role '${role.title}' option '${option.description}'`);
 
         // Reply that it is okay
+        // TODO: Can we do a reply without any content? This is a workaround to avoid the "This interaction failed" message
         interaction.reply({ content: 'OK', fetchReply: true })
             .then((message) => message.delete())
             .catch(console.error);
