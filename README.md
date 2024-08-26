@@ -78,3 +78,23 @@ By default the log level is `debug`. This is fine for development use. You can c
 ```
 "log_level": "info"
 ```
+
+## Database
+
+You can configure the database connectionstring in `config.json` by changing the `database_connection_string` entry.
+There are also other connection strings in there named _a _b etc. Those are just there to easily switch. They
+are not used by the program.
+
+You must configure a database string and then run:
+
+```
+npm run createdb
+```
+
+If you want to wipe your database and recreate the tables forcefully you can use:
+
+```
+npm run createdb -- --wipe
+```
+
+WARNING: This permanently wipes the data in your database. Use only during development.

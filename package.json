@@ -8,6 +8,7 @@
     "start": "node ./src/bot.js",
     "dev": "nodemon ./src/bot.js",
     "deploycommands": "node ./src/tools/deploy-commands.js",
+    "createdb": "node ./src/tools/create-db.js",
     "lint": "eslint ."
   },
   "keywords": [],
@@ -17,7 +18,11 @@
   "dependencies": {
     "discord.js": "^14.15.3",
     "dotenv": "^16.4.5",
-    "log4js": "^6.9.1"
+    "log4js": "^6.9.1",
+    "pg": "^8.12.0",
+    "pg-hstore": "^2.3.4",
+    "sequelize": "^6.37.3",
+    "sqlite3": "^5.1.7"
   },
   "devDependencies": {
     "@eslint/js": "^9.9.1",

@@ -1,3 +1,7 @@
 {
-    "log_level": "debug"
+    "log_level": "debug",
+    "environment": "development",
+    "database_connection_string_a": "postgres://admin:my-secret-dev-password@sudo-bot-db:5432/sudobotdb",
+    "database_connection_string_b": "sqlite::memory:",
+    "database_connection_string": "sqlite:data/sudobotdb.sqlite"
 }
