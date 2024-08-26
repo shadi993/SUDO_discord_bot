@@ -26,3 +26,6 @@ dist-ssr
 wrangler.toml
 .wrangler
 .env
+
+# Rebase conflict files
+*.orig
