@@ -39,9 +39,9 @@ export const RolesModule = class {
         let messages = await channel.messages.fetch({ limit: 20 });
         this.#logger.log('debug', `Registering role: ${role.title}`);
         this.#logger.log('info', `Fetched ${messages.size} messages.`);
-        
+
         //Message id's should be stored in the database once this is ready. Searching on title is not unique.
-        let message = messages.find((message) => 
+        let message = messages.find((message) =>
             message.author.id === process.env.DISCORD_CLIENT_ID &&
             message.embeds.length > 0 &&
             message.embeds[0].title === role.title);
@@ -57,8 +57,7 @@ export const RolesModule = class {
             this.#logger.log('info', `Message found: ${role.title}. Updating...`);
             await message.edit(generatedMessage);
         }
-        else
-        {
+        else {
             //Create new message if it doesnt exist.
             this.#logger.log('info', `Message not found: ${role.title}`);
             await channel.send(generatedMessage);
@@ -109,7 +108,7 @@ export const RolesModule = class {
         const discordRole = this.#discordRoles.find((discordRole) => discordRole.name === option.role_name);
 
         //Check if role exists in guild
-        if(!discordRole){
+        if (!discordRole) {
             this.#logger.log('error', `Role '${option.role_name}' does not exist in current guild.`);
             return;
         }
@@ -136,8 +135,8 @@ export const RolesModule = class {
             embeds: [{
                 title: `${roleAction} role`,
                 description: `${option.role_name}`
-             }],
-             ephemeral: true
+            }],
+            ephemeral: true
         });
     }
 };
@@ -146,7 +145,7 @@ const ButtonEmbedGenerator = class {
     #embed
     #rows
 
-    constructor(role){
+    constructor(role) {
         let buttons = [];
 
         for (let i = 0; i < role.options.length; i++) {
@@ -213,7 +212,7 @@ const ButtonEmbedGenerator = class {
         }
     }
 
-    getEmbed(){
+    getEmbed() {
         return this.#embed;
     }
 
