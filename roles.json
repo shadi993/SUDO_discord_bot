@@ -1,0 +1,135 @@
+[
+    {
+        "channel_name": "roles",
+        "id": 0,
+        "title": "click on the languages you know or you are currently learning.",
+        "options": [
+            {
+                "description": "🐍. Python",
+                "role_name": "Python",
+                "button_text": "",
+                "button_emoji": "🐍",
+                "button_style": "Secondary"
+            },
+            {
+                "description": "📜. JavaScript",
+                "role_name": "Javascript",
+                "button_text": "",
+                "button_emoji": "📜",
+                "button_style": "Secondary"
+            },
+            {
+                "description": "☕. Java",
+                "role_name": "Java",
+                "button_text": "",
+                "button_emoji": "☕",
+                "button_style": "Secondary"
+            },
+            {
+                "description": "🎮. C#",
+                "role_name": "C#",
+                "button_text": "",
+                "button_emoji": "🎮",
+                "button_style": "Secondary"
+            },
+            {
+                "description": "💻. PHP",
+                "role_name": "PHP",
+                "button_text": "",
+                "button_emoji": "💻",
+                "button_style": "Secondary"
+            },
+            {
+                "description": "👴. C / C++",
+                "role_name": "C/C++",
+                "button_text": "",
+                "button_emoji": "👴",
+                "button_style": "Secondary"
+            },
+            {
+                "description": "🦀. Rust",
+                "role_name": "Rust",
+                "button_text": "",
+                "button_emoji": "🦀",
+                "button_style": "Secondary"
+            },
+            {
+                "description": "📱. Kotlin",
+                "role_name": "Kotlin",
+                "button_text": "",
+                "button_emoji": "📱",
+                "button_style": "Secondary"
+            },
+            {
+                "description": "💎. Ruby",
+                "role_name": "Ruby",
+                "button_text": "",
+                "button_emoji": "💎",
+                "button_style": "Secondary"
+            },
+            {
+                "description": "📃. html/css",
+                "role_name": "html/css",
+                "button_text": "",
+                "button_emoji": "📃",
+                "button_style": "Secondary"
+            },
+            {
+                "description": "💽. SQL",
+                "role_name": "SQL",
+                "button_text": "",
+                "button_emoji": "💽",
+                "button_style": "Secondary"
+            },
+            {
+                "description": "🔵. Go",
+                "role_name": "Go",
+                "button_text": "",
+                "button_emoji": "🔵",
+                "button_style": "Secondary"
+            },
+            {
+                "description": "📘. Typescript",
+                "role_name": "Typescript",
+                "button_text": "",
+                "button_emoji": "📘",
+                "button_style": "Secondary"
+            },
+            {
+                "description": "👑. Nim",
+                "role_name": "Nim",
+                "button_text": "",
+                "button_emoji": "👑",
+                "button_style": "Secondary"
+            }
+        ]
+    },
+    {
+        "channel_name": "roles",
+        "id": 1,
+        "title": "NSFW Role",
+        "options": [
+            {
+                "description": "get the nsfw Role to have access to the NSFW channels (for nsfw selfies, you need to be 18+ verified)",
+                "role_name": "NSFW",
+                "button_text": "NSFW",
+                "button_emoji": "",
+                "button_style": "Danger"
+            }
+        ]
+    },
+    {
+        "channel_name": "rules",
+        "id": 2,
+        "title": "Rules",
+        "options": [
+            {
+                "description": "if you accept the conditions press the ✅",
+                "role_name": "SUDU Member",
+                "button_text": "",
+                "button_emoji": "✅",
+                "button_style": "Success"
+            }
+        ]
+    }
+]
