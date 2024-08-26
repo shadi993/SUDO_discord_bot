@@ -11,11 +11,11 @@ export const LevelingModule = class {
         this.logger.log('info', 'Leveling module is ready.');
     }
 
-    async onDiscordMessage(message) {
-        this.logger.log('info', `[${message.author.tag}]: ${message.content}`);
-
-        if (message.content === 'hello') {
-            message.reply('Hello');
-        }
-    }
+    //async onDiscordMessage(message) {
+    //    this.logger.log('info', `[${message.author.tag}]: ${message.content}`);
+    //
+    //    if (message.content === 'hello') {
+    //        message.reply('Hello');
+    //    }
+    //}
 };
