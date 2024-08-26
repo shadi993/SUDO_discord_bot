@@ -11,7 +11,7 @@ export const LevelingModule = class {
         this.logger.log('info', 'Leveling module is ready.');
     }
 
-    onDiscordMessage(message) {
+    async onDiscordMessage(message) {
         this.logger.log('info', `[${message.author.tag}]: ${message.content}`);
 
         if (message.content === 'hello') {
