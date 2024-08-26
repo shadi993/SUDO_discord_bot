@@ -76,11 +76,20 @@ export const InitDiscordClient = () => {
         await Promise.all(promises);
     });
 
+    DiscordClient.on(Events.InteractionCreate, async (interaction) => {
+        var promises = [];
+        for (const module of InteractionModules) {
+            promises.push(module.onDiscordInteraction(interaction));
+        }
+        await Promise.all(promises);
+    });
+
     DiscordClient.login(process.env.DISCORD_BOT_TOKEN);
 }
 
 var ClientReadyModules = [];
 var MessageCreateModules = [];
+var InteractionModules = [];
 
 export const RegisterDiscordModule = (module) => {
     Logger.log('info', `Registering module: ${module.constructor.name}`);
@@ -91,5 +100,9 @@ export const RegisterDiscordModule = (module) => {
 
     if (module.onDiscordMessage) {
         MessageCreateModules.push(module);
+    }
+
+    if (module.onDiscordInteraction) {
+        InteractionModules.push(module);
     }
 }
