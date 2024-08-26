@@ -37,7 +37,21 @@ npm run deploycommands
 
 ## Developing and Running
 
-To start developing you can make the bot automatically reload itself when you make changes to the code.
+### Debugging from Visual Studio Code
+
+Click on the `Run and Debug` button on the left and then at the top make sure `Debug Discord Bot` is selected. You
+can now click on the little play button to start debugging. You can set breakpoints and step through the program.
+Clicking on the stop button at the top of the screen will close the program and stop debugging.
+
+Typically, pressing F5 will also work.
+
+You may need the appropriate Javascript and Node plugins to do this.
+
+### From the command line
+
+To start debugging/testing with the command line you can make the bot automatically reload itself when
+you make changes to the code.
+
 Type the following:
 
 ```
