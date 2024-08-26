@@ -20,7 +20,7 @@ export const InitCommands = async (client) => {
         const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('.js'));
         for (const file of commandFiles) {
             const filePath = path.join(commandsPath, file);
-            const command = await import(filePath);
+            const command = await import("file://"+filePath);
 
             if ('data' in command && 'execute' in command) {
                 Logger.log('info', `Registering command ${command.data.name}`);
