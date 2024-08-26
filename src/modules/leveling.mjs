@@ -7,7 +7,7 @@ export const LevelingModule = class {
         this.logger = CreateLogger('LevelingModule');
     }
 
-    async onDiscordReady() {
+    async onDiscordReady(guild, channels, roles) {
         this.logger.log('info', 'Leveling module is ready.');
     }
 
