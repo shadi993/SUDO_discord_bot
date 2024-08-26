@@ -69,6 +69,9 @@ export const InitDiscordClient = () => {
     });
 
     DiscordClient.on(Events.MessageCreate, async (message) => {
+        // Avoid events from messages that the bot has sent.
+        if (message.author.id === process.env.DISCORD_CLIENT_ID) return;
+
         var promises = [];
         for (const module of MessageCreateModules) {
             promises.push(module.onDiscordMessage(message));
