@@ -11,6 +11,7 @@ export const InitDiscordClient = () => {
     DiscordClient = new Client({
         intents:
             GatewayIntentBits.Guilds |
+            GatewayIntentBits.GuildModeration |
             GatewayIntentBits.GuildMembers |
             GatewayIntentBits.GuildMessages |
             GatewayIntentBits.GuildMessageReactions |

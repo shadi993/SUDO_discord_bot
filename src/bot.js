@@ -4,11 +4,12 @@ import { InitLogger } from './core/logger.mjs';
 import { InitDiscordClient, RegisterDiscordModule, DiscordClient } from './core/discord-client.mjs';
 import { LevelingModule } from './modules/leveling.mjs';
 import {DisboardModule} from "./modules/disboard.mjs";
+import { RolesModule } from './modules/roles.mjs';
 
 config();
 InitLogger();
 InitDiscordClient();
 RegisterDiscordModule(new LevelingModule());
 RegisterDiscordModule(new DisboardModule());
-
+RegisterDiscordModule(new RolesModule());
 InitCommands(DiscordClient);
