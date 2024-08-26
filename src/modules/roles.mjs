@@ -8,7 +8,6 @@ import * as fs from 'node:fs';
 export const RolesModule = class {
     #logger
     #roles
-    #discordGuild
     #discordChannels
     #discordRoles
 
@@ -67,7 +66,6 @@ export const RolesModule = class {
     async onDiscordReady(guild, channels, roles) {
         this.#logger.log('info', 'Channels loaded. Roles module is loading...');
 
-        this.#discordGuild = guild;
         this.#discordChannels = channels;
         this.#discordRoles = roles;
 
