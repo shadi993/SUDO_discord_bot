@@ -29,7 +29,14 @@ https://support.discord.com/hc/en-us/articles/206346498
 
 You can then right-click your server in discord and click "Copy Server Id".
 
-Once you have done all this, you must register the chat commands at least once. If you add or change a command you must also run this first:
+Now you must configure the database connection string in config.json. If you are developing locally, its easiest to just use an sqlite file.
+Once you have done that you must create the database and tables:
+
+```
+npm run createdb
+```
+
+After that, you must register the chat commands at least once. If you add or change a command you must also run this first:
 
 ```
 npm run deploycommands
