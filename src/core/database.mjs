@@ -30,12 +30,13 @@ export const InitDatabase = async () => {
     PostCountDboEntity.init(
         {
             discord_id: {
-                type: DataTypes.BIGINT,
+                // TODO: BIGINT does not seem to work with sqlite and discord id's??
+                type: DataTypes.STRING,
                 primaryKey: true,
             },
-            post_count: DataTypes.BIGINT
+            xp: DataTypes.BIGINT,
         },
-        { sequelize: SequelizeDb, modelName: 'DiscordPostCount' },
+        { sequelize: SequelizeDb, modelName: 'DiscordUserXp' },
     );
 }
 

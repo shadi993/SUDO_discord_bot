@@ -10,7 +10,9 @@
         "connection_string": "sqlite:data/sudobotdb.sqlite"
     },
     "leveling": {
-        "min_time_between_messages_seconds": 5,
-        "announcement_channel_name": "📈｜leveling-up"
+        "enabled": false,
+        "min_time_between_messages_seconds": 1,
+        "announcement_channel_name": "📈｜leveling-up",
+        "ignore_channels": ["📈｜leveling-up", "💬｜nsfw-chat", "🎴｜nsfw-irl"]
     }
 }
