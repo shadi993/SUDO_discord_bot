@@ -11,11 +11,11 @@ export class PostCountDboEntity extends Model { }
  * Initialize the database connection.
  */
 export const InitDatabase = async () => {
-    DatabaseLogger = CreateLogger('Database');
+    DatabaseLogger = CreateLogger('Database', Config.database.log_level);
 
     DatabaseLogger.log('debug', 'Creating database instance...');
-    SequelizeDb = new Sequelize(Config.database_connection_string, {
-        logging: (...msg) => DatabaseLogger.log('debug', msg)
+    SequelizeDb = new Sequelize(Config.database.connection_string, {
+        logging: (...msg) => DatabaseLogger.log('trace', msg)
     });
 
     DatabaseLogger.log('info', 'Connecting to the database...');

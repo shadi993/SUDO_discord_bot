@@ -1,7 +1,16 @@
 {
-    "log_level": "debug",
-    "environment": "development",
-    "database_connection_string_a": "postgres://admin:my-secret-dev-password@sudo-bot-db:5432/sudobotdb",
-    "database_connection_string_b": "sqlite::memory:",
-    "database_connection_string": "sqlite:data/sudobotdb.sqlite"
+    "general": {
+        "environment": "development",
+        "log_level": "debug"
+    },
+    "database": {
+        "log_level": "debug",
+        "connection_string_a": "postgres://admin:my-secret-dev-password@sudo-bot-db:5432/sudobotdb",
+        "connection_string_b": "sqlite::memory:",
+        "connection_string": "sqlite:data/sudobotdb.sqlite"
+    },
+    "leveling": {
+        "min_time_between_messages_seconds": 5,
+        "announcement_channel_name": "📈｜leveling-up"
+    }
 }
