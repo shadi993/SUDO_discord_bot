@@ -73,8 +73,8 @@ of settings that can just be shared publicly. For this you can change the `confi
 
 ### Log Level
 
-By default the log level is `info`. This is fine for normal use. During debugging you may want to use `debug` as a log level. You can change this in `config.json`
+By default the log level is `debug`. This is fine for development use. You can change the log level in `config.json`
 
 ```
-"log_level": "debug"
+"log_level": "info"
 ```
