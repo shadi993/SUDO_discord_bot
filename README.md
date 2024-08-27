@@ -81,7 +81,7 @@ By default the log level is `debug`. This is fine for development use. You can c
 
 ## Database
 
-You can configure the database connectionstring in `config.json` by changing the `database_connection_string` entry.
+You can configure the database connectionstring in `config.json` by changing the `connection_string` entry.
 There are also other connection strings in there named _a _b etc. Those are just there to easily switch. They
 are not used by the program.
 
