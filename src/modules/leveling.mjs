@@ -1,7 +1,9 @@
-// This is the leveling module. It is responsible for handling the leveling system.
-
 import { CreateLogger } from '../core/logger.mjs';
 
+/**
+ * Module for handling the leveling system.
+ * Users on the server will gain experience points for chatting.
+ */
 export const LevelingModule = class {
     constructor() {
         this.logger = CreateLogger('LevelingModule');

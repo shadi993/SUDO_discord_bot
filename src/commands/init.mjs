@@ -5,6 +5,14 @@ import { Logger } from '../core/logger.mjs';
 
 import { Events, Collection } from 'discord.js';
 
+/**
+ * Initialize the discord / commands.
+ * This will load all the commands from the commands directory and set up the event handler.
+ * You must run:
+ *    npm run deploycommands
+ * Every time you change or add commands. This will update the commands through the discord API.
+ * @param {Client} client - The discord client.
+ */
 export const InitCommands = async (client) => {
     Logger.log('info', 'Initializing commands');
 

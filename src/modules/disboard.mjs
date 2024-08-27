@@ -1,8 +1,10 @@
-// This is the leveling module. It is responsible for handling the leveling system.
-
 import { CreateLogger } from '../core/logger.mjs';
 import { DiscordClient } from "../core/discord-client.mjs";
 
+/**
+ * Module for handling the disboard bumping system.
+ * This module will send a reminder to bump the server every 2 hours.
+ */
 export const DisboardModule = class {
     constructor() {
         this.logger = CreateLogger('DisboardModule');

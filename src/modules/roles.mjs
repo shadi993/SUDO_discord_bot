@@ -1,10 +1,12 @@
-// This is the roles module. It handles role assignment and rule acceptance in the server
-
 import { CreateLogger } from '../core/logger.mjs';
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder } from 'discord.js';
 
 import * as fs from 'node:fs';
 
+/**
+ * Module for handling roles.
+ * Users on the server can assign themselves roles by clicking buttons.
+ */
 export const RolesModule = class {
     #logger
     #roles

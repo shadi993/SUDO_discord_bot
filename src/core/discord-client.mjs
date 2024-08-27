@@ -7,6 +7,9 @@ var DiscordGuild;
 var DiscordChannels;
 var DiscordRoles;
 
+/**
+ * Initialize the Discord client. This will log in the bot and set up the event handlers.
+ */
 export const InitDiscordClient = () => {
     DiscordClient = new Client({
         intents:
@@ -95,6 +98,10 @@ var ClientReadyModules = [];
 var MessageCreateModules = [];
 var InteractionModules = [];
 
+/**
+ * Register a module to receive Discord events.
+ * @param {object} module - The module to register.
+ */
 export const RegisterDiscordModule = (module) => {
     Logger.log('info', `Registering module: ${module.constructor.name}`);
 
