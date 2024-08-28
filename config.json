@@ -13,7 +13,7 @@
         "enabled": false,
         "min_time_between_messages_seconds": 1,
         "announcement_channel_name": "📈｜leveling-up",
-        "ignore_channels": ["📈｜leveling-up", "💬｜nsfw-chat", "🎴｜nsfw-irl"]
+        "ignore_channels": ["📈｜leveling-up", "💬｜nsfw-chat", "🎴｜nsfw-irl","#😂｜shitpost","#💝｜general-hentai","#🔥｜general-porn","#🎼｜music-channel"]
     },
     "disboard": {
         "enabled": true,
