@@ -7,12 +7,14 @@ import { InitDiscordClient, RegisterDiscordModule, DiscordClient } from './core/
 import { LevelingModule } from './modules/leveling.mjs';
 import { DisboardModule } from "./modules/disboard.mjs";
 import { RolesModule } from './modules/roles.mjs';
+import { NotifyModule } from './modules/notify.mjs';
 
 dotenv.config();
 InitConfig();
 InitLogger();
 await InitDatabase();
 InitDiscordClient();
+RegisterDiscordModule(new NotifyModule());
 RegisterDiscordModule(new LevelingModule());
 RegisterDiscordModule(new DisboardModule());
 RegisterDiscordModule(new RolesModule());
