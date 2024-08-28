@@ -14,5 +14,9 @@
         "min_time_between_messages_seconds": 1,
         "announcement_channel_name": "📈｜leveling-up",
         "ignore_channels": ["📈｜leveling-up", "💬｜nsfw-chat", "🎴｜nsfw-irl"]
+    },
+    "disboard": {
+        "enabled": true,
+        "message": "You can bump again!"
     }
 }

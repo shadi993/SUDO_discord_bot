@@ -1,5 +1,6 @@
 import { CreateLogger } from '../core/logger.mjs';
 import { DiscordClient } from "../core/discord-client.mjs";
+import {Config} from "../core/config.mjs";
 
 /**
  * Module for handling the disboard bumping system.
@@ -16,9 +17,12 @@ export const DisboardModule = class {
     }
 
     async onDiscordMessage(message) {
+        if(!Config.disboard.enabled)
+            return;
+
         if (message.author.id.toString() === "302050872383242240" && message.embeds.length > 0 && message.embeds[0].description.includes("Bump done!")) {
             await new Promise((resolve) => setTimeout(resolve, 2 * 60 * 60 * 1000));//2 hr sleep
-            DiscordClient.channels.cache.get(message.channel.id).send("You can bump again!")
+            DiscordClient.channels.cache.get(message.channel.id).send(Config.disboard.message)
         }
     }
 };
