@@ -3,6 +3,7 @@
     "include": ["src/**/*"],
     "exclude": ["node_modules"],
     "compilerOptions": {
+        "typeRoots": ["src/@types"],
         "allowJs": true,
         "outDir": "dist",
         "noEmit": true,

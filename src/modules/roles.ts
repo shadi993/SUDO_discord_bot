@@ -1,5 +1,5 @@
 import { CreateLogger } from '../core/logger.ts';
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CacheType, Collection, EmbedBuilder, Guild, GuildMember, Interaction, NonThreadGuildBasedChannel, Role, TextChannel } from 'discord.js';
+import { ActionRowBuilder, BaseMessageOptions, ButtonBuilder, ButtonStyle, CacheType, Collection, EmbedBuilder, Guild, GuildMember, Interaction, InteractionReplyOptions, Message, MessageEditOptions, MessagePayload, NonThreadGuildBasedChannel, Role, TextChannel } from 'discord.js';
 import { Logger } from 'log4js';
 import * as fs from 'node:fs';
 import { Option, RoleChannel } from './roleChannel.ts';
@@ -8,7 +8,7 @@ import { Option, RoleChannel } from './roleChannel.ts';
  * Module for handling roles.
  * Users on the server can assign themselves roles by clicking buttons.
  */
-export const RolesModule = class {
+export class RolesModule {
     #logger : Logger;
     #roles: RoleChannel[];
     #discordChannels?: Collection<string, NonThreadGuildBasedChannel | null>;
@@ -43,13 +43,13 @@ export const RolesModule = class {
         this.#logger.log('info', `Fetched ${messages.size} messages.`);
 
         //Message id's should be stored in the database once this is ready. Searching on title is not unique.
-        let message = messages.find((message) =>
+        let message: Message<true> | undefined = messages.find((message) =>
             message.author.id === process.env.DISCORD_CLIENT_ID &&
             message.embeds.length > 0 &&
             message.embeds[0].title === role.title);
 
         let embedGenerator = new ButtonEmbedGenerator(role);
-        let generatedMessage = {
+        let generatedMessage: BaseMessageOptions = {
             embeds: [embedGenerator.getEmbed()],
             components: embedGenerator.getRows()
         };
@@ -86,15 +86,16 @@ export const RolesModule = class {
             return;
 
         const customIds: string[] = interaction.customId.split('_');
-        const action = customIds[0];
-        const roleId = customIds[0];
-        const optionIndex = parseInt(customIds[0]);
+        const action: string = customIds[0];
+        const roleId: number = parseInt(customIds[1]);
+        const optionIndex: number = parseInt(customIds[2]);
 
         if (action !== 'roleselection') return;
 
         this.#logger.log('debug', `Received button press from user ${interaction.user.tag} ${interaction.customId}`);
-
-        const role = this.#roles.find((role) => role.id === Number(roleId));
+        console.log(JSON.stringify(roleId));
+        console.log(JSON.stringify(this.#roles))
+        const role = this.#roles[roleId];
 
         if (!role) {
             this.#logger.log('warning', `Received button press for unknown role: ${roleId} from user: ${interaction.user.tag}`);
@@ -150,7 +151,7 @@ export const RolesModule = class {
 
 class ButtonEmbedGenerator {
     private embed: EmbedBuilder;
-    private rows: ActionRowBuilder[];
+    private rows: ActionRowBuilder<ButtonBuilder>[]
 
     constructor(role: RoleChannel) {
         let buttons: ButtonBuilder[] = [];
@@ -162,7 +163,7 @@ class ButtonEmbedGenerator {
         // Split up rows if there are more than 5 buttons
         this.rows = [];
         while (buttons.length > 0) {
-            this.rows.push(new ActionRowBuilder()
+            this.rows.push(new ActionRowBuilder<ButtonBuilder>()
                 .addComponents(buttons.splice(0, 5))
             );
         }

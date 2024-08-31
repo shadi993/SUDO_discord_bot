@@ -35,6 +35,8 @@ export const NotifyModule = class {
         });
 
         DiscordClient.on(Events.MessageUpdate, async (oldMessage, newMessage) => {
+            // Ignore own edited messages
+            if(newMessage.author?.id === DiscordClient.user?.id) return;
             this.#logger.log('info', `Message updated: ${oldMessage.content} -> ${newMessage.content}`);
         });
 

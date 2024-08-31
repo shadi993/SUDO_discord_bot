@@ -6,9 +6,9 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "npx tsc && node ./dist/bot.js",
-    "dev": "npx tsx watch ./src/bot.js",
-    "deploycommands": "node ./src/tools/deploy-commands.js",
-    "createdb": "node ./src/tools/create-db.js",
+    "dev": "npx tsx watch ./src/bot.ts",
+    "deploycommands": "npx tsc && node ./dist/tools/deploy-commands.js",
+    "createdb": "npx tsc && node ./dist/tools/create-db.ts",
     "lint": "eslint ."
   },
   "keywords": [],

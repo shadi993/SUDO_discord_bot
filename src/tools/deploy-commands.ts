@@ -12,8 +12,17 @@ const currentDirectory = path.dirname(url.fileURLToPath(import.meta.url));
 const foldersPath = path.join(currentDirectory, '..', 'commands');
 const commandFolders = fs.readdirSync(foldersPath);
 
+const DISCORD_BOT_TOKEN: string|undefined = process.env.DISCORD_BOT_TOKEN
+const DISCORD_CLIENT_ID: string|undefined = process.env.DISCORD_CLIENT_ID
+const DISCORD_GUILD_ID: string|undefined = process.env.DISCORD_GUILD_ID
+
+
+if(!DISCORD_BOT_TOKEN || !DISCORD_CLIENT_ID || !DISCORD_GUILD_ID) {
+	throw new Error('Correct Discord bot Config not in the .env file. Please check README.MD');
+}
+
 for (const folder of commandFolders) {
-	if (folder.endsWith('.mjs')) continue;
+	if (folder.endsWith('.ts')) continue;
 
 	const commandsPath = path.join(foldersPath, folder);
 	const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('.js'));
@@ -30,19 +39,38 @@ for (const folder of commandFolders) {
 	}
 }
 
-const rest = new REST().setToken(process.env.DISCORD_BOT_TOKEN);
+
+const rest = new REST().setToken(DISCORD_BOT_TOKEN);
 
 (async () => {
 	try {
 		console.log(`Started refreshing ${commands.length} application (/) commands.`);
 
-		const data = await rest.put(
-			Routes.applicationGuildCommands(process.env.DISCORD_CLIENT_ID, process.env.DISCORD_GUILD_ID),
+		await rest.put(
+			Routes.applicationGuildCommands(DISCORD_CLIENT_ID, DISCORD_GUILD_ID),
 			{ body: commands },
-		);
+		)
+		.then((response) => {
+			const responsEntities = response as PutResponse[];
+			console.log(`Successfully reloaded ${responsEntities.length} application (/) commands.`);
+			for( let entity of responsEntities) {
+				console.log(`  * ${entity.name}`)
+			}
+		});
 
-		console.log(`Successfully reloaded ${data.length} application (/) commands.`);
 	} catch (error) {
 		console.error(error);
 	}
 })();
+
+
+interface PutResponse {
+	id:string;
+	application_id:string;
+	version:string;
+	type:number;
+	name: string;
+	description: string;
+	guild_id: number;
+	nsfw:false
+}

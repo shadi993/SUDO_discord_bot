@@ -1,6 +1,6 @@
 import * as dotenv from 'dotenv';
 import { InitConfig } from './core/config.ts';
-import { InitCommands } from './commands/init.mjs';
+import { InitCommands } from './commands/init.ts';
 import { InitLogger } from './core/logger.ts';
 import { InitDatabase } from './core/database.ts';
 import { InitDiscordClient, RegisterDiscordModule, DiscordClient } from './core/discord-client.ts';
