@@ -1,22 +1,23 @@
-import { CreateLogger } from '../core/logger.mjs';
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder } from 'discord.js';
-
+import { CreateLogger } from '../core/logger.ts';
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CacheType, Collection, EmbedBuilder, Guild, GuildMember, Interaction, NonThreadGuildBasedChannel, Role, TextChannel } from 'discord.js';
+import { Logger } from 'log4js';
 import * as fs from 'node:fs';
+import { Option, RoleChannel } from './roleChannel.ts';
 
 /**
  * Module for handling roles.
  * Users on the server can assign themselves roles by clicking buttons.
  */
 export const RolesModule = class {
-    #logger
-    #roles
-    #discordChannels
-    #discordRoles
+    #logger : Logger;
+    #roles: RoleChannel[];
+    #discordChannels?: Collection<string, NonThreadGuildBasedChannel | null>;
+    #discordRoles?: Collection<string, Role>;
 
     constructor() {
         this.#logger = CreateLogger('RolesModule');
 
-        this.#roles = JSON.parse(fs.readFileSync('roles.json'));
+        this.#roles = JSON.parse(fs.readFileSync('roles.json', 'utf-8'));
 
         if (!Array.isArray(this.#roles)) {
             this.#logger.log('error', 'Roles must be an array.');
@@ -24,15 +25,15 @@ export const RolesModule = class {
         }
     }
 
-    async #createOrUpdateMessage(role) {
+    async #createOrUpdateMessage(role: any) {
         // Find channel by name in the guild
         this.#logger.log('debug', `Looking for channel: ${role.channel_name}`);
 
         //find channel by id for future reference
         //const channel = this.#discordChannels.find((channel) => channel.id === role.channel_id);
-        const channel = this.#discordChannels.find((channel) => channel.name === role.channel_name);
+        const channel = this.#discordChannels!.find((channel) => channel!.name === role.channel_name);
 
-        if (!channel) {
+        if (!channel || !(channel instanceof TextChannel)) {
             this.#logger.log('error', `Channel not found: ${role.channel_name}`);
             throw new Error(`Channel not found: ${role.channel_name}`);
         }
@@ -65,7 +66,10 @@ export const RolesModule = class {
         };
     }
 
-    async onDiscordReady(guild, channels, roles) {
+    async onDiscordReady(
+            guild: Guild,
+            channels: Collection<string, NonThreadGuildBasedChannel | null>,
+            roles: Collection<string, Role>) {
         this.#logger.log('info', 'Channels loaded. Roles module is loading...');
 
         this.#discordChannels = channels;
@@ -77,11 +81,14 @@ export const RolesModule = class {
         }
     }
 
-    async onDiscordInteraction(interaction) {
+    async onDiscordInteraction(interaction: Interaction<CacheType>) {
         if (!interaction.isButton())
             return;
 
-        const [action, roleId, optionIndex] = interaction.customId.split('_');
+        const customIds: string[] = interaction.customId.split('_');
+        const action = customIds[0];
+        const roleId = customIds[0];
+        const optionIndex = parseInt(customIds[0]);
 
         if (action !== 'roleselection') return;
 
@@ -92,7 +99,7 @@ export const RolesModule = class {
         if (!role) {
             this.#logger.log('warning', `Received button press for unknown role: ${roleId} from user: ${interaction.user.tag}`);
             return;
-        }
+        }   
 
         const option = role.options[optionIndex];
 
@@ -104,8 +111,8 @@ export const RolesModule = class {
         this.#logger.log('info', `Received button press from user ${interaction.user.tag} for role '${role.title}' option '${option.description}'`);
 
         // Check if the user has the role
-        const member = interaction.member;
-        const discordRole = this.#discordRoles.find((discordRole) => discordRole.name === option.role_name);
+        const member: GuildMember = interaction.member as GuildMember;
+        const discordRole = this.#discordRoles?.find((discordRole) => discordRole.name === option.role_name);
 
         //Check if role exists in guild
         if (!discordRole) {
@@ -115,7 +122,7 @@ export const RolesModule = class {
 
         var roleAction = "";
 
-        if (member.roles.cache.find((memberRole) => memberRole.id === discordRole.id)) {
+        if (member && member.roles.cache.find((memberRole) => memberRole.id === discordRole.id)) {
             // Only remove if toggle is set to false.
             // This is used by the accept rules button which should not be removed.
             if (option.toggle !== false) {
@@ -141,26 +148,26 @@ export const RolesModule = class {
     }
 };
 
-const ButtonEmbedGenerator = class {
-    #embed
-    #rows
+class ButtonEmbedGenerator {
+    private embed: EmbedBuilder;
+    private rows: ActionRowBuilder[];
 
-    constructor(role) {
-        let buttons = [];
+    constructor(role: RoleChannel) {
+        let buttons: ButtonBuilder[] = [];
 
         for (let i = 0; i < role.options.length; i++) {
             this.#generateButton(role, role.options[i], i, buttons);
         }
 
         // Split up rows if there are more than 5 buttons
-        this.#rows = [];
+        this.rows = [];
         while (buttons.length > 0) {
-            this.#rows.push(new ActionRowBuilder()
+            this.rows.push(new ActionRowBuilder()
                 .addComponents(buttons.splice(0, 5))
             );
         }
 
-        this.#embed = new EmbedBuilder()
+        this.embed = new EmbedBuilder()
             .setTitle(role.title)
             .setDescription(" ")
             .setColor(0x0099FF);
@@ -170,14 +177,14 @@ const ButtonEmbedGenerator = class {
             fieldDescription += option.description + "\n";
         }
 
-        this.#embed.addFields({
+        this.embed.addFields({
             name: '\u200B',
             value: fieldDescription,
             inline: false
         });
     }
 
-    #generateButton(role, option, i, buttons) {
+    #generateButton(role: RoleChannel, option: Option, i: number, buttons: ButtonBuilder[]) {
         var button = new ButtonBuilder()
             .setCustomId('roleselection_' + role.id + '_' + i)
             .setStyle(this.#getButtonStyleFromString(option.button_style));
@@ -195,7 +202,7 @@ const ButtonEmbedGenerator = class {
         buttons.push(button);
     }
 
-    #getButtonStyleFromString(style) {
+    #getButtonStyleFromString(style: string) {
         switch (style) {
             case 'Primary':
                 return ButtonStyle.Primary;
@@ -213,10 +220,10 @@ const ButtonEmbedGenerator = class {
     }
 
     getEmbed() {
-        return this.#embed;
+        return this.embed;
     }
 
     getRows() {
-        return this.#rows;
+        return this.rows;
     }
 }

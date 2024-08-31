@@ -1,13 +1,15 @@
-import { CreateLogger } from '../core/logger.mjs';
-import { Config } from '../core/config.mjs';
-import { PostCountDboEntity } from '../core/database.mjs';
+import { CreateLogger } from '../core/logger.ts';
+import { Config } from '../core/config.ts';
+import { PostCountDboEntity } from '../core/database.ts';
+import { Logger } from 'log4js';
+import { Collection, Guild, Message, NonThreadGuildBasedChannel, Role, TextChannel } from 'discord.js';
 
-const UserInformation = class {
-    #logger;
-    #discordId;
-    #dbEntity;
+class UserInformation{
+    #logger? : Logger;
+    #discordId?: string;
+    #dbEntity?: PostCountDboEntity;
 
-    async init(logger, discordId) {
+    async init(logger: Logger, discordId: string) {
         this.#logger = logger;
         this.#discordId = discordId;
 
@@ -30,38 +32,38 @@ const UserInformation = class {
         if (!Config.leveling.enabled)
             return;
 
-        const now = new Date();
-        if (now - this.lastXpGainDate < Config.leveling.min_time_between_messages_seconds * 1000)
+        const now: number = new Date().getUTCMilliseconds();
+        if (now - this.lastXpGainDateMillis < Config.leveling.min_time_between_messages_seconds * 1000)
             return false
 
         const previousLevel = this.level;
 
-        this.#dbEntity.xp += 1;
+        this.#dbEntity!.xp += 1;
 
-        this.#logger.log('trace', `Updating ${this.#discordId} in database.`);
-        await this.#dbEntity.save();
+        this.#logger!.log('trace', `Updating ${this.#discordId} in database.`);
+        await this.#dbEntity!.save();
 
         if (this.level > previousLevel) {
-            this.#logger.log('info', `User ${this.#discordId} leveled up!`);
+            this.#logger!.log('info', `User ${this.#discordId} leveled up!`);
             return true;
         }
 
         return false;
     }
 
-    get discordId() {
-        return this.#discordId;
+    get discordId(): string {
+        return this.#discordId!;
     }
 
-    get xp() {
-        return this.#dbEntity.xp;
+    get xp() : number{
+        return this.#dbEntity!.xp;
     }
 
-    get lastXpGainDate() {
-        return this.#dbEntity.updatedAt;
+    get lastXpGainDateMillis(): number {
+        return this.#dbEntity!.updatedAt.getUTCMilliseconds();
     }
 
-    get level() {
+    get level(): number {
         // TODO: Come up with some cool formula for calculating the level
         return Math.floor(Math.log2(this.xp + 1));
     }
@@ -71,12 +73,12 @@ const UserInformation = class {
  * Module for handling the leveling system.
  * Users on the server will gain experience points for chatting.
  */
-export const LevelingModule = class {
+export class LevelingModule {
     #logger;
-    #discordUsersMap;
-    #guild;
-    #channelsToIgnore;
-    #levelupAnnouncementChannel;
+    #discordUsersMap: Map<string, UserInformation>;
+    #guild? : Guild;
+    #channelsToIgnore?: string[];
+    #levelupAnnouncementChannel?: TextChannel;
 
     constructor() {
         this.#logger = CreateLogger('LevelingModule');
@@ -84,14 +86,17 @@ export const LevelingModule = class {
     }
 
     /*eslint no-unused-vars: ["error", {"args": "none"}]*/
-    async onDiscordReady(guild, channels, roles) {
+    async onDiscordReady(
+        guild: Guild,
+        channels: Collection<string, NonThreadGuildBasedChannel | null>,
+        roles: Collection<string, Role>) {
         this.#logger.log('info', 'Leveling module is ready.');
 
         this.#guild = guild;
         this.#channelsToIgnore = [];
 
         for (const channelName of Config.leveling.ignore_channels) {
-            const channel = channels.find(channel => channel.name === channelName);
+            const channel = channels.find(channel => channel!.name === channelName);
             if (channel) {
                 this.#channelsToIgnore.push(channel.id);
             } else {
@@ -99,7 +104,7 @@ export const LevelingModule = class {
             }
         }
 
-        this.#levelupAnnouncementChannel = channels.find(channel => channel.name === Config.leveling.announcement_channel_name);
+        this.#levelupAnnouncementChannel = channels.find(channel => channel!.name === Config.leveling.announcement_channel_name)! as TextChannel;
 
         if (!this.#levelupAnnouncementChannel) {
             this.#logger.log('error', `Channel ${Config.leveling.announcement_channel_name} not found in the server.`);
@@ -107,10 +112,10 @@ export const LevelingModule = class {
         }
     }
 
-    async onDiscordMessage(message) {
-        if (this.#channelsToIgnore.includes(message.channel.id))
+    async onDiscordMessage(message: Message<boolean>) {
+        if (this.#channelsToIgnore!.includes(message.channel.id))
         {
-            this.#logger.log('trace', `Ignoring message in channel ${message.channel.name}`);
+            this.#logger.log('trace', `Ignoring message in channel ${(message.channel as TextChannel).name}`);
             return;
         }
 
@@ -132,11 +137,11 @@ export const LevelingModule = class {
         this.#logger.log('trace', `User ${discordId} has ${userInfo.xp} xp (level ${userInfo.level})`);
     }
 
-    async sendLevelupMessage(discordId, level) {
-        this.#guild.members.fetch(discordId).then(async (user) => {
+    async sendLevelupMessage(discordId: string, level: number) {
+        this.#guild!.members.fetch(discordId).then(async (user) => {
             const message = 
                 `:partying_face: **Congratulations**, ${user}!\n You climbed from level **${level-1}** to **${level}**. Keep it up!`;
-            await this.#levelupAnnouncementChannel.send(message);
+            await this.#levelupAnnouncementChannel!.send(message);
         });
     }
 };

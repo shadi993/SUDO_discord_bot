@@ -1,7 +1,7 @@
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import * as url from 'node:url';
-import { Logger } from '../core/logger.mjs';
+import { Logger } from '../core/logger.ts';
 
 import { Events, Collection } from 'discord.js';
 

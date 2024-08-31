@@ -1,11 +1,18 @@
-import { Sequelize, DataTypes, Model } from 'sequelize';
-import { Config } from './config.mjs';
-import { CreateLogger } from './logger.mjs';
+import { Config } from './config.ts';
+import { CreateLogger, Logger } from './logger.ts';
+import { Column, Table, Model, Sequelize, DataType, AllowNull } from 'sequelize-typescript';
 
-var SequelizeDb;
-var DatabaseLogger;
+var SequelizeDb : Sequelize;
+var DatabaseLogger : typeof Logger;
 
-export class PostCountDboEntity extends Model { }
+@Table
+export class PostCountDboEntity extends Model { 
+    @Column(DataType.TEXT)
+    discord_id: string = "";
+    
+    @Column(DataType.BIGINT)
+    xp: number = 0;
+}
 
 /**
  * Initialize the database connection.
@@ -27,7 +34,7 @@ export const InitDatabase = async () => {
         throw error;
     }
 
-    PostCountDboEntity.init(
+    /*PostCountDboEntity.init(
         {
             discord_id: {
                 // TODO: BIGINT does not seem to work with sqlite and discord id's??
@@ -37,7 +44,7 @@ export const InitDatabase = async () => {
             xp: DataTypes.BIGINT,
         },
         { sequelize: SequelizeDb, modelName: 'DiscordUserXp' },
-    );
+    );*/
 }
 
 /**

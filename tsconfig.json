@@ -1,0 +1,13 @@
+{
+    "extends": "@tsconfig/node22/tsconfig.json",
+    "include": ["src/**/*"],
+    "exclude": ["node_modules"],
+    "compilerOptions": {
+        "allowJs": true,
+        "outDir": "dist",
+        "noEmit": true,
+        "allowImportingTsExtensions": true,
+        "experimentalDecorators": true,
+        "emitDecoratorMetadata": true
+    }
+}

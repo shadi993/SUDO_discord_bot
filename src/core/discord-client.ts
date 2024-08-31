@@ -1,11 +1,11 @@
-import { Client, GatewayIntentBits, Events } from 'discord.js';
-import { Logger } from './logger.mjs';
+import { Client, GatewayIntentBits, Events, Guild, Collection, NonThreadGuildBasedChannel, Role } from 'discord.js';
+import { Logger } from './logger.ts';
 
-export var DiscordClient;
+export var DiscordClient: Client;
 
-var DiscordGuild;
-var DiscordChannels;
-var DiscordRoles;
+var DiscordGuild: Guild;
+var DiscordChannels: Collection<string, NonThreadGuildBasedChannel | null>;
+var DiscordRoles: Collection<string, Role>;
 
 /**
  * Initialize the Discord client. This will log in the bot and set up the event handlers.
@@ -33,7 +33,14 @@ export const InitDiscordClient = () => {
         Logger.log('info', 'Discord client is ready.');
 
         Logger.log('debug', 'Fetching guild...');
-        DiscordClient.guilds.fetch(process.env.DISCORD_GUILD_ID)
+        const discordGuildId: string | undefined = process.env.DISCORD_GUILD_ID;
+
+        if (!discordGuildId) {
+            Logger.log('error', 'DISCORD_GUILD_ID is not set in the environment.');
+            throw new Error('DISCORD_GUILD_ID is not set in the environment.');
+        }
+
+        DiscordClient.guilds.fetch(discordGuildId)
             .then((guild) => {
                 Logger.log('debug', `Guild loaded: ${guild.name}`);
                 DiscordGuild = guild;
@@ -94,15 +101,15 @@ export const InitDiscordClient = () => {
     DiscordClient.login(process.env.DISCORD_BOT_TOKEN);
 }
 
-var ClientReadyModules = [];
-var MessageCreateModules = [];
-var InteractionModules = [];
+var ClientReadyModules: any[] = [];
+var MessageCreateModules: any[] = [];
+var InteractionModules: any[] = [];
 
 /**
  * Register a module to receive Discord events.
  * @param {object} module - The module to register.
  */
-export const RegisterDiscordModule = (module) => {
+export const RegisterDiscordModule = (module: any) => {
     Logger.log('info', `Registering module: ${module.constructor.name}`);
 
     if (module.onDiscordReady) {

@@ -1,13 +1,13 @@
 import * as dotenv from 'dotenv';
-import { InitConfig } from './core/config.mjs';
+import { InitConfig } from './core/config.ts';
 import { InitCommands } from './commands/init.mjs';
-import { InitLogger } from './core/logger.mjs';
-import { InitDatabase } from './core/database.mjs';
-import { InitDiscordClient, RegisterDiscordModule, DiscordClient } from './core/discord-client.mjs';
-import { LevelingModule } from './modules/leveling.mjs';
-import { DisboardModule } from "./modules/disboard.mjs";
-import { RolesModule } from './modules/roles.mjs';
-import { NotifyModule } from './modules/notify.mjs';
+import { InitLogger } from './core/logger.ts';
+import { InitDatabase } from './core/database.ts';
+import { InitDiscordClient, RegisterDiscordModule, DiscordClient } from './core/discord-client.ts';
+import { LevelingModule } from './modules/leveling.ts';
+import { DisboardModule } from "./modules/disboard.ts";
+import { RolesModule } from './modules/roles.ts';
+import { NotifyModule } from './modules/notify.ts';
 
 dotenv.config();
 InitConfig();

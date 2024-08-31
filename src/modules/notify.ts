@@ -1,6 +1,6 @@
-import { CreateLogger } from '../core/logger.mjs';
-import { DiscordClient } from "../core/discord-client.mjs";
-import { Events } from 'discord.js';
+import { CreateLogger } from '../core/logger.ts';
+import { DiscordClient } from "../core/discord-client.ts";
+import { Collection, Events, Guild, NonThreadGuildBasedChannel, Role } from 'discord.js';
 
 /**
  * Module for handling event notifications.
@@ -15,7 +15,10 @@ export const NotifyModule = class {
     }
 
     /*eslint no-unused-vars: ["error", {"args": "none"}]*/
-    async onDiscordReady(guild, channels, roles) {
+    async onDiscordReady(
+            guild: Guild,
+            channels: Collection<string, NonThreadGuildBasedChannel | null>,
+            roles: Collection<string, Role>) {
         this.#logger.log('info', 'NotifyModule module is ready.');
         this.#logger.log('info', 'NotifyModule registering additional callbacks.');
 
@@ -39,12 +42,12 @@ export const NotifyModule = class {
             this.#logger.log('info', `Member updated: ${oldMember.user.tag} -> ${newMember.user.tag}`);
         });
 
-        DiscordClient.on(Events.GuildBanAdd, async (guild, user) => {
-            this.#logger.log('info', `User banned: ${user.tag}`);
+        DiscordClient.on(Events.GuildBanAdd, async (member) => {
+            this.#logger.log('info', `User banned: ${member.user.tag}`);
         });
 
-        DiscordClient.on(Events.GuildBanRemove, async (guild, user) => {
-            this.#logger.log('info', `User unbanned: ${user.tag}`);
+        DiscordClient.on(Events.GuildBanRemove, async (member) => {
+            this.#logger.log('info', `User unbanned: ${member.user.tag}`);
         });
 
         DiscordClient.on(Events.VoiceServerUpdate, async (oldState, newState) => {

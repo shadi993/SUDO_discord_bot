@@ -1,7 +1,7 @@
 import log4js from 'log4js';
-import { Config } from '../core/config.mjs';
+import { Config } from '../core/config.ts';
 
-export var Logger;
+export var Logger: log4js.Logger;
 
 /**
  * Initialize the default global logger.
@@ -20,7 +20,7 @@ export const InitLogger = () => {
  * @param {string} default_log_level - The default log level to use if none is specified in the config.
  * @returns {Logger} The logger instance.
  */
-export const CreateLogger = (name, default_log_level = Config.general.log_level) => {
+export const CreateLogger = (name: string, default_log_level: string = Config.general.log_level): typeof Logger => {
     var logger = log4js.getLogger(name);
     logger.level = default_log_level;
     return logger;
