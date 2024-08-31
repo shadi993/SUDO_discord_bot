@@ -6,7 +6,9 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node ./src/bot.js",
+    "start_ts": "node --import=tsx ./src/bot.js",
     "dev": "nodemon ./src/bot.js",
+    "dev_tsx": "npx tsx watch ./src/bot.js",
     "deploycommands": "node ./src/tools/deploy-commands.js",
     "createdb": "node ./src/tools/create-db.js",
     "lint": "eslint ."
@@ -22,12 +24,16 @@
     "pg": "^8.12.0",
     "pg-hstore": "^2.3.4",
     "sequelize": "^6.37.3",
-    "sqlite3": "^5.1.7"
+    "sqlite3": "^5.1.7",
+    "typescript": "^5.5.4"
   },
   "devDependencies": {
     "@eslint/js": "^9.9.1",
+    "@tsconfig/node22": "^22.0.0",
     "eslint": "^9.9.1",
     "globals": "^15.9.0",
-    "nodemon": "^3.1.4"
+    "nodemon": "^3.1.4",
+    "tsx": "^4.19.0",
+    "typescript-eslint": "^8.3.0"
   }
 }
