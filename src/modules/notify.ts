@@ -1,5 +1,5 @@
-import { CreateLogger } from '../core/logger.ts';
-import { DiscordClient } from "../core/discord-client.ts";
+import { CreateLogger } from '../core/logger.js';
+import { DiscordClient } from '../core/discord-client.js';
 import { Collection, Events, Guild, NonThreadGuildBasedChannel, Role } from 'discord.js';
 
 /**

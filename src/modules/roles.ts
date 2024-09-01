@@ -1,8 +1,9 @@
 import { ActionRowBuilder, BaseMessageOptions, ButtonBuilder, ButtonStyle, CacheType, Collection, EmbedBuilder, Guild, GuildMember, Interaction, Message, NonThreadGuildBasedChannel, Role, TextChannel } from 'discord.js';
 import { Logger } from 'log4js';
 import * as fs from 'node:fs';
-import { CreateLogger } from '../core/logger.ts';
-import { RoleOption, RoleSelectionPromt } from './models/roleSelectionPrompt.model.ts';
+import { CreateLogger } from '../core/logger.js';
+import { RoleOption, RoleSelectionPromt } from './models/roleSelectionPrompt.model.js';
+import { log } from 'node:console';
 
 /**
  * Module for handling roles.

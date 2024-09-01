@@ -2,8 +2,8 @@ import {
     SlashCommandBuilder, CommandInteraction, SlashCommandStringOption,
     CommandInteractionOptionResolver, PermissionFlagsBits
 } from 'discord.js';
-import { RolesModule } from '../../modules/roles.ts'
-import { RoleOption } from '../../modules/models/roleSelectionPrompt.model.ts';
+import { RolesModule } from '../../modules/roles.js'
+import { RoleOption } from '../../modules/models/roleSelectionPrompt.model.js';
 
 export const data = new SlashCommandBuilder()
     .setName('addlanguage')

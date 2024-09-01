@@ -1,7 +1,7 @@
 import * as dotenv from 'dotenv';
-import { InitConfig } from '../core/config.ts';
-import { InitLogger } from '../core/logger.ts';
-import { InitDatabase, CreateTables } from '../core/database.ts';
+import { InitConfig } from '../core/config.js';
+import { InitLogger } from '../core/logger.js';
+import { InitDatabase, CreateTables } from '../core/database.js';
 
 dotenv.config();
 InitConfig();

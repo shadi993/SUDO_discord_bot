@@ -1,5 +1,5 @@
 import { SlashCommandBuilder, CommandInteraction, PermissionFlagsBits } from 'discord.js';
-import { RolesModule } from '../../modules/roles.ts';
+import { RolesModule } from '../../modules/roles.js';
 
 export const data = new SlashCommandBuilder()
     .setName('load_from_json')

@@ -1,6 +1,6 @@
-import { CreateLogger } from '../core/logger.ts';
-import { Config } from '../core/config.ts';
-import { PostCountDboEntity } from './models/postCountDboEntity.model.ts';
+import { CreateLogger } from '../core/logger.js';
+import { Config } from '../core/config.js';
+import { PostCountDboEntity } from './models/postCountDboEntity.model.js';
 import { Logger } from 'log4js';
 import { Collection, Guild, Message, NonThreadGuildBasedChannel, Role, TextChannel } from 'discord.js';
 

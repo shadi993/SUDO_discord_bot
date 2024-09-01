@@ -1,5 +1,5 @@
 import { Client, GatewayIntentBits, Events, Guild, Collection, NonThreadGuildBasedChannel, Role } from 'discord.js';
-import { Logger } from './logger.ts';
+import { Logger } from './logger.js';
 
 export var DiscordClient: Client;
 

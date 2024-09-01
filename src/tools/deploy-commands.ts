@@ -22,10 +22,10 @@ if(!DISCORD_BOT_TOKEN || !DISCORD_CLIENT_ID || !DISCORD_GUILD_ID) {
 }
 
 for (const folder of commandFolders) {
-	if (folder.endsWith('.ts')) continue;
+	if (folder.endsWith('.js')) continue;
 
 	const commandsPath = path.join(foldersPath, folder);
-	const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('.ts'));
+	const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('.js'));
 
 	for (const file of commandFiles) {
 		const filePath = path.join(commandsPath, file);

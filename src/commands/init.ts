@@ -1,7 +1,7 @@
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import * as url from 'node:url';
-import { Logger } from '../core/logger.ts';
+import { Logger } from '../core/logger.js';
 
 import { Events, Collection, Client } from 'discord.js';
 
@@ -31,10 +31,10 @@ export const InitCommands = async (client: Client<boolean>) => {
         const commandFolders = fs.readdirSync(currentDirectory);
 
         for (const folder of commandFolders) {
-            if (folder === 'init.ts') continue;
+            if (folder === 'init.js') continue;
 
             const commandsPath = path.join(currentDirectory, folder);
-            const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('.ts'));
+            const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('.js'));
             for (const file of commandFiles) {
                 const filePath = path.join(commandsPath, file);
                 const command = await import("file://" + filePath);

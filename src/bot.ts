@@ -1,14 +1,14 @@
 import * as dotenv from 'dotenv';
-import { InitConfig } from './core/config.ts';
-import { InitCommands } from './commands/init.ts';
-import { InitLogger } from './core/logger.ts';
-import { InitDatabase } from './core/database.ts';
-import { InitDiscordClient, RegisterDiscordModule, DiscordClient } from './core/discord-client.ts';
-import { LevelingModule } from './modules/leveling.ts';
-import { DisboardModule } from "./modules/disboard.ts";
-import { RolesModule } from './modules/roles.ts';
-import { NotifyModule } from './modules/notify.ts';
-import { AutoRole } from './modules/autoRole.ts';
+import { InitConfig } from './core/config.js';
+import { InitCommands } from './commands/init.js';
+import { InitLogger } from './core/logger.js';
+import { InitDatabase } from './core/database.js';
+import { InitDiscordClient, RegisterDiscordModule, DiscordClient } from './core/discord-client.js';
+import { LevelingModule } from './modules/leveling.js';
+import { DisboardModule } from './modules/disboard.js';
+import { RolesModule } from './modules/roles.js';
+import { NotifyModule } from './modules/notify.js';
+import { AutoRole } from './modules/autoRole.js';
 
 dotenv.config();
 InitConfig();

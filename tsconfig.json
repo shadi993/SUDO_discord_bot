@@ -6,8 +6,6 @@
         "typeRoots": ["src/@types"],
         "allowJs": true,
         "outDir": "dist",
-        "noEmit": true,
-        "allowImportingTsExtensions": true,
         "experimentalDecorators": true,
         "emitDecoratorMetadata": true
     }

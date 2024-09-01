@@ -1,5 +1,5 @@
 import log4js from 'log4js';
-import { Config } from '../core/config.ts';
+import { Config } from '../core/config.js';
 
 export var Logger: log4js.Logger;
 

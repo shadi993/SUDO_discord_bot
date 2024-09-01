@@ -1,6 +1,6 @@
-import { CreateLogger } from '../core/logger.ts';
-import { DiscordClient } from "../core/discord-client.ts";
-import { Config } from "../core/config.ts";
+import { CreateLogger } from '../core/logger.js';
+import { DiscordClient } from '../core/discord-client.js';
+import { Config } from '../core/config.js';
 import { Logger } from 'log4js';
 import { Channel, Collection, Guild, Message, NonThreadGuildBasedChannel, Role, TextChannel } from 'discord.js';
 

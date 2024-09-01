@@ -1,8 +1,8 @@
 import { Sequelize } from 'sequelize-typescript';
-import { Config } from './config.ts';
-import { CreateLogger, Logger } from './logger.ts';
-import { PostCountDboEntity } from '../modules/models/postCountDboEntity.model.ts';
-import { RoleOption, RoleSelectionPromt } from '../modules/models/roleSelectionPrompt.model.ts';
+import { Config } from './config.js';
+import { CreateLogger, Logger } from './logger.js';
+import { PostCountDboEntity } from '../modules/models/postCountDboEntity.model.js';
+import { RoleOption, RoleSelectionPromt } from '../modules/models/roleSelectionPrompt.model.js';
 
 var SequelizeDb : Sequelize;
 var DatabaseLogger : typeof Logger;
