@@ -18,12 +18,12 @@ export const data = new SlashCommandBuilder()
         option.setName('button_text').setDescription('Text for the Button'))
     .addStringOption((option: SlashCommandStringOption) =>
         option.setName('button_style')
-            .setDescription('Button Type, leave empty if Secondary')
+            .setDescription('Button Color, leave empty if Gray')
             .addChoices(
-                { name: 'Primary', value: 'Primary' },
-                { name: 'Secondary', value: 'Secondary' },
-                { name: 'Success', value: 'Success' },
-                { name: 'Danger', value: 'Danger' }
+                { name: 'Blue', value: 'Primary' },
+                { name: 'Gray', value: 'Secondary' },
+                { name: 'Green', value: 'Success' },
+                { name: 'Red', value: 'Danger' }
             ))
     .addStringOption((option: SlashCommandStringOption) =>
         option.setName('color').setDescription('Associated Color, leave empty if none'))
