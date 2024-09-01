@@ -17,5 +17,5 @@ InitDiscordClient();
 RegisterDiscordModule(new NotifyModule());
 RegisterDiscordModule(new LevelingModule());
 RegisterDiscordModule(new DisboardModule());
-RegisterDiscordModule(new RolesModule());
+RegisterDiscordModule(RolesModule.instance);
 InitCommands(DiscordClient);

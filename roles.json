@@ -1,7 +1,7 @@
 [
     {
         "channel_name": "👾｜roles",
-        "id": 0,
+        "roleSelectionPromptId": 0,
         "title": "click on the languages you know or you are currently learning.",
         "options": [
             {
@@ -101,12 +101,26 @@
                 "button_text": "",
                 "button_emoji": "👑",
                 "button_style": "Secondary"
+            },
+            {
+                "description": "Banana",
+                "role_name": "Nana",
+                "button_text": "",
+                "button_emoji": "🍌",
+                "button_style": "Secondary"
+            },
+            {
+                "description": "fucko",
+                "role_name": "fucko",
+                "button_text": "",
+                "button_emoji": "👋",
+                "button_style": "Secondary"
             }
         ]
     },
     {
         "channel_name": "👾｜roles",
-        "id": 1,
+        "roleSelectionPromptId": 1,
         "title": "NSFW Role",
         "options": [
             {
@@ -120,7 +134,7 @@
     },
     {
         "channel_name": "📜｜rules",
-        "id": 2,
+        "roleSelectionPromptId": 2,
         "title": "Rules",
         "options": [
             {

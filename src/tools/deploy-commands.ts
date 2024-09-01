@@ -25,7 +25,7 @@ for (const folder of commandFolders) {
 	if (folder.endsWith('.ts')) continue;
 
 	const commandsPath = path.join(foldersPath, folder);
-	const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('.js'));
+	const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('.ts'));
 
 	for (const file of commandFiles) {
 		const filePath = path.join(commandsPath, file);
@@ -45,7 +45,7 @@ const rest = new REST().setToken(DISCORD_BOT_TOKEN);
 (async () => {
 	try {
 		console.log(`Started refreshing ${commands.length} application (/) commands.`);
-
+		console.log(JSON.stringify(commands))
 		await rest.put(
 			Routes.applicationGuildCommands(DISCORD_CLIENT_ID, DISCORD_GUILD_ID),
 			{ body: commands },

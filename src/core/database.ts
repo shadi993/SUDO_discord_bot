@@ -1,18 +1,11 @@
+import { Sequelize } from 'sequelize-typescript';
 import { Config } from './config.ts';
 import { CreateLogger, Logger } from './logger.ts';
-import { Column, Table, Model, Sequelize, DataType, AllowNull } from 'sequelize-typescript';
+import { PostCountDboEntity } from '../modules/models/postCountDboEntity.model.ts';
+import { RoleOption, RoleSelectionPromt } from '../modules/models/roleSelectionPrompt.model.ts';
 
 var SequelizeDb : Sequelize;
 var DatabaseLogger : typeof Logger;
-
-@Table
-export class PostCountDboEntity extends Model { 
-    @Column(DataType.TEXT)
-    discord_id: string = "";
-    
-    @Column(DataType.BIGINT)
-    xp: number = 0;
-}
 
 /**
  * Initialize the database connection.
@@ -22,7 +15,14 @@ export const InitDatabase = async () => {
 
     DatabaseLogger.log('debug', 'Creating database instance...');
     SequelizeDb = new Sequelize(Config.database.connection_string, {
-        logging: (...msg) => DatabaseLogger.log('trace', msg)
+        logging: (...msg) => DatabaseLogger.log('trace', msg),
+        models: [PostCountDboEntity, RoleOption, RoleSelectionPromt],
+        pool: {
+            max: 1,
+            min: 0,
+            acquire: 30000,
+            idle: 10000
+          }
     });
 
     DatabaseLogger.log('info', 'Connecting to the database...');

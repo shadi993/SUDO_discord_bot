@@ -5,6 +5,12 @@ import { Logger } from '../core/logger.ts';
 
 import { Events, Collection, Client } from 'discord.js';
 
+
+async function sleep(ms: number): Promise<void> {
+    return new Promise(
+        (resolve) => setTimeout(resolve, ms));
+}
+
 /**
  * Initialize the discord / commands.
  * This will load all the commands from the commands directory and set up the event handler.
@@ -15,7 +21,9 @@ import { Events, Collection, Client } from 'discord.js';
  */
 export const InitCommands = async (client: Client<boolean>) => {
     Logger.log('info', 'Initializing commands');
-
+    while(!client.isReady()) {
+        await sleep(500) // Client is not always ready
+    }
     if(client.isReady()){
         client.commands = new Collection();
 
@@ -23,10 +31,10 @@ export const InitCommands = async (client: Client<boolean>) => {
         const commandFolders = fs.readdirSync(currentDirectory);
 
         for (const folder of commandFolders) {
-            if (folder === 'init.mjs') continue;
+            if (folder === 'init.ts') continue;
 
             const commandsPath = path.join(currentDirectory, folder);
-            const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('.js'));
+            const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('.ts'));
             for (const file of commandFiles) {
                 const filePath = path.join(commandsPath, file);
                 const command = await import("file://" + filePath);

@@ -1,8 +1,9 @@
-import { CreateLogger } from '../core/logger.ts';
-import { ActionRowBuilder, BaseMessageOptions, ButtonBuilder, ButtonStyle, CacheType, Collection, EmbedBuilder, Guild, GuildMember, Interaction, InteractionReplyOptions, Message, MessageEditOptions, MessagePayload, NonThreadGuildBasedChannel, Role, TextChannel } from 'discord.js';
+import { ActionRowBuilder, BaseMessageOptions, ButtonBuilder, ButtonStyle, CacheType, Collection, EmbedBuilder, Guild, GuildMember, Interaction, Message, NonThreadGuildBasedChannel, Role, TextChannel } from 'discord.js';
 import { Logger } from 'log4js';
 import * as fs from 'node:fs';
-import { Option, RoleChannel } from './roleChannel.ts';
+import { CreateLogger } from '../core/logger.ts';
+import { RoleOption, RoleSelectionPromt } from './models/roleSelectionPrompt.model.ts';
+import { log } from 'node:console';
 
 /**
  * Module for handling roles.
@@ -10,35 +11,69 @@ import { Option, RoleChannel } from './roleChannel.ts';
  */
 export class RolesModule {
     #logger : Logger;
-    #roles: RoleChannel[];
     #discordChannels?: Collection<string, NonThreadGuildBasedChannel | null>;
     #discordRoles?: Collection<string, Role>;
+    static #instance: RolesModule;
 
-    constructor() {
+    private constructor() {
         this.#logger = CreateLogger('RolesModule');
-
-        this.#roles = JSON.parse(fs.readFileSync('roles.json', 'utf-8'));
-
-        if (!Array.isArray(this.#roles)) {
-            this.#logger.log('error', 'Roles must be an array.');
-            throw new Error('Roles must be an array.');
-        }
     }
 
-    async #createOrUpdateMessage(role: any) {
+    static get instance(): RolesModule{
+        if(!RolesModule.#instance){
+            this.#instance = new RolesModule();
+        }
+        return this.#instance
+    }
+
+    async updateRolesFromJson() {
+        this.#logger.log(`Loading data from JSON`)
+        const roleSelectionPrompts = JSON.parse(fs.readFileSync('roles.json', 'utf-8')) as RoleSelectionPromt[];
+        for(let roleSelectionPromptFromJSON of roleSelectionPrompts){
+            let roleSelectionPrompt: RoleSelectionPromt = await RoleSelectionPromt.findOrBuild(
+                {where: {roleSelectionPromptId: roleSelectionPromptFromJSON.roleSelectionPromptId},
+            defaults: {
+                channel_name: roleSelectionPromptFromJSON.channel_name,
+                roleSelectionPromptId: roleSelectionPromptFromJSON.roleSelectionPromptId,
+                title: roleSelectionPromptFromJSON.title
+            }}).then(result => result[0].save())
+            for(let option of roleSelectionPromptFromJSON.options) {
+                await RoleOption.findOrBuild({where: {role_name: option.role_name}, 
+                    defaults: {
+                        roleID: option.roleID, 
+                        description: option.description,
+                        role_name: option.role_name,
+                        button_text: option.button_text,
+                        button_emoji: option.button_emoji,
+                        button_style: option.button_style,
+                        toggle: option.toggle,
+                        associatedColor: option.associatedColor,
+                        roleSelectionPromptId: roleSelectionPrompt.roleSelectionPromptId
+                    }}).then(ab => ab[0].save());
+            }
+        }
+        this.#logger.log(`Done Loading data from JSON`)
+        this.setupRoles();
+    }
+
+    async #createOrUpdateMessage(role: RoleSelectionPromt): Promise<Message<true>> {
         // Find channel by name in the guild
         this.#logger.log('debug', `Looking for channel: ${role.channel_name}`);
 
         //find channel by id for future reference
         //const channel = this.#discordChannels.find((channel) => channel.id === role.channel_id);
-        const channel = this.#discordChannels!.find((channel) => channel!.name === role.channel_name);
-
+        const channel = this.#discordChannels?.find((channel) => channel!.name === role.channel_name);
+        
         if (!channel || !(channel instanceof TextChannel)) {
             this.#logger.log('error', `Channel not found: ${role.channel_name}`);
             throw new Error(`Channel not found: ${role.channel_name}`);
         }
 
-        let messages = await channel.messages.fetch({ limit: 20 });
+        const messages = await channel.messages.fetch({ limit: 20 });
+        return await this.#updateOrCreateMessages(channel, role, messages);
+    }
+
+    #updateOrCreateMessages(channel: TextChannel, role: RoleSelectionPromt, messages: Collection<string, Message<true>>): Promise<Message<true>> {
         this.#logger.log('debug', `Registering role: ${role.title}`);
         this.#logger.log('info', `Fetched ${messages.size} messages.`);
 
@@ -57,12 +92,11 @@ export class RolesModule {
         if (message) {
             //Update message if it already exists.
             this.#logger.log('info', `Message found: ${role.title}. Updating...`);
-            await message.edit(generatedMessage);
-        }
-        else {
+            return message.edit(generatedMessage);
+        } else {
             //Create new message if it doesnt exist.
             this.#logger.log('info', `Message not found: ${role.title}`);
-            await channel.send(generatedMessage);
+            return channel.send(generatedMessage);
         };
     }
 
@@ -76,9 +110,17 @@ export class RolesModule {
         this.#discordRoles = roles;
 
         //this function should be moved in a singular class so it can also be called from a command so you dont have to restart the bot after adding or removing roles.
-        for (const role of this.#roles) {
-            this.#createOrUpdateMessage(role);
+        await this.setupRoles();
+    }
+
+    async setupRoles() {
+        var promises: Promise<Message<true>>[] = []
+        const roles = await RoleSelectionPromt.findAll({include: [RoleOption]});
+        
+        for (const role of roles) {
+            promises.push(this.#createOrUpdateMessage(role));
         }
+        return promises;
     }
 
     async onDiscordInteraction(interaction: Interaction<CacheType>) {
@@ -87,29 +129,23 @@ export class RolesModule {
 
         const customIds: string[] = interaction.customId.split('_');
         const action: string = customIds[0];
-        const roleId: number = parseInt(customIds[1]);
-        const optionIndex: number = parseInt(customIds[2]);
-
+        const roleSelectionId: number = parseInt(customIds[1]);
+        const roleOptionId: number = parseInt(customIds[2]);
+ 
         if (action !== 'roleselection') return;
 
+        console.log(JSON.stringify(customIds));
+        
         this.#logger.log('debug', `Received button press from user ${interaction.user.tag} ${interaction.customId}`);
-        console.log(JSON.stringify(roleId));
-        console.log(JSON.stringify(this.#roles))
-        const role = this.#roles[roleId];
 
-        if (!role) {
-            this.#logger.log('warning', `Received button press for unknown role: ${roleId} from user: ${interaction.user.tag}`);
-            return;
-        }   
-
-        const option = role.options[optionIndex];
+        const option = await RoleOption.findOne({where: {roleID: roleOptionId}});
 
         if (!option) {
-            this.#logger.log('warning', `Received button press for unknown option: ${optionIndex} from user: ${interaction.user.tag}`);
+            this.#logger.log('warning', `Received button press for unknown option: ${roleOptionId} from user: ${interaction.user.tag}`);
             return;
         }
 
-        this.#logger.log('info', `Received button press from user ${interaction.user.tag} for role '${role.title}' option '${option.description}'`);
+        this.#logger.log('info', `Received button press from user ${interaction.user.tag} for role '${option.role_name}' option '${option.description}'`);
 
         // Check if the user has the role
         const member: GuildMember = interaction.member as GuildMember;
@@ -153,11 +189,11 @@ class ButtonEmbedGenerator {
     private embed: EmbedBuilder;
     private rows: ActionRowBuilder<ButtonBuilder>[]
 
-    constructor(role: RoleChannel) {
+    constructor(role: RoleSelectionPromt) {
         let buttons: ButtonBuilder[] = [];
 
-        for (let i = 0; i < role.options.length; i++) {
-            this.#generateButton(role, role.options[i], i, buttons);
+        for (let option of role.options) {
+            this.#generateButton(role, option, buttons);
         }
 
         // Split up rows if there are more than 5 buttons
@@ -185,9 +221,9 @@ class ButtonEmbedGenerator {
         });
     }
 
-    #generateButton(role: RoleChannel, option: Option, i: number, buttons: ButtonBuilder[]) {
+    #generateButton(role: RoleSelectionPromt, option: RoleOption, buttons: ButtonBuilder[]) {
         var button = new ButtonBuilder()
-            .setCustomId('roleselection_' + role.id + '_' + i)
+            .setCustomId('roleselection_' + role.roleSelectionPromptId + '_' + option.roleID)
             .setStyle(this.#getButtonStyleFromString(option.button_style));
 
         if (option.button_text) {
