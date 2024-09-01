@@ -3,7 +3,6 @@ import { Logger } from 'log4js';
 import * as fs from 'node:fs';
 import { CreateLogger } from '../core/logger.ts';
 import { RoleOption, RoleSelectionPromt } from './models/roleSelectionPrompt.model.ts';
-import { log } from 'node:console';
 
 /**
  * Module for handling roles.
