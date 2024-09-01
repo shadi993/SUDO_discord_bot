@@ -8,6 +8,7 @@ import { LevelingModule } from './modules/leveling.ts';
 import { DisboardModule } from "./modules/disboard.ts";
 import { RolesModule } from './modules/roles.ts';
 import { NotifyModule } from './modules/notify.ts';
+import { AutoRole } from './modules/autoRole.ts';
 
 dotenv.config();
 InitConfig();
@@ -17,5 +18,6 @@ InitDiscordClient();
 RegisterDiscordModule(new NotifyModule());
 RegisterDiscordModule(new LevelingModule());
 RegisterDiscordModule(new DisboardModule());
+RegisterDiscordModule(new AutoRole());
 RegisterDiscordModule(RolesModule.instance);
 InitCommands(DiscordClient);
