@@ -18,5 +18,9 @@
     "disboard": {
         "enabled": true,
         "message": "You can bump again!"
+    },
+    "autorole": {
+        "enabled": true,
+        "assign_on_join": ["----------Server Member----------", "-------Programming Language---------"]
     }
 }
