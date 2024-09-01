@@ -1,4 +1,7 @@
-import { SlashCommandBuilder, CommandInteraction, SlashCommandStringOption, CommandInteractionOptionResolver, ButtonStyle } from 'discord.js';
+import {
+    SlashCommandBuilder, CommandInteraction, SlashCommandStringOption,
+    CommandInteractionOptionResolver, PermissionFlagsBits
+} from 'discord.js';
 import { RolesModule } from '../../modules/roles.ts'
 import { RoleOption } from '../../modules/models/roleSelectionPrompt.model.ts';
 
@@ -15,15 +18,16 @@ export const data = new SlashCommandBuilder()
         option.setName('button_text').setDescription('Text for the Button'))
     .addStringOption((option: SlashCommandStringOption) =>
         option.setName('button_style')
-        .setDescription('Button Type, leave empty if Secondary')
-        .addChoices(
-            {name: 'Primary', value: 'Primary'},
-            {name: 'Secondary', value: 'Secondary'},
-            {name: 'Success', value: 'Success'},
-            {name: 'Danger', value: 'Danger'}
-        ))
+            .setDescription('Button Type, leave empty if Secondary')
+            .addChoices(
+                { name: 'Primary', value: 'Primary' },
+                { name: 'Secondary', value: 'Secondary' },
+                { name: 'Success', value: 'Success' },
+                { name: 'Danger', value: 'Danger' }
+            ))
     .addStringOption((option: SlashCommandStringOption) =>
-        option.setName('color').setDescription('Associated Color, leave empty if none'));
+        option.setName('color').setDescription('Associated Color, leave empty if none'))
+    .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild)
 
 export async function execute(interaction: CommandInteraction<'cached'>) {
     var options = interaction.options as CommandInteractionOptionResolver<"cached">
