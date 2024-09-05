@@ -22,5 +22,9 @@
     "autorole": {
         "enabled": true,
         "assign_on_join": ["----------Server Member----------", "-------Programming Language---------"]
+    },
+    "notify": {
+        "enabled": true,
+        "channel": "bot-log"
     }
 }
