@@ -2,6 +2,113 @@ import { CreateLogger } from '../core/logger.mjs';
 import { Config } from '../core/config.mjs';
 import { PostCountDboEntity } from '../core/database.mjs';
 
+
+
+const levelSteps  = [
+    0,
+    70,
+    277,
+    625,
+    1111,
+    1736,
+    2500,
+    3402,
+    4444,
+    5625,
+    6944,
+    8402,
+    10000,
+    11756,
+    13631,
+    15625,
+    17777,
+    20069,
+    22500 ,
+    25069 ,
+    27777 ,
+    30625,
+    33611,
+    36736,
+    40000,
+    42500,
+    46944 ,
+    50625,
+    54444,
+    58402,
+    62500,
+    66736 ,
+    71111,
+    75625 ,
+    80277,
+    85069 ,
+    90000,
+    95069,
+    100277,
+    105625,
+    111111,
+    116736,
+    122500,
+    128402,
+    134444,
+    140625,
+    146941,
+    153402,
+    160000,
+    166736,
+    172000,
+    177000,
+    180000,
+    190000,
+    202500,
+    210069,
+    217777,
+    225625,
+    233611,
+    250000,
+    258402,
+    262560,
+    275625,
+    284444,
+    300000,
+    310069,
+    333300,
+    348265,
+    369999,
+    380060,
+    399999,
+    412345,
+    438723,
+    455889,
+    472651,
+    491050,
+    500500,
+    520784,
+    533483,
+    554552,
+    578264,
+    589774,
+    610221,
+    629442,
+    640239,
+    678875,
+    691239,
+    711111,
+    728012,
+    742379,
+    759999,
+    770869,
+    794583,
+    809541,
+    821668,
+    843354,
+    860666,
+    888888,
+    900000,
+    930000,
+    950000,
+];
+const minexp = 10;
+const maxexp = 40;
 const UserInformation = class {
     #logger;
     #discordId;
@@ -36,7 +143,7 @@ const UserInformation = class {
 
         const previousLevel = this.level;
 
-        this.#dbEntity.xp += 1;
+        this.#dbEntity.xp += Math.floor(Math.random() * (maxexp - minexp + 1) + minexp);
 
         this.#logger.log('trace', `Updating ${this.#discordId} in database.`);
         await this.#dbEntity.save();
@@ -62,8 +169,12 @@ const UserInformation = class {
     }
 
     get level() {
-        // TODO: Come up with some cool formula for calculating the level
-        return Math.floor(Math.log2(this.xp + 1));
+        for(let i= 0; i< levelSteps.length; ++i){
+            if (levelSteps[i] > this.xp){
+                return i;
+            }
+        }
+        return 0;
     }
 };
 
