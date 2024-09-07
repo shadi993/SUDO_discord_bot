@@ -173,6 +173,9 @@ const UserInformation = class {
             if (levelSteps[i] > this.xp){
                 return i;
             }
+            if (i === levelSteps.length -1){
+                return i;
+            }
         }
         return 0;
     }
