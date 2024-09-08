@@ -60,7 +60,7 @@ export const NotifyModule = class {
             const deletedMessageEmbed = new EmbedBuilder()
                 .setColor('#ED4245')
                 .setAuthor({ name: `${message.author.globalName}` })
-                .addFields({ name: `${message.author.globalName}`, value: `${message.author.globalName} deleted a message` },
+                .addFields({ name: '\u200B', value: `<@${message.author.id}> deleted a message` },
                     { name: 'message: ', value: "```" + `${message.content}` + "```" }
                 )
                 .setTimestamp()
@@ -75,7 +75,7 @@ export const NotifyModule = class {
             const modifiedMessageEmbed = new EmbedBuilder()
                 .setColor('#ED4245')
                 .setAuthor({ name: `${oldMessage.author.globalName}` })
-                .addFields({ name: `${oldMessage.author.globalName}`, value: `${oldMessage.author.globalName} modified a message` },
+                .addFields({ name: '\u200B', value: `<@${oldMessage.author.id}> modified a message` },
                     { name: 'old: ', value: "```" + `${oldMessage.content}` + "```" },
                     { name: 'new: ', value: "```" + `${newMessage.content}` + "```" },
                 )
