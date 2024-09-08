@@ -59,7 +59,7 @@ export const NotifyModule = class {
 
             const deletedMessageEmbed = new EmbedBuilder()
                 .setColor('#ED4245')
-                .setAuthor({ name: `${message.author.globalName}` })
+                .setAuthor({ name: `${message.author.globalName}`,iconURL:message.author.displayAvatarURL() })
                 .addFields({ name: '\u200B', value: `<@${message.author.id}> deleted a message` },
                     { name: 'message: ', value: "```" + `${message.content}` + "```" }
                 )
@@ -74,7 +74,7 @@ export const NotifyModule = class {
             if (oldMessage.author.bot) return;
             const modifiedMessageEmbed = new EmbedBuilder()
                 .setColor('#ED4245')
-                .setAuthor({ name: `${oldMessage.author.globalName}` })
+                .setAuthor({ name: `${oldMessage.author.globalName}`,iconURL:oldMessage.author.displayAvatarURL() })
                 .addFields({ name: '\u200B', value: `<@${oldMessage.author.id}> modified a message` },
                     { name: 'old: ', value: "```" + `${oldMessage.content}` + "```" },
                     { name: 'new: ', value: "```" + `${newMessage.content}` + "```" },
