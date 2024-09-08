@@ -75,7 +75,7 @@ export const NotifyModule = class {
             const modifiedMessageEmbed = new EmbedBuilder()
                 .setColor('#ED4245')
                 .setAuthor({ name: `${oldMessage.author.globalName}` })
-                .addFields({ name: `${oldMessage.author.globalName}`, value: `${oldMessage.author.globalName} modiefied a message` },
+                .addFields({ name: `${oldMessage.author.globalName}`, value: `${oldMessage.author.globalName} modified a message` },
                     { name: 'old: ', value: "```" + `${oldMessage.content}` + "```" },
                     { name: 'new: ', value: "```" + `${newMessage.content}` + "```" },
                 )
