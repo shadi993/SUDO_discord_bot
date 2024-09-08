@@ -71,7 +71,7 @@ export const NotifyModule = class {
 
         DiscordClient.on(Events.MessageUpdate, async (oldMessage, newMessage) => {
             this.#logger.log('info', `Message updated: ${oldMessage.content} -> ${newMessage.content}`);
-
+            if (oldMessage.author.bot) return;
             const modifiedMessageEmbed = new EmbedBuilder()
                 .setColor('#ED4245')
                 .setAuthor({ name: `${oldMessage.author.globalName}` })
