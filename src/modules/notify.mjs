@@ -25,12 +25,13 @@ export const NotifyModule = class {
         DiscordClient.on(Events.GuildMemberAdd, async (member) => {
             this.#logger.log('info', `New member joined: ${member.user.tag}`);
             const newJoinEmbed = new EmbedBuilder()
-                .setColor('#ED4245')
+                .setColor('#57F287')
                 .setAuthor({ name: `${member.user.tag}`, iconURL: member.user.displayAvatarURL() })
                 .setThumbnail(member.user.displayAvatarURL())
-                .addFields({ name: '\u200B', value: `<@${member.user.id}> has joined the server` },
-                    { name: 'Age of account', value: `${member.user.createdAt}` },
-                    { name: 'created Time Stamp', value: `${member.user.createdTimestamp}` })
+                .addFields({ name: '\u200B', value: `<@${member.user.id}> **has joined the server**` },
+                    { name: 'Display Name', value: `${member.user.displayName}`},
+                    { name: 'Joined at', value: `<t:${(member.joinedTimestamp / 1000).toString().split('.')[0]}> (<t:${(member.joinedTimestamp / 1000).toString().split('.')[0]}:R>)` },
+                    { name: 'Created at', value: `<t:${(member.user.createdTimestamp / 1000).toString().split('.')[0]}> (<t:${(member.user.createdTimestamp / 1000).toString().split('.')[0]}:R>)` })
                 .setTimestamp()
                 .setFooter({ text: 'SUDO' })
 
@@ -45,8 +46,7 @@ export const NotifyModule = class {
                 .setAuthor({ name: `${member.user.tag}`, iconURL: member.user.displayAvatarURL() })
                 .setThumbnail(member.user.displayAvatarURL())
                 .addFields({ name: '\u200B', value: `<@${member.user.id}> has left the server` },
-                    { name: 'Age of account', value: `${member.user.createdAt}` },
-                    { name: 'created Time Stamp', value: `${member.user.createdTimestamp}` }
+                    { name: 'Created at', value: `<t:${(member.user.createdTimestamp / 1000).toString().split('.')[0]}> (<t:${(member.user.createdTimestamp / 1000).toString().split('.')[0]}:R>)`  }
                 )
                 .setTimestamp()
                 .setFooter({ text: 'SUDO' })
@@ -89,19 +89,42 @@ export const NotifyModule = class {
         DiscordClient.on(Events.GuildMemberUpdate, async (oldMember, newMember) => {
             this.#logger.log('info', `Member updated: ${oldMember.user.tag} -> ${newMember.user.tag}`);
 
-            const guildMemberEmbed = new EmbedBuilder()
-                .setColor('#ED4245')
-                .setURL(`${newMember.user.defaultAvatarURL}`)
-                .setAuthor({ name: `${oldMember.user.globalName}`, iconURL: newMember.user.displayAvatarURL() })
-                .setThumbnail(newMember.user.displayAvatarURL())
-                .addFields({ name: `${oldMember.user.globalName}`, value: `${newMember.user.globalName} changed tag` },
-                    { name: 'old: ', value: `${oldMember.user.tag}` },
-                    { name: 'new: ', value: `${newMember.user.tag}` },
-                )
-                .setTimestamp()
-                .setFooter({ text: 'SUDO' })
+            
+            if (oldMember.roles.cache.size > newMember.roles.cache.size) {
+                // Creating an embed message.
+                const guildMemberEmbed = new EmbedBuilder()
+                guildMemberEmbed.setColor("#ED4245");
+                guildMemberEmbed.setAuthor({name:newMember.user.tag, iconURL:newMember.user.displayAvatarURL()});
+                guildMemberEmbed.setThumbnail(oldMember.user.displayAvatarURL());
+                let roleArray=[];
+                oldMember.roles.cache.forEach(role => {
+                    if (!newMember.roles.cache.has(role.id)) {
+                        roleArray.push(role);
+                        //guildMemberEmbed.addFields({name:"Role Removed",value: role});
+                    }
+                });
+                guildMemberEmbed.addFields({name:"Role Removed", value: roleArray.toString()});
+                guildMemberEmbed.setTimestamp();
+                guildMemberEmbed.setFooter({ text: 'SUDO' });
+                await this.#notifyChannel.send({ embeds: [guildMemberEmbed] });
 
-            await this.#notifyChannel.send({ embeds: [guildMemberEmbed] });
+            } else if (oldMember.roles.cache.size < newMember.roles.cache.size) {
+                const guildMemberEmbed = new EmbedBuilder()
+                guildMemberEmbed.setColor("#57F287");
+                guildMemberEmbed.setAuthor({name:newMember.user.tag, iconURL:newMember.user.displayAvatarURL()});
+                guildMemberEmbed.setThumbnail(oldMember.user.displayAvatarURL());
+                let roleArray=[];
+                newMember.roles.cache.forEach(role => {
+                    if (!oldMember.roles.cache.has(role.id)) {
+                        roleArray.push(role);
+                        //guildMemberEmbed.addFields({name:"Role Added", value: role});
+                    }
+                });
+                guildMemberEmbed.addFields({name:"Role Added", value: roleArray.toString()});
+                guildMemberEmbed.setTimestamp();
+                guildMemberEmbed.setFooter({ text: 'SUDO' });
+                await this.#notifyChannel.send({ embeds: [guildMemberEmbed] });
+            }
         });
 
         DiscordClient.on(Events.GuildBanAdd, async (guild, user) => {
