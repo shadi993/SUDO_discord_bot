@@ -16,7 +16,14 @@
         "ignore_channels": ["📈｜leveling-up", "💬｜nsfw-chat", "🎴｜nsfw-irl","#😂｜shitpost","#💝｜general-hentai","#🔥｜general-porn","#🎼｜music-channel"],
         "roles": {
             "2": "Bit",
-            "5": "Byte"
+            "5": "Byte",
+            "10": "Kilobyte",
+            "15": "Megabyte",
+            "20": "Gigabyte",
+            "30": "Terabyte",
+            "50": "Petabyte",
+            "70": "Exabyte",
+            "90": "Zettabyte"
         }
     },
     "disboard": {
