@@ -55,12 +55,12 @@ export const NotifyModule = class {
         });
 
         DiscordClient.on(Events.MessageDelete, async (message) => {
-            this.#logger.log('info', `${message.author.globalName} deleted:` + "```" + `${message.content}` + "```");
+            this.#logger.log('info', `${message.author.globalName} deleted: ${message.content}`);
 
             const deletedMessageEmbed = new EmbedBuilder()
                 .setColor('#ED4245')
                 .setAuthor({ name: `${message.author.globalName}`,iconURL:message.author.displayAvatarURL() })
-                .addFields({ name: '\u200B', value: `<@${message.author.id}> deleted a message` },
+                .addFields({ name: '\u200B', value: `<@${message.author.id}> deleted a message in ${message.channel.toString()}` },
                     { name: 'message: ', value: "```" + `${message.content}` + "```" }
                 )
                 .setTimestamp()
@@ -75,7 +75,7 @@ export const NotifyModule = class {
             const modifiedMessageEmbed = new EmbedBuilder()
                 .setColor('#ED4245')
                 .setAuthor({ name: `${oldMessage.author.globalName}`,iconURL:oldMessage.author.displayAvatarURL() })
-                .addFields({ name: '\u200B', value: `<@${oldMessage.author.id}> modified a message` },
+                .addFields({ name: '\u200B', value: `<@${oldMessage.author.id}> modified a message in ${oldMessage.channel.toString()}` },
                     { name: 'old: ', value: "```" + `${oldMessage.content}` + "```" },
                     { name: 'new: ', value: "```" + `${newMessage.content}` + "```" },
                 )
