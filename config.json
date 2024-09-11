@@ -10,10 +10,14 @@
         "connection_string": "sqlite:data/sudobotdb.sqlite"
     },
     "leveling": {
-        "enabled": false,
+        "enabled": true,
         "min_time_between_messages_seconds": 1,
         "announcement_channel_name": "📈｜leveling-up",
-        "ignore_channels": ["📈｜leveling-up", "💬｜nsfw-chat", "🎴｜nsfw-irl","#😂｜shitpost","#💝｜general-hentai","#🔥｜general-porn","#🎼｜music-channel"]
+        "ignore_channels": ["📈｜leveling-up", "💬｜nsfw-chat", "🎴｜nsfw-irl","#😂｜shitpost","#💝｜general-hentai","#🔥｜general-porn","#🎼｜music-channel"],
+        "roles": {
+            "2": "Bit",
+            "5": "Byte"
+        }
     },
     "disboard": {
         "enabled": true,
