@@ -62,6 +62,7 @@ export const NotifyModule = class {
 
             if (!message.member) return;
             if (message.member.user.bot) return;
+            
             const deletedMessageEmbed = new EmbedBuilder()
                 .setColor('#ED4245')
                 .setAuthor({ name: `${message.author.globalName}`,iconURL:message.author.displayAvatarURL() })
@@ -76,11 +77,14 @@ export const NotifyModule = class {
 
         DiscordClient.on(Events.MessageUpdate, async (oldMessage, newMessage) => {
             this.#logger.log('info', `Message updated: ${oldMessage.content} -> ${newMessage.content}`);
+
             if (oldMessage.author.bot) return;
+
+            const guildID = this.#guild.id.toString();
             const modifiedMessageEmbed = new EmbedBuilder()
                 .setColor('#ED4245')
                 .setAuthor({ name: `${oldMessage.author.globalName}`,iconURL:oldMessage.author.displayAvatarURL() })
-                .addFields({ name: '\u200B', value: `<@${oldMessage.author.id}> modified a message in ${oldMessage.channel.toString()} [jump to Message](https://discord.com/channels/${this.#guild.id.toString()}/${oldMessage.channelId.toString()}/${oldMessage.id.toString()})` },
+                .addFields({ name: '\u200B', value: `<@${oldMessage.author.id}> modified a message in ${oldMessage.channel.toString()} [jump to Message](https://discord.com/channels/${guildID}/${oldMessage.channelId.toString()}/${oldMessage.id.toString()})` },
                     { name: 'old: ', value: "```" + `${oldMessage.content}` + "```" },
                     { name: 'new: ', value: "```" + `${newMessage.content}` + "```" },
                 )
