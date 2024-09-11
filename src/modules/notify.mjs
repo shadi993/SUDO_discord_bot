@@ -57,6 +57,8 @@ export const NotifyModule = class {
         DiscordClient.on(Events.MessageDelete, async (message) => {
             this.#logger.log('info', `${message.author.globalName} deleted: ${message.content}`);
 
+            if (!message.member) return;
+            if (message.member.user.bot) return;
             const deletedMessageEmbed = new EmbedBuilder()
                 .setColor('#ED4245')
                 .setAuthor({ name: `${message.author.globalName}`,iconURL:message.author.displayAvatarURL() })
