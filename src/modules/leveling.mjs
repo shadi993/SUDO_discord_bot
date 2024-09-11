@@ -191,7 +191,7 @@ export const LevelingModule = class {
     #guild;
     #channelsToIgnore;
     #levelupAnnouncementChannel;
-
+    #discordRoles;
     constructor() {
         this.#logger = CreateLogger('LevelingModule');
         this.#discordUsersMap = new Map();
@@ -203,7 +203,7 @@ export const LevelingModule = class {
 
         this.#guild = guild;
         this.#channelsToIgnore = [];
-
+        this.#discordRoles = roles;
         for (const channelName of Config.leveling.ignore_channels) {
             const channel = channels.find(channel => channel.name === channelName);
             if (channel) {
@@ -241,6 +241,10 @@ export const LevelingModule = class {
 
         if (leveledUp) {
             await this.sendLevelupMessage(discordId, userInfo.level);
+            if (userInfo.level.toString() in Config.leveling.roles) {
+                const discordRole = this.#discordRoles.find((discordRole) => discordRole.name === Config.leveling.roles[userInfo.level.toString()]);
+                message.member.roles.add(discordRole);
+            }
         }
 
         this.#logger.log('trace', `User ${discordId} has ${userInfo.xp} xp (level ${userInfo.level})`);
