@@ -11,6 +11,8 @@ import { Config } from "../core/config.mjs";
 export const NotifyModule = class {
     #logger;
     #notifyChannel;
+    #guild;
+
 
     constructor() {
         this.#logger = CreateLogger('NotifyModule');
@@ -21,7 +23,8 @@ export const NotifyModule = class {
         this.#logger.log('info', 'NotifyModule module is ready.');
         this.#logger.log('info', 'NotifyModule registering additional callbacks.');
         this.#notifyChannel = channels.find(channel => channel.name === Config.notify.channel);
-
+        this.#guild = guild;
+        
         DiscordClient.on(Events.GuildMemberAdd, async (member) => {
             this.#logger.log('info', `New member joined: ${member.user.tag}`);
             const newJoinEmbed = new EmbedBuilder()
@@ -62,7 +65,7 @@ export const NotifyModule = class {
             const deletedMessageEmbed = new EmbedBuilder()
                 .setColor('#ED4245')
                 .setAuthor({ name: `${message.author.globalName}`,iconURL:message.author.displayAvatarURL() })
-                .addFields({ name: '\u200B', value: `<@${message.author.id}> deleted a message in ${message.channel.toString()}` },
+                .addFields({ name: '\u200B', value: `<@${message.author.id}> deleted a message in ${message.channel.toString()} ` },
                     { name: 'message: ', value: "```" + `${message.content}` + "```" }
                 )
                 .setTimestamp()
@@ -77,7 +80,7 @@ export const NotifyModule = class {
             const modifiedMessageEmbed = new EmbedBuilder()
                 .setColor('#ED4245')
                 .setAuthor({ name: `${oldMessage.author.globalName}`,iconURL:oldMessage.author.displayAvatarURL() })
-                .addFields({ name: '\u200B', value: `<@${oldMessage.author.id}> modified a message in ${oldMessage.channel.toString()}` },
+                .addFields({ name: '\u200B', value: `<@${oldMessage.author.id}> modified a message in ${oldMessage.channel.toString()} [jump to Message](https://discord.com/channels/${this.#guild.id.toString()}/${oldMessage.channelId.toString()}/${oldMessage.id.toString()})` },
                     { name: 'old: ', value: "```" + `${oldMessage.content}` + "```" },
                     { name: 'new: ', value: "```" + `${newMessage.content}` + "```" },
                 )
