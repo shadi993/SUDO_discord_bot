@@ -66,13 +66,13 @@ export const NotifyModule = class {
             const deletedMessageEmbed = new EmbedBuilder()
                 .setColor('#ED4245')
                 .setAuthor({ name: `${message.author.globalName}`,iconURL:message.author.displayAvatarURL() })
-                .addFields({ name: '\u200B', value: `<@${message.author.id}> deleted a message in ${message.channel.toString()} ` }
+                .addFields({ name: '\u200B', value: `🗑 <@${message.author.id}> deleted a message in ${message.channel.toString()} ` }
                 )
                 
                 .setTimestamp()
                 .setFooter({ text: 'SUDO' })
                 if (message.content) {
-                    deletedMessageEmbed.addFields({ name: 'Message:', value: "```" + message.content + "```" });
+                    deletedMessageEmbed.addFields({ name: 'Message:', value: message.content });
                 } else {
                     deletedMessageEmbed.addFields({ name: 'Message:', value: 'No text content' });
                 }
@@ -95,7 +95,7 @@ export const NotifyModule = class {
             const modifiedMessageEmbed = new EmbedBuilder()
                 .setColor('#ED4245')
                 .setAuthor({ name: `${oldMessage.author.globalName}`,iconURL:oldMessage.author.displayAvatarURL() })
-                .addFields({ name: '\u200B', value: `<@${oldMessage.author.id}> modified a message in ${oldMessage.channel.toString()} [jump to Message](https://discord.com/channels/${guildID}/${oldMessage.channelId.toString()}/${oldMessage.id.toString()})` },
+                .addFields({ name: '\u200B', value: `✍️ <@${oldMessage.author.id}> modified a message in ${oldMessage.channel.toString()} [jump to Message](https://discord.com/channels/${guildID}/${oldMessage.channelId.toString()}/${oldMessage.id.toString()})` },
                     { name: 'old: ', value: "```" + `${oldMessage.content}` + "```" },
                     { name: 'new: ', value: "```" + `${newMessage.content}` + "```" },
                 )
@@ -123,7 +123,7 @@ export const NotifyModule = class {
                         //guildMemberEmbed.addFields({name:"Role Removed",value: role});
                     }
                 });
-                guildMemberEmbed.addFields({name:"Role Removed", value: roleArray.toString()});
+                guildMemberEmbed.addFields({name:"\u200B", value:`<@${oldMember.user.id}> updated Role`},{name:"Role Removed", value:"⛔️ "+ roleArray.toString()});
                 guildMemberEmbed.setTimestamp();
                 guildMemberEmbed.setFooter({ text: 'SUDO' });
                 await this.#notifyChannel.send({ embeds: [guildMemberEmbed] });
@@ -140,7 +140,7 @@ export const NotifyModule = class {
                         //guildMemberEmbed.addFields({name:"Role Added", value: role});
                     }
                 });
-                guildMemberEmbed.addFields({name:"Role Added", value: roleArray.toString()});
+                guildMemberEmbed.addFields({name:"\u200B", value:`<@${oldMember.user.id}> updated Role`},{name:"Role Added", value:"✅ "+ roleArray.toString()});
                 guildMemberEmbed.setTimestamp();
                 guildMemberEmbed.setFooter({ text: 'SUDO' });
                 await this.#notifyChannel.send({ embeds: [guildMemberEmbed] });
