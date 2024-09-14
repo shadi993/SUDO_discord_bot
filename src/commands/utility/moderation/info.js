@@ -14,9 +14,9 @@ export const data = new SlashCommandBuilder()
         // Create the Info embed
         const warnEmbed = new EmbedBuilder()
             .setColor('#FFFF00')
-            .setTitle('❗️ You have been Informed!')
+            .setTitle('❗️ Information!')
             .addFields(
-                { name: 'Reason', value: reason },
+                { name: 'Info', value: reason },
                 { name: 'Moderator', value: `${interaction.user.tag}`, inline: true },
                 { name: 'Guild', value: `${interaction.guild.name}`, inline: true },
             )
