@@ -242,7 +242,7 @@ export const LevelingModule = class {
         if (leveledUp) {
             await this.sendLevelupMessage(discordId, userInfo.level);
             if (userInfo.level.toString() in Config.leveling.roles) {
-                for (const [key, value] of Object.entries(Config.leveling.roles)) {
+                for (const [, value] of Object.entries(Config.leveling.roles)) {
                     const discordRole = this.#discordRoles.find((discordRole) => discordRole.name === value);
                     if (message.member.roles.cache.find((memberRole) => memberRole.id === discordRole.id)){
                         message.member.roles.remove(discordRole);

@@ -10,10 +10,10 @@ import * as url from 'node:url';
 const commands = [];
 const currentDirectory = path.dirname(url.fileURLToPath(import.meta.url));
 const foldersPath = path.join(currentDirectory, '..', 'commands');
-const commandFolders = fs.readdirSync(foldersPath);
+const commandFolders = fs.readdirSync(foldersPath,{recursive:true});
 
 for (const folder of commandFolders) {
-	if (folder.endsWith('.mjs')) continue;
+	if (folder.endsWith('.mjs') || folder.endsWith('.js')) continue;
 
 	const commandsPath = path.join(foldersPath, folder);
 	const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('.js'));

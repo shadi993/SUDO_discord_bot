@@ -19,10 +19,10 @@ export const InitCommands = async (client) => {
     client.commands = new Collection();
 
     const currentDirectory = path.dirname(url.fileURLToPath(import.meta.url));
-    const commandFolders = fs.readdirSync(currentDirectory);
+    const commandFolders = fs.readdirSync(currentDirectory,{recursive:true});
 
     for (const folder of commandFolders) {
-        if (folder === 'init.mjs') continue;
+        if (folder.endsWith('.mjs') || folder.endsWith('.js')) continue;
 
         const commandsPath = path.join(currentDirectory, folder);
         const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('.js'));
