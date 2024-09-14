@@ -66,11 +66,22 @@ export const NotifyModule = class {
             const deletedMessageEmbed = new EmbedBuilder()
                 .setColor('#ED4245')
                 .setAuthor({ name: `${message.author.globalName}`,iconURL:message.author.displayAvatarURL() })
-                .addFields({ name: '\u200B', value: `<@${message.author.id}> deleted a message in ${message.channel.toString()} ` },
-                    { name: 'message: ', value: "```" + `${message.content}` + "```" }
+                .addFields({ name: '\u200B', value: `<@${message.author.id}> deleted a message in ${message.channel.toString()} ` }
                 )
+                
                 .setTimestamp()
                 .setFooter({ text: 'SUDO' })
+                if (message.content) {
+                    deletedMessageEmbed.addFields({ name: 'Message:', value: "```" + message.content + "```" });
+                } else {
+                    deletedMessageEmbed.addFields({ name: 'Message:', value: 'No text content' });
+                }
+            
+                // Check for attachments (including GIFs)
+                if (message.attachments.size > 0) {
+                    const attachmentURLs = message.attachments.map(attachment => attachment.url).join('\n');
+                    deletedMessageEmbed.addFields({ name: 'Attachments:', value: attachmentURLs });
+                }
 
             await this.#notifyChannel.send({ embeds: [deletedMessageEmbed] });
         });
