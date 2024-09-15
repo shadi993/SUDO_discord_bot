@@ -126,7 +126,7 @@ export const NotifyModule = class {
                 guildMemberEmbed.addFields({name:"\u200B", value:`<@${oldMember.user.id}> updated Role`},{name:"Role Removed", value:"⛔️ "+ roleArray.toString()});
                 guildMemberEmbed.setTimestamp();
                 guildMemberEmbed.setFooter({ text: 'SUDO' });
-                
+
                 await this.#notifyChannel.send({ embeds: [guildMemberEmbed] });
 
             } else if (oldMember.roles.cache.size < newMember.roles.cache.size) {
@@ -214,6 +214,7 @@ export const NotifyModule = class {
                     .setColor('#E67E22')
                     .setAuthor({ name: `${oldState.member.user.globalName}`, iconURL: oldState.member.user.displayAvatarURL() })
                     .setDescription(`<@${oldState.member.user.id}> moved from **${oldState.channel.name}** to **${newState.channel.name}**`)
+                    .setTimestamp()
                     .setFooter({ text: 'SUDO' });
         
                 await this.#notifyChannel.send({ embeds: [voiceStateEmbed]});
@@ -253,6 +254,7 @@ export const NotifyModule = class {
     
             await this.#notifyChannel.send({ embeds: [threadUpdateEmbed] });
         });
+
         /*DiscordClient.on(Events.Raw, async (packet) => {
             this.#logger.log('info', `Raw packet.`, packet);
             if (packet.t == 'GUILD_AUDIT_LOG_ENTRY_CREATE') {
