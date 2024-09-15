@@ -179,10 +179,10 @@ export const NotifyModule = class {
         });
 
         DiscordClient.on(Events.VoiceStateUpdate, async (oldState, newState) => {
-            this.#logger.log('info', `Voice state updated: ${oldState} -> ${newState}`);
 
             // User joined a voice channel
             if (!oldState.channelId && newState.channelId) {
+                this.#logger.log('info', `${oldState.member.user.displayName} joined the voice channel: ${newState.channel.name}`);
                 const voiceStateEmbed = new EmbedBuilder()
                     .setColor('#57F287')
                     .setAuthor({ name: `${oldState.member.user.globalName}`, iconURL: oldState.member.user.displayAvatarURL() })
@@ -194,6 +194,7 @@ export const NotifyModule = class {
         
             // User left a voice channel
             if (oldState.channelId && !newState.channelId) {
+                this.#logger.log('info', `${oldState.member.user.displayName} left the voice channel: ${oldState.channel.name}`);
                 const voiceStateEmbed = new EmbedBuilder()
                     .setColor('#ED4245')
                     .setAuthor({ name: `${oldState.member.user.globalName}`, iconURL: oldState.member.user.displayAvatarURL() })
@@ -205,6 +206,7 @@ export const NotifyModule = class {
         
             // User moved to another voice channel
             if (oldState.channelId && newState.channelId && oldState.channelId !== newState.channelId) {
+                this.#logger.log('info', `${oldState.member.user.displayName} moved from ${oldState.channel.name} to ${newState.channel.name}`);
                 const voiceStateEmbed = new EmbedBuilder()
                     .setColor('#E67E22')
                     .setAuthor({ name: `${oldState.member.user.globalName}`, iconURL: oldState.member.user.displayAvatarURL() })
