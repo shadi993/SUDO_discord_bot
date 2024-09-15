@@ -227,7 +227,7 @@ export const NotifyModule = class {
             const threadCreateEmbed = new EmbedBuilder()
             .setColor('#57F287')
             .setTitle('Thread Created')
-            .setDescription(`A new thread named **${thread.name}** was created in **${thread.parent.name}**.`)
+            .setDescription(`[**${thread.name}**](https://discord.com/channels/${thread.guild.id}/${thread.parent.id}/${thread.id}) was created in **${thread.parent.name}**.`)
             .addFields({ name: 'Created by', value: `${creator.user.tag} <@${creator.id}>` })
             .setTimestamp()
             .setFooter({ text: 'SUDO' });
@@ -276,7 +276,7 @@ export const NotifyModule = class {
             const threadUpdateEmbed = new EmbedBuilder()
             .setColor('#E67E22')
             .setTitle('Thread Updated')
-            .setDescription(`The thread **${oldThread.name}** was updated. New name: **${newThread.name}**.`)
+            .setDescription(`The thread [**${newThread.name}**](https://discord.com/channels/${newThread.guild.id}/${newThread.parent.id}/${newThread.id}) was updated. New name: **${newThread.name}**.`)
             .addFields({ name: 'Updated by', value: updater })
             .setTimestamp()
             .setFooter({ text: 'SUDO' });
