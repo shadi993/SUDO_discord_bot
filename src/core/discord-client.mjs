@@ -21,6 +21,7 @@ export const InitDiscordClient = () => {
             GatewayIntentBits.GuildMembers |
             GatewayIntentBits.GuildPresences |
             GatewayIntentBits.GuildEmojisAndStickers |
+            GatewayIntentBits.GuildVoiceStates |
             GatewayIntentBits.DirectMessages |
             GatewayIntentBits.DirectMessageReactions |
             GatewayIntentBits.MessageContent

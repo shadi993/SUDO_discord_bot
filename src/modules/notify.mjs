@@ -180,6 +180,39 @@ export const NotifyModule = class {
 
         DiscordClient.on(Events.VoiceStateUpdate, async (oldState, newState) => {
             this.#logger.log('info', `Voice state updated: ${oldState} -> ${newState}`);
+
+            // User joined a voice channel
+            if (!oldState.channelId && newState.channelId) {
+                const voiceStateEmbed = new EmbedBuilder()
+                    .setColor('#57F287')
+                    .setAuthor({ name: `${oldState.member.user.globalName}`, iconURL: oldState.member.user.displayAvatarURL() })
+                    .setDescription(`<@${oldState.member.user.id}> joined the voice channel: **${newState.channel.name}**`)
+                    .setTimestamp();
+        
+                await this.#notifyChannel.send({ embeds: [voiceStateEmbed]});
+            }
+        
+            // User left a voice channel
+            if (oldState.channelId && !newState.channelId) {
+                const voiceStateEmbed = new EmbedBuilder()
+                    .setColor('#ED4245')
+                    .setAuthor({ name: `${oldState.member.user.globalName}`, iconURL: oldState.member.user.displayAvatarURL() })
+                    .setDescription(`<@${oldState.member.user.id}> left the voice channel: **${oldState.channel.name}**`)
+                    .setTimestamp();
+        
+                await this.#notifyChannel.send({ embeds: [voiceStateEmbed]});
+            }
+        
+            // User moved to another voice channel
+            if (oldState.channelId && newState.channelId && oldState.channelId !== newState.channelId) {
+                const voiceStateEmbed = new EmbedBuilder()
+                    .setColor('#E67E22')
+                    .setAuthor({ name: `${oldState.member.user.globalName}`, iconURL: oldState.member.user.displayAvatarURL() })
+                    .setDescription(`<@${oldState.member.user.id}> moved from **${oldState.channel.name}** to **${newState.channel.name}**`)
+                    .setTimestamp();
+        
+                await this.#notifyChannel.send({ embeds: [voiceStateEmbed]});
+            }
         });
 
         /*DiscordClient.on(Events.Raw, async (packet) => {
