@@ -111,6 +111,7 @@ export const NotifyModule = class {
 
             
             if (oldMember.roles.cache.size > newMember.roles.cache.size) {
+
                 // Creating an embed message.
                 const guildMemberEmbed = new EmbedBuilder()
                 guildMemberEmbed.setColor("#ED4245");
@@ -120,12 +121,12 @@ export const NotifyModule = class {
                 oldMember.roles.cache.forEach(role => {
                     if (!newMember.roles.cache.has(role.id)) {
                         roleArray.push(role);
-                        //guildMemberEmbed.addFields({name:"Role Removed",value: role});
                     }
                 });
                 guildMemberEmbed.addFields({name:"\u200B", value:`<@${oldMember.user.id}> updated Role`},{name:"Role Removed", value:"⛔️ "+ roleArray.toString()});
                 guildMemberEmbed.setTimestamp();
                 guildMemberEmbed.setFooter({ text: 'SUDO' });
+                
                 await this.#notifyChannel.send({ embeds: [guildMemberEmbed] });
 
             } else if (oldMember.roles.cache.size < newMember.roles.cache.size) {
@@ -137,12 +138,12 @@ export const NotifyModule = class {
                 newMember.roles.cache.forEach(role => {
                     if (!oldMember.roles.cache.has(role.id)) {
                         roleArray.push(role);
-                        //guildMemberEmbed.addFields({name:"Role Added", value: role});
                     }
                 });
                 guildMemberEmbed.addFields({name:"\u200B", value:`<@${oldMember.user.id}> updated Role`},{name:"Role Added", value:"✅ "+ roleArray.toString()});
                 guildMemberEmbed.setTimestamp();
                 guildMemberEmbed.setFooter({ text: 'SUDO' });
+                
                 await this.#notifyChannel.send({ embeds: [guildMemberEmbed] });
             }
         });
@@ -187,7 +188,8 @@ export const NotifyModule = class {
                     .setColor('#57F287')
                     .setAuthor({ name: `${oldState.member.user.globalName}`, iconURL: oldState.member.user.displayAvatarURL() })
                     .setDescription(`<@${oldState.member.user.id}> joined the voice channel: **${newState.channel.name}**`)
-                    .setTimestamp();
+                    .setTimestamp()
+                    .setFooter({ text: 'SUDO' });
         
                 await this.#notifyChannel.send({ embeds: [voiceStateEmbed]});
             }
@@ -199,7 +201,8 @@ export const NotifyModule = class {
                     .setColor('#ED4245')
                     .setAuthor({ name: `${oldState.member.user.globalName}`, iconURL: oldState.member.user.displayAvatarURL() })
                     .setDescription(`<@${oldState.member.user.id}> left the voice channel: **${oldState.channel.name}**`)
-                    .setTimestamp();
+                    .setTimestamp()
+                    .setFooter({ text: 'SUDO' });
         
                 await this.#notifyChannel.send({ embeds: [voiceStateEmbed]});
             }
@@ -211,12 +214,45 @@ export const NotifyModule = class {
                     .setColor('#E67E22')
                     .setAuthor({ name: `${oldState.member.user.globalName}`, iconURL: oldState.member.user.displayAvatarURL() })
                     .setDescription(`<@${oldState.member.user.id}> moved from **${oldState.channel.name}** to **${newState.channel.name}**`)
-                    .setTimestamp();
+                    .setFooter({ text: 'SUDO' });
         
                 await this.#notifyChannel.send({ embeds: [voiceStateEmbed]});
             }
         });
 
+        DiscordClient.on(Events.ThreadCreate, async (thread) => {
+            const threadCreateEmbed = new EmbedBuilder()
+            .setColor('#57F287')
+            .setTitle('Thread Created')
+            .setDescription(`A new thread named **${thread.name}** was created in **${thread.parent.name}**.`)
+            .setTimestamp()
+            .setFooter({ text: 'SUDO' });
+            
+    
+        await this.#notifyChannel.send({ embeds: [threadCreateEmbed] });
+        });
+
+        DiscordClient.on(Events.ThreadDelete, async (thread) => {
+            const threadDeleteEmbed = new EmbedBuilder()
+            .setColor('#ED4245')
+            .setTitle('Thread Deleted')
+            .setDescription(`The thread named **${thread.name}** in **${thread.parent.name}** was deleted.`)
+            .setTimestamp()
+            .setFooter({ text: 'SUDO' });
+    
+            await this.#notifyChannel.send({ embeds: [threadDeleteEmbed] });
+        });
+
+        DiscordClient.on(Events.ThreadUpdate, async (oldThread, newThread) => {
+            const threadUpdateEmbed = new EmbedBuilder()
+            .setColor('#E67E22')
+            .setTitle('Thread Updated')
+            .setDescription(`The thread **${oldThread.name}** was updated. New name: **${newThread.name}**.`)
+            .setTimestamp()
+            .setFooter({ text: 'SUDO' });
+    
+            await this.#notifyChannel.send({ embeds: [threadUpdateEmbed] });
+        });
         /*DiscordClient.on(Events.Raw, async (packet) => {
             this.#logger.log('info', `Raw packet.`, packet);
             if (packet.t == 'GUILD_AUDIT_LOG_ENTRY_CREATE') {
