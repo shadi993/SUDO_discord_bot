@@ -1,6 +1,6 @@
 import { CreateLogger } from '../core/logger.mjs';
 import { DiscordClient } from "../core/discord-client.mjs";
-import { Events, EmbedBuilder } from 'discord.js';
+import { Events, EmbedBuilder, AuditLogEvent } from 'discord.js';
 import { Config } from "../core/config.mjs";
 
 /**
@@ -222,10 +222,13 @@ export const NotifyModule = class {
         });
 
         DiscordClient.on(Events.ThreadCreate, async (thread) => {
+
+            const creator = await thread.fetchOwner()
             const threadCreateEmbed = new EmbedBuilder()
             .setColor('#57F287')
             .setTitle('Thread Created')
             .setDescription(`A new thread named **${thread.name}** was created in **${thread.parent.name}**.`)
+            .addFields({ name: 'Created by', value: `${creator.user.tag} <@${creator.id}>` })
             .setTimestamp()
             .setFooter({ text: 'SUDO' });
             
@@ -234,10 +237,23 @@ export const NotifyModule = class {
         });
 
         DiscordClient.on(Events.ThreadDelete, async (thread) => {
+
+            const fetchedLogs = await thread.guild.fetchAuditLogs({
+                limit: 1,
+                type: AuditLogEvent.ThreadDelete
+            });
+            const deletionLog = fetchedLogs.entries.first();
+            let deleter = 'Unknown';
+
+            if (deletionLog) {
+                const { executor } = deletionLog;
+                deleter = `${executor.tag} <@${executor.id}>`;
+            }
             const threadDeleteEmbed = new EmbedBuilder()
             .setColor('#ED4245')
             .setTitle('Thread Deleted')
             .setDescription(`The thread named **${thread.name}** in **${thread.parent.name}** was deleted.`)
+            .addFields({ name: 'Deleted by', value: deleter })
             .setTimestamp()
             .setFooter({ text: 'SUDO' });
     
@@ -245,10 +261,23 @@ export const NotifyModule = class {
         });
 
         DiscordClient.on(Events.ThreadUpdate, async (oldThread, newThread) => {
+
+            const fetchedLogs = await newThread.guild.fetchAuditLogs({
+                limit: 1,
+                type: AuditLogEvent.ThreadUpdate
+            });
+            const updateLog = fetchedLogs.entries.first();
+            let updater = 'Unknown';
+
+            if (updateLog) {
+                const { executor } = updateLog;
+                updater = `${executor.tag} <@${executor.id}>`;
+            }
             const threadUpdateEmbed = new EmbedBuilder()
             .setColor('#E67E22')
             .setTitle('Thread Updated')
             .setDescription(`The thread **${oldThread.name}** was updated. New name: **${newThread.name}**.`)
+            .addFields({ name: 'Updated by', value: updater })
             .setTimestamp()
             .setFooter({ text: 'SUDO' });
     
