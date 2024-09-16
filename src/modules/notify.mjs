@@ -110,41 +110,58 @@ export const NotifyModule = class {
             this.#logger.log('info', `Member updated: ${oldMember.user.tag} -> ${newMember.user.tag}`);
 
             
-            if (oldMember.roles.cache.size > newMember.roles.cache.size) {
-
-                // Creating an embed message.
-                const guildMemberEmbed = new EmbedBuilder()
-                guildMemberEmbed.setColor("#ED4245");
-                guildMemberEmbed.setAuthor({name:newMember.user.tag, iconURL:newMember.user.displayAvatarURL()});
-                guildMemberEmbed.setThumbnail(oldMember.user.displayAvatarURL());
-                let roleArray=[];
-                oldMember.roles.cache.forEach(role => {
-                    if (!newMember.roles.cache.has(role.id)) {
-                        roleArray.push(role);
-                    }
-                });
-                guildMemberEmbed.addFields({name:"\u200B", value:`<@${oldMember.user.id}> updated Role`},{name:"Role Removed", value:"⛔️ "+ roleArray.toString()});
-                guildMemberEmbed.setTimestamp();
-                guildMemberEmbed.setFooter({ text: 'SUDO' });
-
-                await this.#notifyChannel.send({ embeds: [guildMemberEmbed] });
-
-            } else if (oldMember.roles.cache.size < newMember.roles.cache.size) {
-                const guildMemberEmbed = new EmbedBuilder()
-                guildMemberEmbed.setColor("#57F287");
-                guildMemberEmbed.setAuthor({name:newMember.user.tag, iconURL:newMember.user.displayAvatarURL()});
-                guildMemberEmbed.setThumbnail(oldMember.user.displayAvatarURL());
-                let roleArray=[];
-                newMember.roles.cache.forEach(role => {
-                    if (!oldMember.roles.cache.has(role.id)) {
-                        roleArray.push(role);
-                    }
-                });
-                guildMemberEmbed.addFields({name:"\u200B", value:`<@${oldMember.user.id}> updated Role`},{name:"Role Added", value:"✅ "+ roleArray.toString()});
-                guildMemberEmbed.setTimestamp();
-                guildMemberEmbed.setFooter({ text: 'SUDO' });
-                
-                await this.#notifyChannel.send({ embeds: [guildMemberEmbed] });
+            const embed = new EmbedBuilder()
+            .setAuthor({ name: `${newMember.user.tag}`, iconURL: newMember.user.displayAvatarURL() })
+            .setColor('#E67E22')
+            .setTitle('Member Updated')
+            .setTimestamp();
+    
+            // Check for nickname change
+            if (oldMember.nickname !== newMember.nickname) {
+                embed.addFields({name: '\u200B',value: `<@${oldMember.user.id}>`},{
+                    name: 'Nickname Changed',
+                    value: `Old: ${oldMember.nickname || 'None'}\nNew: ${newMember.nickname || 'None'}`,
+                }),
+                embed.setThumbnail(oldMember.user.displayAvatarURL()),
+                embed.setTimestamp(),
+                embed.setFooter({ text: 'SUDO' });
+            }
+    
+            // Check for role changes
+            const oldRoles = oldMember.roles.cache.map(role => role.name);
+            const newRoles = newMember.roles.cache.map(role => role.name);
+    
+            if (oldRoles.length !== newRoles.length) {
+                const removedRoles = oldRoles.filter(role => !newRoles.includes(role));
+                const addedRoles = newRoles.filter(role => !oldRoles.includes(role));
+    
+                if (addedRoles.length > 0) {
+                    embed.addFields({name: '\u200B',value: `<@${oldMember.user.id}>`},{ name: 'Roles Added', value:"✅ "+ addedRoles.join(', ') }),
+                    embed.setThumbnail(oldMember.user.displayAvatarURL()),
+                    embed.setTimestamp(),
+                    embed.setFooter({ text: 'SUDO' });
+                }
+                if (removedRoles.length > 0) {
+                    embed.addFields({name: '\u200B',value: `<@${oldMember.user.id}>`},{ name: 'Roles Removed', value:"⛔️ "+ removedRoles.join(', ') })
+                    embed.setThumbnail(oldMember.user.displayAvatarURL()),
+                    embed.setTimestamp(),
+                    embed.setFooter({ text: 'SUDO' });
+                }
+            }
+    
+            // Check for avatar change
+            if (oldMember.user.displayAvatarURL() !== newMember.user.displayAvatarURL()) {
+                embed.addFields({
+                    name: 'Avatar Updated',
+                    value: `<@${oldMember.user.id}> updated their profile picture.`,
+                })
+                .setThumbnail(newMember.user.displayAvatarURL()),
+                embed.setTimestamp(),
+                embed.setFooter({ text: 'SUDO' }); 
+            }
+    
+            if (embed.data.fields.length > 0) {
+                await this.#notifyChannel.send({ embeds: [embed] });
             }
         });
 
