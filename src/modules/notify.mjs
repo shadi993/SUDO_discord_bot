@@ -168,11 +168,25 @@ export const NotifyModule = class {
         DiscordClient.on(Events.GuildBanAdd, async (guild, user) => {
             this.#logger.log('info', `User banned: ${user.tag}`);
 
+            const fetchedLogs = await guild.fetchAuditLogs({
+                limit: 1,
+                type: AuditLogEvent.MemberBanAdd,
+            });
+
+            const banLog = fetchedLogs.entries.first();
+            let executor = 'Unknown';
+
+            if (banLog) {
+                const { executor: banExecutor } = banLog; // Get the user who banned the member
+                executor = banExecutor ? `${banExecutor.tag}` : 'Unknown';
+            }
+
             const bannedEmbed = new EmbedBuilder()
                 .setColor('#ED4245')
                 .setAuthor({ name: `${user.globalName}`, iconURL: user.displayAvatarURL() })
                 .setThumbnail(user.displayAvatarURL())
-                .addFields({ name: `${user.globalName}`, value: `${user.globalName} got banned` })
+                .addFields({ name: 'Banned User', value: `${user.globalName} (<@${user.id}>)`, inline: true },
+                    { name: 'Banned By', value: executor, inline: true })
                 .setTimestamp()
                 .setFooter({ text: 'SUDO' })
 
