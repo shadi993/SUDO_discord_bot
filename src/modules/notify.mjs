@@ -1,6 +1,6 @@
 import { CreateLogger } from '../core/logger.mjs';
 import { DiscordClient } from "../core/discord-client.mjs";
-import { Events, EmbedBuilder, AuditLogEvent } from 'discord.js';
+import { Events, EmbedBuilder, AuditLogEvent, PermissionsBitField } from 'discord.js';
 import { Config } from "../core/config.mjs";
 
 /**
@@ -301,6 +301,154 @@ export const NotifyModule = class {
             await this.#notifyChannel.send({ embeds: [threadUpdateEmbed] });
         });
 
+        DiscordClient.on(Events.ChannelCreate, async (channel) => {
+            const fetchedLogs = await channel.guild.fetchAuditLogs({
+                limit: 1,
+                type: AuditLogEvent.ChannelCreate,
+            });
+        
+            const creationLog = fetchedLogs.entries.first();
+            let creator = 'Unknown';
+        
+            if (creationLog) {
+                const { executor } = creationLog;
+                creator = `${executor.tag} <@${executor.id}>`;
+            }
+        
+            const embed = new EmbedBuilder()
+                .setColor('#57F287')
+                .setTitle('Channel Created')
+                .addFields(
+                    { name: 'Channel', value: `${channel.name} (${channel.type})` },
+                    { name: 'Created by', value: creator }
+                )
+                .setTimestamp()
+                .setFooter({ text: 'SUDO' });
+        
+            await this.#notifyChannel.send({ embeds: [embed] });
+        });
+
+        DiscordClient.on(Events.ChannelDelete, async (channel) => {
+            const fetchedLogs = await channel.guild.fetchAuditLogs({
+                limit: 1,
+                type: AuditLogEvent.ChannelDelete,
+            });
+        
+            const deletionLog = fetchedLogs.entries.first();
+            let deleter = 'Unknown';
+        
+            if (deletionLog) {
+                const { executor } = deletionLog;
+                deleter = `${executor.tag} <@${executor.id}>`;
+            }
+        
+            const embed = new EmbedBuilder()
+                .setColor('#ED4245')
+                .setTitle('Channel Deleted')
+                .addFields(
+                    { name: 'Channel', value: `${channel.name} (${channel.type})` },
+                    { name: 'Deleted by', value: deleter }
+                )
+                .setTimestamp()
+                .setFooter({ text: 'SUDO' });
+        
+                await this.#notifyChannel.send({ embeds: [embed] });
+        });
+
+        DiscordClient.on(Events.ChannelUpdate, async (oldChannel, newChannel) => {
+            const fetchedLogs = await newChannel.guild.fetchAuditLogs({
+                limit: 1,
+                type: AuditLogEvent.ChannelUpdate,
+            });
+        
+            const updateLog = fetchedLogs.entries.first();
+            let updater = 'Unknown';
+        
+            if (updateLog) {
+                const { executor } = updateLog;
+                updater = `${executor.tag} <@${executor.id}>`;
+            }
+        
+            const embed = new EmbedBuilder()
+                .setColor('#E67E22')
+                .setTitle('Channel Updated')
+                .setTimestamp()
+                .setFooter({ text: 'SUDO' });
+        
+            // Check for name change
+            if (oldChannel.name !== newChannel.name) {
+                embed.addFields({
+                    name: 'Name Changed',
+                    value: `Old: ${oldChannel.name}\nNew: ${newChannel.name}`,
+                });
+            }
+        
+            // Check for topic change
+            if (oldChannel.topic !== newChannel.topic) {
+                embed.addFields({
+                    name: 'Topic Changed',
+                    value: `Old: ${oldChannel.topic || 'None'}\nNew: ${newChannel.topic || 'None'}`,
+                });
+            }
+                // Permission changes
+            const oldPerms = oldChannel.permissionOverwrites.cache;
+            const newPerms = newChannel.permissionOverwrites.cache;
+            const changes = [];
+
+            newPerms.forEach((newPerm, id) => {
+                const oldPerm = oldPerms.get(id);
+        
+                if (!oldPerm) {
+                    // New permission overwrite added
+                    changes.push(`**Added** permissions for ${getOverwriteTarget(newPerm)}: ${formatPermissions(newPerm.allow)}`);
+                } else {
+                    // Compare allow and deny bitfields
+                    const addedPerms = newPerm.allow.bitfield & ~oldPerm.allow.bitfield;
+                    const removedPerms = oldPerm.allow.bitfield & ~newPerm.allow.bitfield;
+        
+                    if (addedPerms) {
+                        changes.push(`**Added** permissions for ${getOverwriteTarget(newPerm)}: ${formatPermissions(addedPerms)}`);
+                    }
+        
+                    if (removedPerms) {
+                        changes.push(`**Removed** permissions for ${getOverwriteTarget(newPerm)}: ${formatPermissions(removedPerms)}`);
+                    }
+                }
+            });
+        
+            // Check for removed permission overwrites
+            oldPerms.forEach((oldPerm, id) => {
+                if (!newPerms.has(id)) {
+                    // Permission overwrite removed
+                    changes.push(`**Removed** permissions for ${getOverwriteTarget(oldPerm)}: ${formatPermissions(oldPerm.allow)}`);
+                }
+            });
+
+            if (changes.length > 0) {
+                embed.addFields({ name: 'Permissions Changed', value: changes.join('\n') });
+            }
+        
+            embed.addFields({ name: 'Updated by', value: updater });
+        
+            // Send the embed if there are any updates
+            if (embed.data.fields.length > 0) {
+                await this.#notifyChannel.send({ embeds: [embed] });
+            }
+        });
+
+        // Utility function to get the target of the permission overwrite (role or member)
+        function getOverwriteTarget(overwrite) {
+            return overwrite.type === 'role'
+                ? `<@&${overwrite.id}>` // Role
+                : `<@${overwrite.id}>`; // Member
+        }
+
+        // Utility function to format permission bits into readable permission names
+        function formatPermissions(permissionBitfield) {
+            const permissions = Object.keys(PermissionsBitField.Flags);
+            const grantedPermissions = permissions.filter(perm => permissionBitfield & PermissionsBitField.Flags[perm]);
+            return grantedPermissions.map(perm => `\`${perm}\``).join(', ');
+        }
         /*DiscordClient.on(Events.Raw, async (packet) => {
             this.#logger.log('info', `Raw packet.`, packet);
             if (packet.t == 'GUILD_AUDIT_LOG_ENTRY_CREATE') {
