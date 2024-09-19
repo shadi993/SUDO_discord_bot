@@ -404,6 +404,7 @@ export const NotifyModule = class {
                     value: `Old: ${oldChannel.topic || 'None'}\nNew: ${newChannel.topic || 'None'}`,
                 });
             }
+
                 // Permission changes
             const oldPerms = oldChannel.permissionOverwrites.cache;
             const newPerms = newChannel.permissionOverwrites.cache;
@@ -411,21 +412,23 @@ export const NotifyModule = class {
 
             newPerms.forEach((newPerm, id) => {
                 const oldPerm = oldPerms.get(id);
+
+                const target = getOverwriteTarget(newPerm, newChannel); 
         
                 if (!oldPerm) {
                     // New permission overwrite added
-                    changes.push(`**Added** permissions for ${getOverwriteTarget(newPerm)}: ${formatPermissions(newPerm.allow)}`);
+                    changes.push(`**Added** permissions for ${target} in <#${newChannel.id}>: ${formatPermissions(newPerm.allow)}`);
                 } else {
                     // Compare allow and deny bitfields
                     const addedPerms = newPerm.allow.bitfield & ~oldPerm.allow.bitfield;
                     const removedPerms = oldPerm.allow.bitfield & ~newPerm.allow.bitfield;
         
                     if (addedPerms) {
-                        changes.push(`**Added** permissions for ${getOverwriteTarget(newPerm)}: ${formatPermissions(addedPerms)}`);
+                        changes.push(`**Added** permissions for ${target} in <#${newChannel.id}>: ${formatPermissions(addedPerms)}`);
                     }
         
                     if (removedPerms) {
-                        changes.push(`**Removed** permissions for ${getOverwriteTarget(newPerm)}: ${formatPermissions(removedPerms)}`);
+                        changes.push(`**Removed** permissions for ${target} in <#${newChannel.id}>: ${formatPermissions(removedPerms)}`);
                     }
                 }
             });
