@@ -414,35 +414,40 @@ export const NotifyModule = class {
                 const oldPerm = oldPerms.get(id);
 
                 const target = getOverwriteTarget(newPerm, newChannel); 
-        
+                let addedPerms = '';
+                let removedPerms = '';
                 if (!oldPerm) {
                     // New permission overwrite added
-                    changes.push(`**Added** permissions for ${target} in <#${newChannel.id}>: ${formatPermissions(newPerm.allow)}`);
+                    addedPerms = formatPermissionsWithEmoji(newPerm.allow, '✅');
                 } else {
-                    // Compare allow and deny bitfields
-                    const addedPerms = newPerm.allow.bitfield & ~oldPerm.allow.bitfield;
-                    const removedPerms = oldPerm.allow.bitfield & ~newPerm.allow.bitfield;
+                    // Compare added and removed permissions
+                    const addedPermissions = newPerm.allow.bitfield & ~oldPerm.allow.bitfield;
+                    const removedPermissions = oldPerm.allow.bitfield & ~newPerm.allow.bitfield;
         
-                    if (addedPerms) {
-                        changes.push(`**Added** permissions for ${target} in <#${newChannel.id}>: ${formatPermissions(addedPerms)}`);
+                    if (addedPermissions) {
+                        addedPerms = formatPermissionsWithEmoji(addedPermissions, '✅');
                     }
         
-                    if (removedPerms) {
-                        changes.push(`**Removed** permissions for ${target} in <#${newChannel.id}>: ${formatPermissions(removedPerms)}`);
+                    if (removedPermissions) {
+                        removedPerms = formatPermissionsWithEmoji(removedPermissions, '❌');
                     }
+                }
+        
+                if (addedPerms || removedPerms) {
+                    changes.push(`**Permissions for ${target} in <#${newChannel.id}>**\n${addedPerms}${removedPerms ? '\n' + removedPerms : ''}`);
                 }
             });
         
             // Check for removed permission overwrites
             oldPerms.forEach((oldPerm, id) => {
                 if (!newPerms.has(id)) {
-                    // Permission overwrite removed
-                    changes.push(`**Removed** permissions for ${getOverwriteTarget(oldPerm)}: ${formatPermissions(oldPerm.allow)}`);
+                    const target = getOverwriteTarget(oldPerm, oldChannel);
+                    changes.push(`**Permissions Removed for ${target} in <#${newChannel.id}>**\n${formatPermissionsWithEmoji(oldPerm.allow, '❌')}`);
                 }
             });
 
             if (changes.length > 0) {
-                embed.addFields({ name: 'Permissions Changed', value: changes.join('\n') });
+                embed.addFields({ name: 'Permissions Changed', value: changes.join('\n\n') });
             }
         
             embed.addFields({ name: 'Updated by', value: updater });
@@ -453,18 +458,25 @@ export const NotifyModule = class {
             }
         });
 
+        
         // Utility function to get the target of the permission overwrite (role or member)
-        function getOverwriteTarget(overwrite) {
-            return overwrite.type === 'role'
-                ? `<@&${overwrite.id}>` // Role
-                : `<@${overwrite.id}>`; // Member
+        function getOverwriteTarget(overwrite, channel) {
+            const role = channel.guild.roles.cache.get(overwrite.id);
+            if (role) {
+                return `<@&${role.id}>`;
+            }
+            const member = channel.guild.members.cache.get(overwrite.id);
+            if (member) {
+                return `<@${member.id}>`;
+            }
+            return 'Unknown';
         }
 
         // Utility function to format permission bits into readable permission names
-        function formatPermissions(permissionBitfield) {
+        function formatPermissionsWithEmoji(permissionBitfield, emoji) {
             const permissions = Object.keys(PermissionsBitField.Flags);
             const grantedPermissions = permissions.filter(perm => permissionBitfield & PermissionsBitField.Flags[perm]);
-            return grantedPermissions.map(perm => `\`${perm}\``).join(', ');
+            return grantedPermissions.map(perm => `${emoji} \`${perm}\``).join('\n');
         }
         /*DiscordClient.on(Events.Raw, async (packet) => {
             this.#logger.log('info', `Raw packet.`, packet);
