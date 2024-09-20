@@ -197,6 +197,22 @@ export const LevelingModule = class {
         this.#discordUsersMap = new Map();
     }
 
+    static calculateLevel(xp) {
+        for (let i = 0; i < levelSteps.length; ++i) {
+            if (levelSteps[i] > xp) {
+                return i;
+            }
+        }
+        return levelSteps.length - 1; // Max level if XP exceeds the highest level
+    }
+
+    static calculateNextLevelXP(currentLevel) {
+        if (currentLevel >= levelSteps.length - 1) {
+            return 'Max level reached'; // Or handle max level differently if you prefer
+        }
+        return levelSteps[currentLevel];
+    }
+
     /*eslint no-unused-vars: ["error", {"args": "none"}]*/
     async onDiscordReady(guild, channels, roles) {
         this.#logger.log('info', 'Leveling module is ready.');
