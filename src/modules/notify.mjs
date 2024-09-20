@@ -412,10 +412,11 @@ export const NotifyModule = class {
 
             newPerms.forEach((newPerm, id) => {
                 const oldPerm = oldPerms.get(id);
-
                 const target = getOverwriteTarget(newPerm, newChannel); 
+
                 let addedPerms = '';
                 let removedPerms = '';
+
                 if (!oldPerm) {
                     // New permission overwrite added
                     addedPerms = formatPermissionsWithEmoji(newPerm.allow, '✅');
@@ -424,11 +425,11 @@ export const NotifyModule = class {
                     const addedPermissions = newPerm.allow.bitfield & ~oldPerm.allow.bitfield;
                     const removedPermissions = oldPerm.allow.bitfield & ~newPerm.allow.bitfield;
         
-                    if (addedPermissions) {
+                    if (addedPermissions !== 0) {
                         addedPerms = formatPermissionsWithEmoji(addedPermissions, '✅');
                     }
         
-                    if (removedPermissions) {
+                    if (removedPermissions !== 0) {
                         removedPerms = formatPermissionsWithEmoji(removedPermissions, '❌');
                     }
                 }
