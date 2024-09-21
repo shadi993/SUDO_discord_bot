@@ -1,6 +1,7 @@
 import { SlashCommandBuilder, EmbedBuilder } from 'discord.js';
 import { PostCountDboEntity } from '../../core/database.mjs';
 import { LevelingModule } from '../../modules/leveling.mjs';
+import { Config } from '../../core/config.mjs';
 
 export const data = new SlashCommandBuilder()
     .setName('rank')
@@ -8,6 +9,20 @@ export const data = new SlashCommandBuilder()
     .addUserOption(option => option.setName('target').setDescription('The user to view').setRequired(false));
 
 export async function execute(interaction) {
+    const targetChannelName = Config.rank.channel_allowed;
+    const targetChannel = interaction.guild.channels.cache.find(channel => channel.name === targetChannelName);
+
+    if (!targetChannel) {
+        await interaction.reply({ content: `Channel **${targetChannelName}** not found.`, ephemeral: true });
+        return;
+    }
+
+    // Check if the command is executed in the allowed channel
+    if (interaction.channel.id !== targetChannel.id) {
+        await interaction.reply({ content: `You can only use this command in **${targetChannelName}** channel.`, ephemeral: true });
+        return;
+    }
+
     const target = interaction.options.getUser('target') || interaction.user;
 
     // Fetch user info from the database
@@ -20,10 +35,10 @@ export async function execute(interaction) {
 
     // Calculate the level and next level's XP
     const xp = userInfo.xp;
-    const currentLevel = LevelingModule.calculateLevel(xp);
+    const currentLevel = LevelingModule.calculateLevel(xp); 
     const nextLevelXP = LevelingModule.calculateNextLevelXP(currentLevel);
 
-    // Create the rank embed
+    // Create rank embed
     const rankEmbed = new EmbedBuilder()
         .setColor('#00FF00')
         .setTitle(`📊 Rank for ${target.username}`)
