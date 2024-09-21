@@ -185,6 +185,13 @@ const UserInformation = class {
  * Module for handling the leveling system.
  * Users on the server will gain experience points for chatting.
  */
+export function calculateXPForLevel(level) {
+    if (level < 1 || level > levelSteps.length) {
+        return undefined;
+    }
+    return levelSteps[level - 1]; // Return XP for that level
+}
+
 export const LevelingModule = class {
     #logger;
     #discordUsersMap;
@@ -282,4 +289,5 @@ export const LevelingModule = class {
             await this.#levelupAnnouncementChannel.send(message);
         });
     }
+    
 };
