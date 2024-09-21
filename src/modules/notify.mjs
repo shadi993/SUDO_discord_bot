@@ -160,7 +160,7 @@ export const NotifyModule = class {
                 embed.setFooter({ text: 'SUDO' }); 
             }
     
-            if (embed.data.fields.length > 0) {
+            if (embed.data.fields && embed.data.fields.length > 0) {
                 await this.#notifyChannel.send({ embeds: [embed] });
             }
         });
