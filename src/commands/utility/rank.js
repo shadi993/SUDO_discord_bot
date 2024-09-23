@@ -38,7 +38,6 @@ export async function execute(interaction) {
     const currentLevel = LevelingModule.calculateLevel(xp); 
     const nextLevelXP = LevelingModule.calculateNextLevelXP(currentLevel);
 
-    // Create rank embed
     const rankEmbed = new EmbedBuilder()
         .setColor('#00FF00')
         .setTitle(`📊 Rank for ${target.username}`)
@@ -50,6 +49,5 @@ export async function execute(interaction) {
         )
         .setTimestamp();
 
-    // Reply with the rank embed
     await interaction.reply({ embeds: [rankEmbed] });
 }
