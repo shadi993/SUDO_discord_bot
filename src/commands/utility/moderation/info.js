@@ -11,7 +11,6 @@ export const data = new SlashCommandBuilder()
         const target = interaction.options.getUser('target');
         const reason = interaction.options.getString('reason');
 
-        // Create the Info embed
         const warnEmbed = new EmbedBuilder()
             .setColor('#FFFF00')
             .setTitle('❗️ Information!')
@@ -23,7 +22,6 @@ export const data = new SlashCommandBuilder()
             .setTimestamp();
 
         try {
-            // Send the embed to the user's DM
             await target.send({ embeds: [warnEmbed] });
 
             await interaction.reply({ content: `Successfully Informed ${target.tag}.`, ephemeral: true });
