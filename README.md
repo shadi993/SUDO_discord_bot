@@ -105,3 +105,22 @@ npm run createdb -- --wipe
 ```
 
 WARNING: This permanently wipes the data in your database. Use only during development.
+
+
+If you were using probot level up system and you want to move the levels/rank to SUDO bot, use:
+
+```
+npm run scrape-levels
+```
+
+Make sure to add this to the .env:
+
+```
+DISCORD_SCRAPE_CHANNEL_ID=
+```
+
+Then run this to import all the ranks to SUDO bot's database:
+
+```
+npm run import-levels
+```
