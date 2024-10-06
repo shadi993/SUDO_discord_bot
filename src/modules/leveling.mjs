@@ -245,6 +245,12 @@ export const LevelingModule = class {
     }
 
     async onDiscordMessage(message) {
+        //to ignore messages from bots
+        if (message.author.bot) {
+            this.#logger.log('trace', `Ignoring bot message from ${message.author.tag}`);
+            return;
+        }
+
         if (this.#channelsToIgnore.includes(message.channel.id))
         {
             this.#logger.log('trace', `Ignoring message in channel ${message.channel.name}`);
