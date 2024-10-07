@@ -6,7 +6,6 @@ import { PostCountDboEntity } from '../core/database.mjs';
 
 const levelSteps  = [
     0,
-    70,
     277,
     625,
     1111,
@@ -106,6 +105,7 @@ const levelSteps  = [
     900000,
     930000,
     950000,
+    980000,
 ];
 const minexp = 10;
 const maxexp = 40;
