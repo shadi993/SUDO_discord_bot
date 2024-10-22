@@ -165,7 +165,8 @@ export const NotifyModule = class {
             }
         });
 
-        DiscordClient.on(Events.GuildBanAdd, async (guild, user) => {
+        DiscordClient.on(Events.GuildBanAdd, async (ban) => {
+            const {guild,user}=ban;
             this.#logger.log('info', `User banned: ${user.tag}`);
 
             const fetchedLogs = await guild.fetchAuditLogs({
