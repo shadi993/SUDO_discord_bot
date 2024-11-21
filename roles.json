@@ -230,5 +230,19 @@
                 "button_style": "Secondary"
             }
         ]
+    },
+    {
+        "channel_name": "👾｜roles",
+        "id": 4,
+        "title": "notify Role",
+        "options": [
+            {
+                "description": "get the Notify Role to receive notifications in the Announcement channel",
+                "role_name": "Notify",
+                "button_text": "Notify",
+                "button_emoji": "",
+                "button_style": "Success"
+            }
+        ]
     }
 ]

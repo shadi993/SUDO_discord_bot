@@ -9,6 +9,7 @@ import { DisboardModule } from "./modules/disboard.mjs";
 import { RolesModule } from './modules/roles.mjs';
 import { NotifyModule } from './modules/notify.mjs';
 import { AutoRole } from './modules/autoRole.mjs';
+import { AutoKick } from './modules/autoKick.mjs';
 
 dotenv.config();
 InitConfig();
@@ -20,4 +21,5 @@ RegisterDiscordModule(new LevelingModule());
 RegisterDiscordModule(new DisboardModule());
 RegisterDiscordModule(new RolesModule());
 RegisterDiscordModule(new AutoRole());
+RegisterDiscordModule(new AutoKick());
 InitCommands(DiscordClient);

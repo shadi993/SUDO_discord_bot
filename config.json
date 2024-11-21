@@ -43,4 +43,9 @@
         "enabled": true,
         "channel_allowed": "📈｜leveling-up"
     }
+    ,
+    "autokick":{
+        "enabled":true,
+        "account_age_limit":7
+    }
 }
