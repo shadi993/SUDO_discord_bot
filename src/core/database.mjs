@@ -60,8 +60,25 @@ export const CreateTables = async (wipe = false) => {
  */
 export const MigrateTables = async () => {
     DatabaseLogger.log('info', 'Migrating tables')
-    // Add points column to DiscordUserXps
-    const [results, metadata] = await SequelizeDb.query(
-        'alter table "DiscordUserXps" add column if not exists points bigint default 0;');
-    DatabaseLogger.log('info', 'Finished migrating schema')
-}
+    try {
+        const [results] = await SequelizeDb.query(`
+            PRAGMA table_info("DiscordUserXps");
+        `);
+
+        const columnExists = results.some(column => column.name === 'points');
+
+        if (!columnExists) {
+            await SequelizeDb.query(`
+                ALTER TABLE "DiscordUserXps" ADD COLUMN points BIGINT DEFAULT 0;
+            `);
+            DatabaseLogger.log('info', 'Column "points" added to "DiscordUserXps table".');
+        } else {
+            DatabaseLogger.log('info', 'Column "points" already exists in "DiscordUserXps table".');
+        }
+    } catch (error) {
+        DatabaseLogger.log('error', 'Error during table migration:', error);
+        throw error;
+    }
+
+    DatabaseLogger.log('info', 'Finished migrating schema');
+};

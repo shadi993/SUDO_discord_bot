@@ -124,3 +124,15 @@ Then run this to import all the ranks to SUDO bot's database:
 ```
 npm run import-levels
 ```
+
+to add the points column, run 
+
+```
+npm run migratedb
+```
+
+Alternatively you can just run this on your bot's docker host:
+
+```
+echo 'alter table "DiscordUserXps" add column if not exists points bigint default 0;' | docker compose exec -T sudo-bot-db psql -U admin sudobotdb
+```
