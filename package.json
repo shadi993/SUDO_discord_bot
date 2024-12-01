@@ -9,8 +9,9 @@
     "dev": "nodemon ./src/bot.js",
     "deploycommands": "node ./src/tools/deploy-commands.js",
     "createdb": "node ./src/tools/create-db.js",
+    "migratedb": "node ./src/tools/migrate-db.js",
     "scrape-levels": "node ./src/tools/scrape-user-roles.js",
-    "import-levels":"node ./src/tools/import-levels.js",
+    "import-levels": "node ./src/tools/import-levels.js",
     "lint": "eslint ."
   },
   "keywords": [],

@@ -35,6 +35,7 @@ export const InitDatabase = async () => {
                 primaryKey: true,
             },
             xp: DataTypes.BIGINT,
+            points: DataTypes.BIGINT
         },
         { sequelize: SequelizeDb, modelName: 'DiscordUserXp' },
     );
@@ -49,4 +50,18 @@ export const CreateTables = async (wipe = false) => {
     DatabaseLogger.log('info', 'Creating tables...');
     await SequelizeDb.sync({ force: wipe });
     DatabaseLogger.log('info', 'Done creating tables...');
+}
+
+/**
+ * Migrate the tables in the database
+ * 
+ * This will run SQL commands to modify the tables since the original two
+ * column DiscordUserXp table
+ */
+export const MigrateTables = async () => {
+    DatabaseLogger.log('info', 'Migrating tables')
+    // Add points column to DiscordUserXps
+    const [results, metadata] = await SequelizeDb.query(
+        'alter table "DiscordUserXps" add column if not exists points bigint default 0;');
+    DatabaseLogger.log('info', 'Finished migrating schema')
 }
