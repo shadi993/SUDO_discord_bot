@@ -85,26 +85,70 @@ export const NotifyModule = class {
 
             await this.#notifyChannel.send({ embeds: [deletedMessageEmbed] });
         });
-
+        
+        function splitIntoChunks(content, maxLength = 1024) {
+            const chunks = [];
+            for (let i = 0; i < content.length; i += maxLength) {
+                chunks.push(content.slice(i, i + maxLength));
+            }
+            return chunks;
+        }
+        
         DiscordClient.on(Events.MessageUpdate, async (oldMessage, newMessage) => {
-            this.#logger.log('info', `Message updated: ${oldMessage.content} -> ${newMessage.content}`);
-
-            if (oldMessage.author.bot) return;
-
-            const guildID = this.#guild.id.toString();
-            const modifiedMessageEmbed = new EmbedBuilder()
-                .setColor('#ED4245')
-                .setAuthor({ name: `${oldMessage.author.globalName}`,iconURL:oldMessage.author.displayAvatarURL() })
-                .addFields({ name: '\u200B', value: `✍️ <@${oldMessage.author.id}> modified a message in ${oldMessage.channel.toString()} [jump to Message](https://discord.com/channels/${guildID}/${oldMessage.channelId.toString()}/${oldMessage.id.toString()})` },
-                    { name: 'old: ', value: "```" + `${oldMessage.content}` + "```" },
-                    { name: 'new: ', value: "```" + `${newMessage.content}` + "```" },
-                )
-                .setTimestamp()
-                .setFooter({ text: 'SUDO' })
-
-            await this.#notifyChannel.send({ embeds: [modifiedMessageEmbed] });
-
+            try {
+                if (oldMessage.author.bot || oldMessage.content === newMessage.content) return;
+        
+                const guildID = oldMessage.guild.id;
+                const oldContent = oldMessage.content || "No content";
+                const newContent = newMessage.content || "No content";
+        
+                if (!oldContent.trim() && !newContent.trim()) return;
+        
+                const oldChunks = splitIntoChunks(oldContent, 1024 - 6); // Reserve space for code block formatting
+                const newChunks = splitIntoChunks(newContent, 1024 - 6);
+        
+                const embed = new EmbedBuilder()
+                    .setColor('#ED4245')
+                    .setAuthor({
+                        name: `${oldMessage.author.globalName || oldMessage.author.username}`,
+                        iconURL: oldMessage.author.displayAvatarURL(),
+                    })
+                    .setDescription(
+                        `✍️ <@${oldMessage.author.id}> modified a message in ${oldMessage.channel} [Jump to Message](https://discord.com/channels/${guildID}/${oldMessage.channelId}/${oldMessage.id})`
+                    )
+                    .setTimestamp()
+                    .setFooter({ text: 'SUDO' });
+        
+                oldChunks.forEach((chunk, index) => {
+                    embed.addFields({
+                        name: index === 0 ? 'Old:' : '\u200B',
+                        value: `\`\`\`${chunk}\`\`\``,
+                        inline: false,
+                    });
+                });
+        
+                newChunks.forEach((chunk, index) => {
+                    embed.addFields({
+                        name: index === 0 ? 'New:' : '\u200B',
+                        value: `\`\`\`${chunk}\`\`\``,
+                        inline: false,
+                    });
+                });
+        
+                if (embed.data.fields.length > 25) {
+                    embed.spliceFields(24); 
+                    embed.addFields({
+                        name: 'Note:',
+                        value: 'Message content was truncated due to Discord embed field limits.',
+                    });
+                }
+        
+                await this.#notifyChannel.send({ embeds: [embed] });
+            } catch (error) {
+                this.#logger.error('Error in MessageUpdate event:', error);
+            }
         });
+        
 
         DiscordClient.on(Events.GuildMemberUpdate, async (oldMember, newMember) => {
             this.#logger.log('info', `Member updated: ${oldMember.user.tag} -> ${newMember.user.tag}`);
