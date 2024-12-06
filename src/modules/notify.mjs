@@ -11,7 +11,7 @@ import { Config } from "../core/config.mjs";
 export const NotifyModule = class {
     #logger;
     #notifyChannel;
-    #guild;
+    //#guild;
 
 
     constructor() {
@@ -23,7 +23,7 @@ export const NotifyModule = class {
         this.#logger.log('info', 'NotifyModule module is ready.');
         this.#logger.log('info', 'NotifyModule registering additional callbacks.');
         this.#notifyChannel = channels.find(channel => channel.name === Config.notify.channel);
-        this.#guild = guild;
+        //this.#guild = guild;
         
         DiscordClient.on(Events.GuildMemberAdd, async (member) => {
             this.#logger.log('info', `New member joined: ${member.user.tag}`);
