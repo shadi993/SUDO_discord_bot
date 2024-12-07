@@ -35,7 +35,8 @@ export const InitDatabase = async () => {
                 primaryKey: true,
             },
             xp: DataTypes.BIGINT,
-            points: DataTypes.BIGINT
+            points: DataTypes.BIGINT,
+            last_daily_claim: DataTypes.DATE
         },
         { sequelize: SequelizeDb, modelName: 'DiscordUserXp' },
     );
@@ -59,21 +60,29 @@ export const CreateTables = async (wipe = false) => {
  * column DiscordUserXp table
  */
 export const MigrateTables = async () => {
-    DatabaseLogger.log('info', 'Migrating tables')
+    DatabaseLogger.log('info', 'Migrating tables');
     try {
         const [results] = await SequelizeDb.query(`
             PRAGMA table_info("DiscordUserXps");
         `);
 
         const columnExists = results.some(column => column.name === 'points');
+        const lastDailyClaimExists = results.some(column => column.name === 'last_daily_claim');
 
-        if (!columnExists) {
-            await SequelizeDb.query(`
-                ALTER TABLE "DiscordUserXps" ADD COLUMN points BIGINT DEFAULT 0;
-            `);
-            DatabaseLogger.log('info', 'Column "points" added to "DiscordUserXps table".');
+        if (!columnExists || !lastDailyClaimExists) {
+            const queries = [];
+            if (!columnExists) {
+                queries.push(`ALTER TABLE "DiscordUserXps" ADD COLUMN points BIGINT DEFAULT 0;`);
+            }
+            if (!lastDailyClaimExists) {
+                queries.push(`ALTER TABLE "DiscordUserXps" ADD COLUMN last_daily_claim DATE;`);
+            }
+            for (const query of queries) {
+                await SequelizeDb.query(query);
+            }
+            DatabaseLogger.log('info', `Columns ${!columnExists ? '"points"' : ''} ${!lastDailyClaimExists ? '"last_daily_claim"' : ''} added to "DiscordUserXps" table.`);
         } else {
-            DatabaseLogger.log('info', 'Column "points" already exists in "DiscordUserXps table".');
+            DatabaseLogger.log('info', 'Columns "points" and "last_daily_claim" already exist in "DiscordUserXps" table.');
         }
     } catch (error) {
         DatabaseLogger.log('error', 'Error during table migration:', error);
