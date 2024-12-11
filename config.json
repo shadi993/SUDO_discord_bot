@@ -46,6 +46,6 @@
     ,
     "autokick":{
         "enabled":true,
-        "account_age_limit":7
+        "account_age_limit":14
     }
 }

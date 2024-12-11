@@ -8,7 +8,7 @@ export const data = new SlashCommandBuilder()
     .addIntegerOption(option =>
         option
             .setName('bet')
-            .setDescription('The amount of points to bet (minimum 10).')
+            .setDescription('The amount of points to bet (minimum 50).')
             .setRequired(true)
     );
 
@@ -30,8 +30,8 @@ export async function execute(interaction) {
     const userId = interaction.user.id;
     const bet = interaction.options.getInteger('bet');
 
-    if (bet < 10) {
-        await interaction.reply({ content: `The minimum bet is 10 points.`, ephemeral: true });
+    if (bet < 50) {
+        await interaction.reply({ content: `The minimum bet is 50 points.`, ephemeral: true });
         return;
     }
 
@@ -44,7 +44,7 @@ export async function execute(interaction) {
 
     userInfo.points -= bet;
 
-    const symbols = ['🍒', '🍋', '🍊', '🍇', '⭐', '💎'];
+    const symbols = ['🍒', '🍋', '🍇', '💎'];
     const slots = [
         symbols[Math.floor(Math.random() * symbols.length)],
         symbols[Math.floor(Math.random() * symbols.length)],
