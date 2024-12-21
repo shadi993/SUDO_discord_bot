@@ -48,4 +48,8 @@
         "enabled":true,
         "account_age_limit":14
     }
+    ,
+    "moderation": {
+        "channel_name": "moderation" 
+    }
 }
