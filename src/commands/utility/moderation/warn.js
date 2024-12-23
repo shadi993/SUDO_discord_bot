@@ -31,7 +31,7 @@ export async function execute(interaction) {
         .setTitle('🔨 User Warned')
         .setThumbnail(target.displayAvatarURL({ dynamic: true, size: 128 }))
         .addFields(
-            { name: 'User', value: `<@${target.id}> (${target.id})`, inline: true },
+            { name: 'User', value: `<@${target.id}> id: ${target.id}`, inline: true },
             { name: 'Reason', value: reason },
             { name: 'Moderator', value: `${interaction.user.tag}`, inline: true },
             { name: 'Date', value: `<t:${Math.floor(Date.now() / 1000)}:F>`, inline: true },

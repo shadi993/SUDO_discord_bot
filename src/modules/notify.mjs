@@ -238,17 +238,33 @@ export const NotifyModule = class {
             await this.#notifyChannel.send({ embeds: [bannedEmbed] });
         });
 
-        DiscordClient.on(Events.GuildBanRemove, async (guild, user) => {
-            this.#logger.log('info', `User unbanned: ${user.tag}`);
-
-            const unbannedEmbed = new EmbedBuilder()
-                .setColor('#ED4245')
-                .setAuthor({ name: `${user.globalName}`, iconURL: user.displayAvatarURL() })
-                .addFields({ name: `${user.globalName}`, value: `${user.globalName} got unbanned` })
-                .setTimestamp()
-                .setFooter({ text: 'SUDO' })
-
-            await this.#notifyChannel.send({ embeds: [unbannedEmbed] });
+        DiscordClient.on(Events.GuildBanRemove, async (ban) => {
+            try {
+                if (!ban || !ban.user) {
+                    this.#logger.log('warn', 'GuildBanRemove event triggered, but ban or ban.user is undefined.');
+                    return;
+                }
+        
+                this.#logger.log('info', `User unbanned: ${ban.user.tag}`);
+        
+                const unbannedEmbed = new EmbedBuilder()
+                    .setColor('#57F287') 
+                    .setAuthor({ name: `${ban.user.tag}`, iconURL: ban.user.displayAvatarURL() })
+                    .addFields(
+                        { name: 'User', value: `<@${ban.user.id}> (${ban.user.tag})` },
+                        { name: 'Action', value: 'User has been unbanned.' }
+                    )
+                    .setTimestamp()
+                    .setFooter({ text: 'SUDO' });
+        
+                if (this.#notifyChannel) {
+                    await this.#notifyChannel.send({ embeds: [unbannedEmbed] });
+                } else {
+                    this.#logger.log('warn', 'Notify channel is not set.');
+                }
+            } catch (error) {
+                this.#logger.log('error', 'Error handling GuildBanRemove event:', error);
+            }
         });
 
         DiscordClient.on(Events.VoiceServerUpdate, async (oldState, newState) => {
