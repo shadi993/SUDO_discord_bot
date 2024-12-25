@@ -2,11 +2,11 @@ import { SlashCommandBuilder, EmbedBuilder, PermissionFlagsBits } from 'discord.
 import { Config } from '../../../core/config.mjs';
 
 export const data = new SlashCommandBuilder()
-    .setName('ban')
-    .setDescription('Ban a user and log the action in the moderation channel.')
-    .addUserOption(option => option.setName('target').setDescription('The user to ban').setRequired(true))
-    .addStringOption(option => option.setName('reason').setDescription('Reason for the ban').setRequired(false))
-    .setDefaultMemberPermissions(PermissionFlagsBits.BanMembers);
+    .setName('kick')
+    .setDescription('Kick a user and log the action in the moderation channel.')
+    .addUserOption(option => option.setName('target').setDescription('The user to kick').setRequired(true))
+    .addStringOption(option => option.setName('reason').setDescription('Reason for the kick').setRequired(false))
+    .setDefaultMemberPermissions(PermissionFlagsBits.KickMembers);
 
 export async function execute(interaction) {
     const target = interaction.options.getUser('target');
@@ -16,8 +16,8 @@ export async function execute(interaction) {
 
     // Embed for moderation log
     const modLogEmbed = new EmbedBuilder()
-        .setColor('#FF0000')
-        .setTitle('🔨 User Banned')
+        .setColor('#FFA500')
+        .setTitle('🔨 User Kicked')
         .setThumbnail(target.displayAvatarURL({ dynamic: true, size: 128 }))
         .addFields(
             { name: 'User', value: `<@${target.id}> ID: ${target.id}`, inline: true },
@@ -28,9 +28,9 @@ export async function execute(interaction) {
         .setTimestamp();
 
     try {
-        // Ban the user
+        // Kick the user
         const member = await interaction.guild.members.fetch(target.id);
-        await member.ban({ reason });
+        await member.kick(reason);
 
         const modChannelName = Config.moderation.channel_name; 
         const modChannel = interaction.guild.channels.cache.find(channel => channel.name === modChannelName);
@@ -41,10 +41,10 @@ export async function execute(interaction) {
             console.warn(`Moderation channel "${modChannelName}" not found.`);
         }
 
-        await interaction.editReply({ content: `Successfully banned ${target.tag}.` });
+        await interaction.editReply({ content: `Successfully kicked ${target.tag}.` });
     } catch (err) {
-        console.error('Error during ban command execution:', err);
+        console.error('Error during kick command execution:', err);
 
-        await interaction.editReply({ content: `Failed to ban ${target.tag}. They might not be in the server or another issue occurred.` });
+        await interaction.editReply({ content: `Failed to kick ${target.tag}. They might not be in the server or another issue occurred.` });
     }
 };
