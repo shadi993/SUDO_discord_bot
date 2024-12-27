@@ -43,17 +43,24 @@ export const NotifyModule = class {
 
         DiscordClient.on(Events.GuildMemberRemove, async (member) => {
             this.#logger.log('info', `Member left: ${member.user.tag}`);
-
+        
+            const joinedAt = member.joinedTimestamp
+                ? `<t:${Math.floor(member.joinedTimestamp / 1000)}> (<t:${Math.floor(member.joinedTimestamp / 1000)}:R>)`
+                : 'Unknown';
+            const leftAt = `<t:${Math.floor(Date.now() / 1000)}> (<t:${Math.floor(Date.now() / 1000)}:R>)`;
+        
             const leftServerEmbed = new EmbedBuilder()
                 .setColor('#ED4245')
                 .setAuthor({ name: `${member.user.tag}`, iconURL: member.user.displayAvatarURL() })
                 .setThumbnail(member.user.displayAvatarURL())
-                .addFields({ name: '\u200B', value: `<@${member.user.id}> has left the server` },
-                    { name: 'Created at', value: `<t:${(member.user.createdTimestamp / 1000).toString().split('.')[0]}> (<t:${(member.user.createdTimestamp / 1000).toString().split('.')[0]}:R>)`  }
+                .addFields(
+                    { name: '\u200B', value: `<@${member.user.id}> has left the server.` },
+                    { name: 'Joined Server At', value: joinedAt},
+                    { name: 'Left Server At', value: leftAt}
                 )
                 .setTimestamp()
-                .setFooter({ text: 'SUDO' })
-
+                .setFooter({ text: 'SUDO' });
+        
             await this.#notifyChannel.send({ embeds: [leftServerEmbed] });
         });
 
