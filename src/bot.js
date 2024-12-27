@@ -10,6 +10,7 @@ import { RolesModule } from './modules/roles.mjs';
 import { NotifyModule } from './modules/notify.mjs';
 import { AutoRole } from './modules/autoRole.mjs';
 import { AutoKick } from './modules/autoKick.mjs';
+import { PersistentMessage } from './modules/persistentMessage.mjs';
 
 dotenv.config();
 InitConfig();
@@ -22,4 +23,5 @@ RegisterDiscordModule(new DisboardModule());
 RegisterDiscordModule(new RolesModule());
 RegisterDiscordModule(new AutoRole());
 RegisterDiscordModule(new AutoKick());
+RegisterDiscordModule(new PersistentMessage());
 InitCommands(DiscordClient);
