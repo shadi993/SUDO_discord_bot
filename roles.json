@@ -114,7 +114,10 @@
                 "role_name": "NSFW",
                 "button_text": "NSFW",
                 "button_emoji": "",
-                "button_style": "Danger"
+                "button_style": "Danger",
+                "requirements": {
+                    "level":2
+                }
             }
         ]
     },
@@ -137,6 +140,7 @@
         "channel_name": "🟢｜custom-colors",
         "id": 3,
         "title": "Custom Colors.",
+        "exclusive_group":true,
         "options": [
             {
                 "description": "👝.Pastel pink",

@@ -1,10 +1,10 @@
 [
     {
         "channel_name": "🌐｜resources",
-        "message": "This channels are for sharing resources only, please avoid making comments or chatting here"
+        "message": "This channels are for sharing resources only, please avoid making comments or chatting here.\n**use thread for comments**"
     },
     {
         "channel_name": "🎥｜tutorials",
-        "message": "This channels are for sharing tutorials videos only, please avoid making comments or chatting here"
+        "message": "This channels are for sharing tutorials videos only, please avoid making comments or chatting here.\n**use thread for comments**"
     }
 ]
