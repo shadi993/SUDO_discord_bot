@@ -17,19 +17,27 @@ export const PersistentMessage = class {
     }
 
     async #deleteAndRepostMessage(channel, messageContent) {
-        const messages = await channel.messages.fetch({ limit: 20 });
-
-        // Find the bot's message in the channel
-        const botMessage = messages.find((msg) => msg.author.id === process.env.DISCORD_CLIENT_ID);
-
-        if (botMessage) {
-            this.#logger.log('info', `Deleting bot message in channel: ${channel.name}`);
-            await botMessage.delete();
+        try {
+            const messages = await channel.messages.fetch({ limit: 20 });
+    
+            // Find the bot's message in the channel
+            const botMessage = messages.find((msg) => msg.author.id === process.env.DISCORD_CLIENT_ID);
+    
+            if (botMessage) {
+                this.#logger.log('info', `Deleting bot message in channel: ${channel.name}`);
+                await botMessage.delete().catch((error) => {
+                    this.#logger.log('warning', `Failed to delete bot message: ${error.message}`);
+                });
+            } else {
+                this.#logger.log('info', `No bot message found in channel: ${channel.name}`);
+            }
+    
+            // Repost the bot's message
+            this.#logger.log('info', `Reposting message in channel: ${channel.name}`);
+            await channel.send(messageContent);
+        } catch (error) {
+            this.#logger.log('error', `Failed to repost message in channel ${channel.name}: ${error.message}`);
         }
-
-        // Repost the bot's message
-        this.#logger.log('info', `Reposting message in channel: ${channel.name}`);
-        await channel.send(messageContent);
     }
 
     async onDiscordReady(guild, channels) {
