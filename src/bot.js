@@ -11,6 +11,7 @@ import { NotifyModule } from './modules/notify.mjs';
 import { AutoRole } from './modules/autoRole.mjs';
 import { AutoKick } from './modules/autoKick.mjs';
 import { PersistentMessage } from './modules/persistentMessage.mjs';
+import { ThresholdMessage } from './modules/thresholdMessage.mjs';
 
 dotenv.config();
 InitConfig();
@@ -24,4 +25,5 @@ RegisterDiscordModule(new RolesModule());
 RegisterDiscordModule(new AutoRole());
 RegisterDiscordModule(new AutoKick());
 RegisterDiscordModule(new PersistentMessage());
+RegisterDiscordModule(new ThresholdMessage());
 InitCommands(DiscordClient);
