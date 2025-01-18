@@ -248,5 +248,23 @@
                 "button_style": "Success"
             }
         ]
+    },
+    {
+        "channel_name": "👾｜roles",
+        "id": 5,
+        "title": "NSFW+ Role",
+        "options": [
+            {
+                "description": "so you can see NSFW-verified (require 18+ verified role)",
+                "role_name": "NSFW+",
+                "button_text": "NSFW+",
+                "button_emoji": "",
+                "button_style": "Danger",
+                "required_role": "18+ verified",
+                "requirements": {
+                    "level":2
+                }
+            }
+        ]
     }
 ]

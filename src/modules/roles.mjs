@@ -121,6 +121,28 @@ export const RolesModule = class {
         this.#logger.log('info', `Received button press from user ${interaction.user.tag} for role '${role.title}' option '${option.description}'`);
     
         const member = interaction.member;
+
+        // Check role requirements if defined
+        if (option.required_role) {
+            const requiredRole = this.#discordRoles.find((discordRole) => discordRole.name === option.required_role);
+    
+            if (!requiredRole) {
+                this.#logger.log('error', `Required role '${option.required_role}' does not exist.`);
+                await interaction.reply({
+                    content: `The role '${option.required_role}' required to claim this role is missing in the server.`,
+                    ephemeral: true,
+                });
+                return;
+            }
+    
+            if (!member.roles.cache.has(requiredRole.id)) {
+                await interaction.reply({
+                    content: `You need to have the role '${option.required_role}' to claim this role.`,
+                    ephemeral: true,
+                });
+                return;
+            }
+        }
         const discordRole = this.#discordRoles.find((discordRole) => discordRole.name === option.role_name);
     
         if (!discordRole) {
