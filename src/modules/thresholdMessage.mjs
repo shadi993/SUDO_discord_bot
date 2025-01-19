@@ -10,11 +10,13 @@ export const ThresholdMessage = class {
     #config;
     #discordChannels;
     #activeBotMessages;
+    #activeCollectors;
 
     constructor() {
         this.#logger = CreateLogger('ThresholdMessage');
         this.#messageCounts = {};
         this.#activeBotMessages = {};
+        this.#activeCollectors = {};
         this.#config = JSON.parse(fs.readFileSync('thresholdMessages.json'));
 
         if (!Array.isArray(this.#config)) {
@@ -64,12 +66,16 @@ export const ThresholdMessage = class {
         this.#discordChannels = channels;
 
         // Initialize message count for each monitored channel
-        for (const { channel_name } of this.#config) {
+        for (const { channel_name, enabled } of this.#config) {
             const channel = this.#discordChannels.find((ch) => ch.name === channel_name);
 
             if (channel) {
-                this.#messageCounts[channel.id] = 0;
-                this.#logger.log('info', `Monitoring channel: ${channel.name}`);
+                if (enabled) {
+                    this.#messageCounts[channel.id] = 0;
+                    this.#logger.log('info', `Monitoring channel: ${channel.name}`);
+                } else {
+                    this.#logger.log('info', `Channel monitoring disabled: ${channel_name}`);
+                }
             } else {
                 this.#logger.log('error', `Channel not found: ${channel_name}`);
             }
@@ -77,13 +83,13 @@ export const ThresholdMessage = class {
     }
 
     async onDiscordMessage(message) {
-        if (message.author.bot) return; // Ignore bot messages
+        if (message.author.bot) return;
 
         const monitoredChannel = this.#config.find(
             (entry) => entry.channel_name === message.channel.name
         );
 
-        if (!monitoredChannel) return;
+        if (!monitoredChannel || !monitoredChannel.enabled) return;
 
         const { channel_name, threshold, bot_message } = monitoredChannel;
         const channelId = message.channel.id;
@@ -93,9 +99,14 @@ export const ThresholdMessage = class {
         if (hasMedia) {
             this.#logger.log('info', `Media detected in channel: ${message.channel.name}`);
 
-            // Reset the message count and delete the bot message
+            // Reset the message count, delete the bot message, and stop the collector
             this.#messageCounts[channelId] = 0;
             await this.#deleteBotMessage(channelId);
+
+            if (this.#activeCollectors[channelId]) {
+                this.#activeCollectors[channelId].stop();
+                delete this.#activeCollectors[channelId];
+            }
             return;
         }
 
@@ -109,13 +120,21 @@ export const ThresholdMessage = class {
         // Check if message limits is reached
         if (this.#messageCounts[channelId] >= threshold) {
             this.#logger.log('info', `Threshold reached in channel: ${message.channel.name}`);
-            await this.#deleteAndRepostMessage(message.channel, bot_message);
 
+            await this.#deleteAndRepostMessage(message.channel, bot_message);
             this.#messageCounts[channelId] = 0;
+
+            // Prevent multiple collectors for the same channel
+            if (this.#activeCollectors[channelId]) {
+                this.#logger.log('info', `Collector already active for channel: ${channel_name}`);
+                return;
+            }
 
             // Set up a collector for media messages
             const filter = (msg) => !msg.author.bot;
             const collector = message.channel.createMessageCollector({ filter, time: 3600000 }); // 1 hour
+
+            this.#activeCollectors[channelId] = collector;
 
             collector.on('collect', async (newMessage) => {
                 try {
@@ -128,15 +147,9 @@ export const ThresholdMessage = class {
                             `Media detected. Deleting bot message in ${newMessage.channel.name}.`
                         );
 
-                        // Delete the bot message and stop the collector
                         await this.#deleteBotMessage(channelId);
                         collector.stop();
-                    } else {
-                        this.#logger.log(
-                            'info',
-                            `Non-media message detected. Reposting bot message in ${newMessage.channel.name}.`
-                        );
-                        await this.#deleteAndRepostMessage(newMessage.channel, bot_message);
+                        delete this.#activeCollectors[channelId];
                     }
                 } catch (error) {
                     this.#logger.log('error', `Error while handling collected message: ${error.message}`);
@@ -145,6 +158,7 @@ export const ThresholdMessage = class {
 
             collector.on('end', () => {
                 this.#logger.log('info', `Message collector stopped for channel ${channel_name}`);
+                delete this.#activeCollectors[channelId];
             });
         }
     }

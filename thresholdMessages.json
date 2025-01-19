@@ -2,11 +2,13 @@
     {
         "channel_name": "😂｜shitpost",
         "threshold": 6,
-        "bot_message": "**please keep the chat to minimum**\n check the rules in channel's description for more info"
+        "bot_message": "**please keep the chat to minimum**\n check the rules in channel's description for more info",
+        "enabled": false
     },
     {
         "channel_name": "🌇｜sfw-irl",
-        "threshold": 6,
-        "bot_message": "**please keep the chat to minimum**\n check the rules in channel's description for more info"
+        "threshold": 10,
+        "bot_message": "**please keep the chat to minimum**\n check the rules in channel's description for more info",
+        "enabled": true
     }
 ]

@@ -13,7 +13,7 @@
         "enabled": true,
         "min_time_between_messages_seconds": 60,
         "announcement_channel_name": "📈｜leveling-up",
-        "ignore_channels": ["📈｜leveling-up", "💬｜nsfw-chat", "🎴｜nsfw-irl","😂｜shitpost","💝｜general-hentai","🔥｜general-porn","🎼｜music-channel","🚴｜hobbies","💾｜media","🌇｜sfw-irl","🤣｜nsfw-shitpost"],
+        "ignore_channels": ["📈｜leveling-up", "💬｜nsfw-chat", "🎴｜nsfw-irl","😂｜shitpost","💝｜general-hentai","🔥｜general-porn","🎼｜music-channel","💾｜media","🌇｜sfw-irl","🤣｜nsfw-shitpost"],
         "roles": {
             "2": "Bit",
             "5": "Byte",
