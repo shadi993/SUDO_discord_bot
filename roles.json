@@ -137,9 +137,9 @@
         ]
     },
     {
-        "channel_name": "🟢｜custom-colors",
+        "channel_name": "👾｜roles",
         "id": 3,
-        "title": "Custom Colors.",
+        "title": "Custom Colors.(level 15 minimum required)",
         "exclusive_group":true,
         "options": [
             {
@@ -147,91 +147,130 @@
                 "role_name": "Pastel pink",
                 "button_text": "",
                 "button_emoji": "👝",
-                "button_style": "Secondary"
+                "button_style": "Secondary",
+                "requirements": {
+                    "level":15
+                }
             },
             {
                 "description": "👚.Hot pink",
                 "role_name": "Hot pink",
                 "button_text": "",
                 "button_emoji": "👚",
-                "button_style": "Secondary"
+                "button_style": "Secondary",
+                "requirements": {
+                    "level":15
+                }
             },
             {
                 "description": "🟣.Purple",
                 "role_name": "Purple",
                 "button_text": "",
                 "button_emoji": "🟣",
-                "button_style": "Secondary"
+                "button_style": "Secondary",
+                "requirements": {
+                    "level":15
+                }
             },
             {
                 "description": "🟠.Cheese",
                 "role_name": "Cheese",
                 "button_text": "",
                 "button_emoji": "🟠",
-                "button_style": "Secondary"
+                "button_style": "Secondary",
+                "requirements": {
+                    "level":15
+                }
             },
             {
                 "description": "🎱.Black",
                 "role_name": "Black",
                 "button_text": "",
                 "button_emoji": "🎱",
-                "button_style": "Secondary"
+                "button_style": "Secondary",
+                "requirements": {
+                    "level":15
+                }
             },
             {
                 "description": "🎴.Crimson",
                 "role_name": "Crimson",
                 "button_text": "",
                 "button_emoji": "🎴",
-                "button_style": "Secondary"
+                "button_style": "Secondary",
+                "requirements": {
+                    "level":15
+                }
             },
             {
                 "description": "🔴.Red",
                 "role_name": "Red",
                 "button_text": "",
                 "button_emoji": "🔴",
-                "button_style": "Secondary"
+                "button_style": "Secondary",
+                "requirements": {
+                    "level":15
+                }
             },
             {
                 "description": "🧢.Cyan",
                 "role_name": "Cyan",
                 "button_text": "",
                 "button_emoji": "🧢",
-                "button_style": "Secondary"
+                "button_style": "Secondary",
+                "requirements": {
+                    "level":15
+                }
             },
             {
                 "description": "👽.Chartreuse",
                 "role_name": "Chartreuse",
                 "button_text": "",
                 "button_emoji": "👽",
-                "button_style": "Secondary"
+                "button_style": "Secondary",
+                "requirements": {
+                    "level":15
+                }
             },
             {
                 "description": "🍌.Yallow",
                 "role_name": "Yallow",
                 "button_text": "",
                 "button_emoji": "🍌",
-                "button_style": "Secondary"
+                "button_style": "Secondary",
+                "requirements": {
+                    "level":15
+                }
             },
             {
                 "description": "🥊.Dark Red",
                 "role_name": "Dark Red",
                 "button_text": "",
                 "button_emoji": "🥊",
-                "button_style": "Secondary"
+                "button_style": "Secondary",
+                "requirements": {
+                    "level":15
+                }
             },
             {
                 "description": "🩶.Cool Gray",
                 "role_name": "Cool Gray",
                 "button_text": "",
                 "button_emoji": "🩶",
-                "button_style": "Secondary"
+                "button_style": "Secondary",
+                "requirements": {
+                    "level":15
+                }
             },
             {
                 "description": "🌆.Puce",
                 "role_name": "Puce",
                 "button_text": "",
                 "button_emoji": "🌆",
-                "button_style": "Secondary"
+                "button_style": "Secondary",
+                "requirements": {
+                    "level":15
+                }
             }
         ]
     },
