@@ -1,4 +1,4 @@
-import { Client, GatewayIntentBits, Events } from 'discord.js';
+import { Client, GatewayIntentBits, Events ,Partials} from 'discord.js';
 import { Logger } from './logger.mjs';
 
 export var DiscordClient;
@@ -12,7 +12,7 @@ var DiscordRoles;
  */
 export const InitDiscordClient = () => {
     DiscordClient = new Client({
-        intents:
+        intents:[
             GatewayIntentBits.Guilds |
             GatewayIntentBits.GuildModeration |
             GatewayIntentBits.GuildMembers |
@@ -25,6 +25,15 @@ export const InitDiscordClient = () => {
             GatewayIntentBits.DirectMessages |
             GatewayIntentBits.DirectMessageReactions |
             GatewayIntentBits.MessageContent
+        ],
+        partials: [
+            Partials.Channel, // For DM channels
+            Partials.Message, // For uncached messages
+            Partials.Reaction, // For reaction events on uncached messages
+            Partials.User, // For uncached users
+            Partials.GuildMember, // For guild member events
+            ],
+
     });
 
     DiscordClient.once(Events.ClientReady, () => {
@@ -77,6 +86,17 @@ export const InitDiscordClient = () => {
     DiscordClient.on(Events.MessageCreate, async (message) => {
         // Avoid events from messages that the bot has sent.
         if (message.author.id === process.env.DISCORD_CLIENT_ID) return;
+
+        // Debug logs to check if event is getting triggers
+        console.log(`Received message: "${message.content}" from ${message.author.tag} in ${message.channel.type}`);
+
+        if (message.channel.type === 1) { 
+            for (const module of MessageCreateModules) {
+                if (module.onDiscordMessage) {
+                    await module.onDiscordMessage(message);
+                }
+            }
+        }
 
         var promises = [];
         for (const module of MessageCreateModules) {

@@ -52,4 +52,10 @@
     "moderation": {
         "channel_name": "moderation" 
     }
+    ,
+    "ticketSystem": {
+        "category_name": "ticket",
+        "moderator": "Moderator" ,
+        "archives_channel": "transcript-archives"
+    }
 }

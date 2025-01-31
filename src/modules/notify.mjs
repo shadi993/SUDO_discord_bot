@@ -65,33 +65,52 @@ export const NotifyModule = class {
         });
 
         DiscordClient.on(Events.MessageDelete, async (message) => {
-            this.#logger.log('info', `${message.author.globalName} deleted: ${message.content}`);
-
-            if (!message.member) return;
-            if (message.member.user.bot) return;
-            
-            const deletedMessageEmbed = new EmbedBuilder()
-                .setColor('#ED4245')
-                .setAuthor({ name: `${message.author.globalName}`,iconURL:message.author.displayAvatarURL() })
-                .addFields({ name: '\u200B', value: `🗑 <@${message.author.id}> deleted a message in ${message.channel.toString()} ` }
-                )
-                
-                .setTimestamp()
-                .setFooter({ text: 'SUDO' })
+            try {
+                // If the message is partial, attempt to fetch it
+                if (message.partial) {
+                    await message.fetch().catch(err => {
+                        this.#logger.log('error', `Failed to fetch partial message: ${err.message}`);
+                        return;
+                    });
+                }
+        
+                if (!message.author) {
+                    this.#logger.log('warn', 'Message author is null or undefined.');
+                    return;
+                }
+        
+                this.#logger.log(
+                    'info',
+                    `${message.author.globalName || message.author.username} deleted: ${message.content || 'No text content'}`
+                );
+        
+                if (message.member?.user.bot) return;
+        
+                const deletedMessageEmbed = new EmbedBuilder()
+                    .setColor('#ED4245')
+                    .setAuthor({name: `${message.author.globalName || message.author.username}`,iconURL: message.author.displayAvatarURL()})
+                    .addFields({name: '\u200B',value: `🗑 <@${message.author.id}> deleted a message in ${message.channel.toString()}`})
+                    .setTimestamp()
+                    .setFooter({ text: 'SUDO' });
+        
                 if (message.content) {
                     deletedMessageEmbed.addFields({ name: 'Message:', value: message.content });
                 } else {
                     deletedMessageEmbed.addFields({ name: 'Message:', value: 'No text content' });
                 }
-            
+        
                 // Check for attachments (including GIFs)
                 if (message.attachments.size > 0) {
-                    const attachmentURLs = message.attachments.map(attachment => attachment.url).join('\n');
+                    const attachmentURLs = message.attachments.map((attachment) => attachment.url).join('\n');
                     deletedMessageEmbed.addFields({ name: 'Attachments:', value: attachmentURLs });
                 }
-
-            await this.#notifyChannel.send({ embeds: [deletedMessageEmbed] });
+        
+                await this.#notifyChannel.send({ embeds: [deletedMessageEmbed] });
+            } catch (error) {
+                this.#logger.log('error', `Error handling message deletion: ${error.message}`);
+            }
         });
+        
         
         function splitIntoChunks(content, maxLength = 1024) {
             const chunks = [];
