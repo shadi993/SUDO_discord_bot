@@ -8,10 +8,12 @@ export const TicketSystem = class {
     #guild;
     #discordChannels;
     #tickets;
+    #messageMap;
 
     constructor() {
         this.#logger = CreateLogger('TicketSystem');
         this.#tickets = {}; 
+        this.#messageMap = new Map();
     }
 
     async #createTicketChannel(user) {
@@ -214,7 +216,9 @@ export const TicketSystem = class {
 
                     //Forward text message
                     if (message.content) {
-                        await channel.send(`**${user.tag}**:\n${message.content}`);
+                        const ticketMessage = await channel.send(`**${user.tag}**:\n${message.content}`);
+                        this.#messageMap.set(message.id, ticketMessage.id);
+                        this.#messageMap.set(ticketMessage.id, message.id);
                     }
                     //Forward attachments
                     if (message.attachments.size > 0) {
@@ -230,7 +234,9 @@ export const TicketSystem = class {
                     const ticketChannel = await this.#guild.channels.fetch(this.#tickets[user.id], { force: true });
                     if (ticketChannel) {
                         if (message.content) {
-                            await ticketChannel.send(`**${user.tag}**:\n${message.content}`);
+                            const ticketMessage = await ticketChannel.send(`**${user.tag}**:\n${message.content}`);
+                            this.#messageMap.set(message.id, ticketMessage.id);
+                            this.#messageMap.set(ticketMessage.id, message.id);
                         }
                         if (message.attachments.size > 0) {
                             for (const attachment of message.attachments.values()) {
@@ -247,22 +253,72 @@ export const TicketSystem = class {
             }
         });
 
+        DiscordClient.on(Events.MessageUpdate, async (oldMessage, newMessage) => {
+            if (newMessage.partial) await newMessage.fetch(); // Fetch partial messages
+            if (newMessage.author.bot || !newMessage.guild || !Object.values(this.#tickets).includes(newMessage.channel.id)) return;
+        
+            this.#logger.log('info', `Message edited in ticket channel by ${newMessage.author.tag}: ${newMessage.content}`);
+            const userId = Object.keys(this.#tickets).find((key) => this.#tickets[key] === newMessage.channel.id);
+            if (!userId) return;
+        
+            try {
+                const user = await this.#guild.members.fetch(userId);
+                const dmMessageId = this.#messageMap.get(newMessage.id);
+                if (dmMessageId) {
+                    // Ensure the DM channel exists
+                    if (!user.user.dmChannel) {
+                        await user.user.createDM();
+                    }
+                    const dmMessage = await user.user.dmChannel.messages.fetch(dmMessageId);
+                    if (dmMessage) {
+                        await dmMessage.edit(`**${newMessage.author.tag}** : ${newMessage.content}`);
+                        this.#messageMap.set(newMessage.id, dmMessage.id);
+                        this.#messageMap.delete(oldMessage.id);
+                    }
+                }
+            } catch (error) {
+                this.#logger.log('error', `Failed to update DM message: ${error.message}`);
+            }
+        });
+        
+        // Add this event listener for message updates in DMs
+        DiscordClient.on(Events.MessageUpdate, async (oldMessage, newMessage) => {
+            if (newMessage.partial) await newMessage.fetch(); // Fetch partial messages
+            if (newMessage.author.bot || newMessage.guild || newMessage.channel.type !== ChannelType.DM) return;
+        
+            this.#logger.log('info', `DM edited by ${newMessage.author.tag}: ${newMessage.content}`);
+            const ticketMessageId = this.#messageMap.get(oldMessage.id);
+            if (ticketMessageId) {
+                try {
+                    const ticketChannel = await this.#guild.channels.fetch(this.#tickets[newMessage.author.id], { force: true });
+                    const ticketMessage = await ticketChannel.messages.fetch(ticketMessageId);
+                    if (ticketMessage) {
+                        await ticketMessage.edit(`**${newMessage.author.tag}**:\n${newMessage.content}`);
+                        this.#messageMap.set(newMessage.id, ticketMessage.id);
+                        this.#messageMap.delete(oldMessage.id);
+                    }
+                } catch (error) {
+                    this.#logger.log('error', `Failed to update ticket message: ${error.message}`);
+                }
+            }
+        });
+
         // Listen for messages in ticket channels to forward to the user
         DiscordClient.on(Events.MessageCreate, async (message) => {
-            if (message.author.bot || !message.guild || !Object.values(this.#tickets).includes(message.channel.id))
-                return;
-
+            if (message.author.bot || !message.guild || !Object.values(this.#tickets).includes(message.channel.id)) return;
+        
             const userId = Object.keys(this.#tickets).find((key) => this.#tickets[key] === message.channel.id);
             if (!userId) return;
-
+        
             try {
                 const user = await this.#guild.members.fetch(userId);
                 // Forward the text message
                 if (message.content) {
-                    await user.send(`**${message.author.tag}** : ${message.content}`);
+                    const dmMessage = await user.send(`**${message.author.tag}** : ${message.content}`);
                     this.#logger.log('info', `Forwarded message to ${user.user.tag}: ${message.content}`);
-                }
-            
+                    this.#messageMap.set(message.id, dmMessage.id);
+                    this.#messageMap.set(dmMessage.id, message.id);
+                }  
                 // Forward the attachments
                 if (message.attachments.size > 0) {
                     for (const attachment of message.attachments.values()) {
@@ -277,7 +333,6 @@ export const TicketSystem = class {
                 this.#logger.log('error', `Failed to forward message or attachment to user: ${error.message}`);
             }
         });
-
         // Listen for interaction events (button clicks)
         DiscordClient.on(Events.InteractionCreate, async (interaction) => {
             if (!interaction.isButton()) return;
