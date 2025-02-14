@@ -107,14 +107,25 @@
     {
         "channel_name": "👾｜roles",
         "id": 1,
-        "title": "NSFW Role",
+        "title": "NSFW Roles",
         "options": [
             {
-                "description": "get the nsfw Role to have access to the NSFW channels (for nsfw selfies, you need to be 18+ verified)",
+                "description": "NSFW role to access to the NSFW channels",
                 "role_name": "NSFW",
                 "button_text": "NSFW",
                 "button_emoji": "",
                 "button_style": "Danger",
+                "requirements": {
+                    "level":2
+                }
+            },
+            {
+                "description": "NSFW + role to access NSFW-verified (require 18+ verified role)",
+                "role_name": "NSFW+",
+                "button_text": "NSFW+",
+                "button_emoji": "",
+                "button_style": "Danger",
+                "required_role": "18+ verified",
                 "requirements": {
                     "level":2
                 }
@@ -271,39 +282,49 @@
                 "requirements": {
                     "level":15
                 }
+            },
+            {
+                "description": "🐽.Tea rose",
+                "role_name": "Tea Rose",
+                "button_text": "",
+                "button_emoji": "🐽",
+                "button_style": "Secondary",
+                "requirements": {
+                    "level":15
+                }
+            },
+            {
+                "description": "🍈.Cambridge Blue",
+                "role_name": "Cambridge Blue",
+                "button_text": "",
+                "button_emoji": "🍈",
+                "button_style": "Secondary",
+                "requirements": {
+                    "level":15
+                }
             }
         ]
     },
     {
         "channel_name": "👾｜roles",
         "id": 4,
-        "title": "notify Role",
+        "title": "notification Roles",
         "options": [
             {
-                "description": "get the Notify Role to receive notifications in the Announcement channel",
-                "role_name": "Notify",
+                "description": "Notification Role for receiving notifications in the Announcement channel",
+                "role_name": "Notification",
                 "button_text": "Notify",
+                "button_emoji": "",
+                "button_style": "Success"
+            },
+            {
+                "description": "MovieNight Role for receiving notifications when we stream a movie",
+                "role_name": "MovieNight",
+                "button_text": "MovieNight",
                 "button_emoji": "",
                 "button_style": "Success"
             }
         ]
-    },
-    {
-        "channel_name": "👾｜roles",
-        "id": 5,
-        "title": "NSFW+ Role",
-        "options": [
-            {
-                "description": "so you can see NSFW-verified (require 18+ verified role)",
-                "role_name": "NSFW+",
-                "button_text": "NSFW+",
-                "button_emoji": "",
-                "button_style": "Danger",
-                "required_role": "18+ verified",
-                "requirements": {
-                    "level":2
-                }
-            }
-        ]
     }
+
 ]
