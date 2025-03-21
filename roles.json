@@ -101,6 +101,13 @@
                 "button_text": "",
                 "button_emoji": "👑",
                 "button_style": "Secondary"
+            },
+            {
+                "description": "💲. Bash",
+                "role_name": "Bash",
+                "button_text": "",
+                "button_emoji": "💲",
+                "button_style": "Secondary"
             }
         ]
     },
@@ -298,6 +305,16 @@
                 "role_name": "Cambridge Blue",
                 "button_text": "",
                 "button_emoji": "🍈",
+                "button_style": "Secondary",
+                "requirements": {
+                    "level":15
+                }
+            },
+            {
+                "description": "🍋‍🟩.Lime Green",
+                "role_name": "Lime Green",
+                "button_text": "",
+                "button_emoji": "🍋‍🟩",
                 "button_style": "Secondary",
                 "requirements": {
                     "level":15
