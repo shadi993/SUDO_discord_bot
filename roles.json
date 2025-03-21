@@ -319,6 +319,16 @@
                 "requirements": {
                     "level":15
                 }
+            },
+            {
+                "description": "🥏.Aero",
+                "role_name": "Aero",
+                "button_text": "",
+                "button_emoji": "🥏",
+                "button_style": "Secondary",
+                "requirements": {
+                    "level":15
+                }
             }
         ]
     },
