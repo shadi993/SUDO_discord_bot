@@ -19,13 +19,13 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
-    "discord.js": "^14.15.3",
+    "discord.js": "^14.25.1",
     "dotenv": "^16.4.5",
     "log4js": "^6.9.1",
     "pg": "^8.12.0",
     "pg-hstore": "^2.3.4",
     "sequelize": "^6.37.3",
-    "sqlite3": "^5.1.7"
+    "sqlite3": "^6.0.1"
   },
   "devDependencies": {
     "@eslint/js": "^9.9.1",

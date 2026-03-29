@@ -46,10 +46,6 @@ export const TicketSystem = class {
                     deny: ['ViewChannel'],
                 },
                 {
-                    id: user.id,
-                    allow: ['ViewChannel', 'SendMessages', 'AttachFiles'],
-                },
-                {
                     id: moderatorRole.id,
                     allow: ['ViewChannel', 'SendMessages', 'ManageMessages'],
                 },

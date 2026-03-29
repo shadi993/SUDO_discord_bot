@@ -19,10 +19,11 @@ export const PersistentMessage = class {
     async #deleteAndRepostMessage(channel, messageContent) {
         try {
             const messages = await channel.messages.fetch({ limit: 20 });
-    
-            // Find the bot's message in the channel
-            const botMessage = messages.find((msg) => msg.author.id === process.env.DISCORD_CLIENT_ID);
-    
+
+            const botMessage = messages.find(
+                (msg) => msg.author.id === process.env.DISCORD_CLIENT_ID
+            );
+
             if (botMessage) {
                 this.#logger.log('info', `Deleting bot message in channel: ${channel.name}`);
                 await botMessage.delete().catch((error) => {
@@ -31,12 +32,39 @@ export const PersistentMessage = class {
             } else {
                 this.#logger.log('info', `No bot message found in channel: ${channel.name}`);
             }
-    
-            // Repost the bot's message
+
             this.#logger.log('info', `Reposting message in channel: ${channel.name}`);
             await channel.send(messageContent);
+
         } catch (error) {
             this.#logger.log('error', `Failed to repost message in channel ${channel.name}: ${error.message}`);
+        }
+    }
+
+    async #ensurePersistentMessage(channel, messageContent) {
+        try {
+            const messages = await channel.messages.fetch({ limit: 20 });
+
+            const botMessage = messages.find(
+                (msg) => msg.author.id === process.env.DISCORD_CLIENT_ID
+            );
+
+            if (botMessage && botMessage.content === messageContent) {
+                this.#logger.log('info', `Message already correct in ${channel.name}`);
+                return;
+            }
+
+            if (botMessage) {
+                this.#logger.log('info', `Updating persistent message in ${channel.name}`);
+                await botMessage.edit(messageContent);
+                return;
+            }
+
+            this.#logger.log('info', `Sending new persistent message in ${channel.name}`);
+            await channel.send(messageContent);
+
+        } catch (error) {
+            this.#logger.log('error', `Failed to ensure message in channel ${channel.name}: ${error.message}`);
         }
     }
 
@@ -49,7 +77,7 @@ export const PersistentMessage = class {
             const channel = this.#discordChannels.find((ch) => ch.name === channel_name);
 
             if (channel) {
-                await this.#deleteAndRepostMessage(channel, message);
+                await this.#ensurePersistentMessage(channel, message);
             } else {
                 this.#logger.log('error', `Channel not found: ${channel_name}`);
             }
