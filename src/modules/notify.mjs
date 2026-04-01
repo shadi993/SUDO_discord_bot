@@ -122,9 +122,17 @@ export const NotifyModule = class {
         
         DiscordClient.on(Events.MessageUpdate, async (oldMessage, newMessage) => {
             try {
-                if (oldMessage.author.bot || oldMessage.content === newMessage.content) return;
+                if (oldMessage.partial) await oldMessage.fetch().catch(() => null);
+                if (newMessage.partial) await newMessage.fetch().catch(() => null);
+
+                if (!oldMessage.author) return;
+                if (oldMessage.author.bot) return;
+
+                if (oldMessage.content === newMessage.content) return;
         
                 const guildID = oldMessage.guild.id;
+                if (!guildID) return;
+
                 const oldContent = oldMessage.content || "No content";
                 const newContent = newMessage.content || "No content";
         

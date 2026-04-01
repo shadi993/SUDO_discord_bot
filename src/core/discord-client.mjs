@@ -32,6 +32,7 @@ export const InitDiscordClient = () => {
             Partials.Reaction, // For reaction events on uncached messages
             Partials.User, // For uncached users
             Partials.GuildMember, // For guild member events
+            Partials.ThreadMember
             ],
 
     });
