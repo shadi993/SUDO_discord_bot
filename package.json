@@ -19,7 +19,7 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
-    "discord.js": "^14.25.1",
+    "discord.js": "^14.26.2",
     "dotenv": "^16.4.5",
     "log4js": "^6.9.1",
     "pg": "^8.12.0",
