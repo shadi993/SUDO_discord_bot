@@ -123,7 +123,7 @@
                 "button_emoji": "",
                 "button_style": "Danger",
                 "requirements": {
-                    "level":2
+                    "level":5
                 }
             },
             {
@@ -134,7 +134,7 @@
                 "button_style": "Danger",
                 "required_role": "18+ verified",
                 "requirements": {
-                    "level":2
+                    "level":5
                 }
             }
         ]
