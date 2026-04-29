@@ -13,6 +13,7 @@ import { AutoKick } from './modules/autoKick.mjs';
 import { PersistentMessage } from './modules/persistentMessage.mjs';
 import { ThresholdMessage } from './modules/thresholdMessage.mjs';
 import { TicketSystem } from './modules/ticketSystem.mjs';
+import { HoneypotModule } from './modules/honeypot.mjs';
 
 dotenv.config();
 InitConfig();
@@ -28,4 +29,5 @@ RegisterDiscordModule(new AutoKick());
 RegisterDiscordModule(new PersistentMessage());
 RegisterDiscordModule(new ThresholdMessage());
 RegisterDiscordModule(new TicketSystem());
+RegisterDiscordModule(new HoneypotModule());
 InitCommands(DiscordClient);

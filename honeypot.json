@@ -1,0 +1,9 @@
+{
+  "enabled": true,
+  "channel_name": "👾｜roles",
+  "log_channel_name": "bot-log",
+  "title": "Honeypot - Please Ignore",
+  "description": "Don't click the button or you will be kicked from the server. this honeypot meant for bots only.",
+  "button_text": "Do NOT click",
+  "punishment": "kick"
+}

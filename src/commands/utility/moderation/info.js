@@ -1,4 +1,5 @@
 import { SlashCommandBuilder, EmbedBuilder, PermissionFlagsBits } from 'discord.js';
+import { Config } from '../../../core/config.mjs';
 
 export const data = new SlashCommandBuilder()
         .setName('info')
@@ -21,6 +22,19 @@ export const data = new SlashCommandBuilder()
             )
             .setTimestamp();
 
+
+        // Embed for moderation log
+        const modLogEmbed = new EmbedBuilder()
+            .setColor('#FFFF00')
+            .setTitle('❗️ User Informed')
+            .setThumbnail(target.displayAvatarURL({ dynamic: true, size: 128 }))
+            .addFields(
+                { name: 'User', value: `<@${target.id}> ID: ${target.id}`, inline: true },
+                { name: 'Reason', value: reason },
+                { name: 'Moderator', value: `${interaction.user.tag}`, inline: true },
+                { name: 'Date', value: `<t:${Math.floor(Date.now() / 1000)}:F>`, inline: true })
+        .setTimestamp();
+
         try {
             await target.send({ embeds: [warnEmbed] });
 
@@ -29,5 +43,13 @@ export const data = new SlashCommandBuilder()
             console.error('Error sending Info message to the user: ', err);
 
             await interaction.reply({ content: `Failed to send a information to ${target.tag}. They might have DMs disabled.`, ephemeral: true });
+        }
+
+        const modChannelName = Config.moderation.channel_name; 
+        const modChannel = interaction.guild.channels.cache.find(channel => channel.name === modChannelName);
+        if (modChannel) {
+            await modChannel.send({ embeds: [modLogEmbed] });
+        } else {
+            console.warn(`Moderation channel "${modChannelName}" not found.`);
         }
     };
