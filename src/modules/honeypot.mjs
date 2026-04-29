@@ -80,11 +80,7 @@ export const HoneypotModule = class {
         const member = interaction.member;
 
         this.#logger.log('warn', `Honeypot triggered by ${interaction.user.tag}`);
-        // join and leave
-        const joinedAt = interaction.joinedTimestamp
-                ? `<t:${Math.floor(interaction.joinedTimestamp / 1000)}> (<t:${Math.floor(interaction.joinedTimestamp / 1000)}:R>)`
-                : 'Unknown';
-            const leftAt = `<t:${Math.floor(Date.now() / 1000)}> (<t:${Math.floor(Date.now() / 1000)}:R>)`;
+
         // send log
         if (this.#logChannel) {
             const logEmbed = new EmbedBuilder()
@@ -94,8 +90,6 @@ export const HoneypotModule = class {
                 .setThumbnail(interaction.user.displayAvatarURL())
                 .addFields(
                     { name: '\u200B', value: `<@${interaction.user.id}> has Triggered the honeypot.` },
-                    { name: 'Joined Server At', value: joinedAt},
-                    { name: 'Left Server At', value: leftAt},
                     { name: 'Action', value: this.#config.punishment, inline: true }
                 )
                 .setTimestamp()
