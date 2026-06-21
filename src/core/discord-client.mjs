@@ -106,12 +106,23 @@ export const InitDiscordClient = () => {
         await Promise.all(promises);
     });
 
-    DiscordClient.on(Events.InteractionCreate, async (interaction) => {
+    /*DiscordClient.on(Events.InteractionCreate, async (interaction) => {
         var promises = [];
         for (const module of InteractionModules) {
             promises.push(module.onDiscordInteraction(interaction));
         }
-        await Promise.all(promises);
+        await Promise.allSettled(promises);
+    });*/
+    DiscordClient.on(Events.InteractionCreate, async (interaction) => {
+    const results = await Promise.allSettled(
+        InteractionModules.map(m => m.onDiscordInteraction?.(interaction))
+    );
+
+    for (const result of results) {
+        if (result.status === 'rejected') {
+            Logger.log('error', result.reason);
+        }
+    }
     });
 
     DiscordClient.login(process.env.DISCORD_BOT_TOKEN);
