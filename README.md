@@ -125,7 +125,7 @@ Then run this to import all the ranks to SUDO bot's database:
 npm run import-levels
 ```
 
-to add the points column, run 
+In case you you were using an old ver of the SUDO bot that didn't has a points column, then run this command: 
 
 ```
 npm run migratedb
