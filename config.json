@@ -60,4 +60,11 @@
         "moderator": "Moderator" ,
         "archives_channel": "transcript-archives"
     }
+    ,
+    "mute": {
+        "enabled": true,
+        "role_name": "MUTE",
+        "ban_on_leave": true,
+        "ban_reason": "Muted user left the server."
+    }
 }
