@@ -140,6 +140,21 @@
         ]
     },
     {
+        "channel_name": "📜｜rules",
+        "id": 2,
+        "title": "Rules",
+        "options": [
+            {
+                "description": "if you accept the conditions press the ✅",
+                "role_name": "SUDO Member",
+                "button_text": "",
+                "button_emoji": "✅",
+                "button_style": "Success",
+                "toggle": false
+            }
+        ]
+    },
+    {
         "channel_name": "👾｜roles",
         "id": 3,
         "title": "Custom Colors.(level 15 minimum required)",

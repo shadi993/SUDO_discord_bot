@@ -14,7 +14,8 @@ import { PersistentMessage } from './modules/persistentMessage.mjs';
 import { ThresholdMessage } from './modules/thresholdMessage.mjs';
 import { TicketSystem } from './modules/ticketSystem.mjs';
 import { HoneypotModule } from './modules/honeypot.mjs';
-
+import { DobCheck } from './modules/dobCheck.mjs';
+import { BanEmoji } from './modules/banEmoji.mjs';
 
 dotenv.config();
 InitConfig();
@@ -31,5 +32,7 @@ RegisterDiscordModule(new PersistentMessage());
 RegisterDiscordModule(new ThresholdMessage());
 RegisterDiscordModule(new TicketSystem());
 RegisterDiscordModule(new HoneypotModule());
+RegisterDiscordModule(new DobCheck());
+RegisterDiscordModule(new BanEmoji());
 
 InitCommands(DiscordClient);

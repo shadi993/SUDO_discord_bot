@@ -106,6 +106,25 @@ export const InitDiscordClient = () => {
         await Promise.all(promises);
     });
 
+    DiscordClient.on(Events.MessageReactionAdd, async (reaction, user) => {
+        const results = await Promise.allSettled(
+            MessageReactionAddModules.map(
+                module =>
+                    module.onDiscordMessageReactionAdd?.(
+                        reaction,
+                        user
+                    )
+            )
+        );
+        for (const result of results) {
+            if (result.status === 'rejected') {
+                Logger.log(
+                    'error',
+                    result.reason
+                );
+            }
+        }
+    });
     /*DiscordClient.on(Events.InteractionCreate, async (interaction) => {
         var promises = [];
         for (const module of InteractionModules) {
@@ -130,6 +149,7 @@ export const InitDiscordClient = () => {
 
 var ClientReadyModules = [];
 var MessageCreateModules = [];
+var MessageReactionAddModules = [];
 var InteractionModules = [];
 
 /**
@@ -145,6 +165,10 @@ export const RegisterDiscordModule = (module) => {
 
     if (module.onDiscordMessage) {
         MessageCreateModules.push(module);
+    }
+
+    if (module.onDiscordMessageReactionAdd) {
+        MessageReactionAddModules.push(module);
     }
 
     if (module.onDiscordInteraction) {

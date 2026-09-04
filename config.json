@@ -2,13 +2,15 @@
     "general": {
         "environment": "development",
         "log_level": "debug"
-    },
+    }
+    ,
     "database": {
         "log_level": "debug",
         "connection_string_a": "postgres://admin:my-secret-dev-password@sudo-bot-db:5432/sudobotdb",
         "connection_string_b": "sqlite::memory:",
         "connection_string": "sqlite:data/sudobotdb.sqlite"
-    },
+    }
+    ,
     "leveling": {
         "enabled": true,
         "min_time_between_messages_seconds": 60,
@@ -25,15 +27,18 @@
             "70": "Exabyte",
             "90": "Zettabyte"
         }
-    },
+    }
+    ,
     "disboard": {
         "enabled": true,
         "message": "You can bump again!"
-    },
+    }
+    ,
     "autorole": {
         "enabled": true,
         "assign_on_join": ["----------Server Member----------", "-------Programming Language---------"]
-    },
+    }
+    ,
     "notify": {
         "enabled": true,
         "channel": "bot-log"
@@ -61,10 +66,28 @@
         "archives_channel": "transcript-archives"
     }
     ,
-    "mute": {
+    "dob_check": {
         "enabled": true,
-        "role_name": "MUTE",
-        "ban_on_leave": true,
-        "ban_reason": "Muted user left the server."
+        "channel_name": "📜｜rules",
+        "moderation_channel": "dob-log",
+        "verified_role": "SUDO Member",
+        "title": "Rules",
+        "description": "if you accept the conditions press the ✅",
+        "button_text": "",
+        "button_emoji": "✅",
+        "button_style": "Success",
+        "toggle": false
     }
+    ,
+    "ban_emoji": {
+    "enabled": true,
+    "log": true,
+    "log_channel": "bot-log",
+    "emojis": [
+        ":pregnant_man:",
+        ":pregnant_person:",
+        "🫄",
+        "🫃"
+    ]
+}
 }

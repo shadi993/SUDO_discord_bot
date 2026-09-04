@@ -6,6 +6,7 @@ var SequelizeDb;
 var DatabaseLogger;
 
 export class PostCountDboEntity extends Model { }
+export class AgeVerificationDboEntity extends Model { }
 
 /**
  * Initialize the database connection.
@@ -39,6 +40,24 @@ export const InitDatabase = async () => {
             last_daily_claim: DataTypes.DATE
         },
         { sequelize: SequelizeDb, modelName: 'DiscordUserXp' },
+    );
+
+    AgeVerificationDboEntity.init(
+        {
+            discord_id: {
+                type: DataTypes.STRING,
+                primaryKey: true,
+            },
+            dob: {
+                type: DataTypes.DATEONLY,
+                allowNull: true,
+            },
+            first_joined_at: {
+                type: DataTypes.DATE,
+                allowNull: false,
+            }
+        },
+        { sequelize: SequelizeDb, modelName: 'AgeVerification',timestamps: false },
     );
 }
 
@@ -84,10 +103,39 @@ export const MigrateTables = async () => {
         } else {
             DatabaseLogger.log('info', 'Columns "points" and "last_daily_claim" already exist in "DiscordUserXps" table.');
         }
+    
+    const [tables] = await SequelizeDb.query(`
+            SELECT name
+            FROM sqlite_master
+            WHERE type = 'table'
+            AND name = 'AgeVerifications';
+        `);
+
+        const ageVerificationTableExists = tables.length > 0;
+
+        if (!ageVerificationTableExists) {
+            await SequelizeDb.query(`
+                CREATE TABLE "AgeVerifications" (
+                    "discord_id" VARCHAR(255) PRIMARY KEY NOT NULL,
+                    "dob" DATE,
+                    "first_joined_at" DATETIME NOT NULL
+                );
+            `);
+
+            DatabaseLogger.log(
+                'info',
+                'Created "AgeVerifications" table.'
+            );
+        } else {
+            DatabaseLogger.log(
+                'info',
+                '"AgeVerifications" table already exists.'
+            );
+        }
+
     } catch (error) {
         DatabaseLogger.log('error', 'Error during table migration:', error);
         throw error;
     }
-
     DatabaseLogger.log('info', 'Finished migrating schema');
 };
