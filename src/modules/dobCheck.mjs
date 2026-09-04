@@ -95,6 +95,19 @@ export const DobCheck = class {
                 interaction.isButton() &&
                 interaction.customId === 'dob_check_button'
             ) {
+                // Check if the user already has the member role.
+                const member = await interaction.guild.members.fetch(
+                    interaction.user.id
+                );
+
+                const verifiedRole = interaction.guild.roles.cache.find(
+                    (role) => role.name === this.#config.verified_role
+                );
+
+                if (verifiedRole && member.roles.cache.has(verifiedRole.id)) {
+                    await interaction.reply({content: `✅ You already have the ${verifiedRole.name}.`,ephemeral: true});
+        return;
+    }
                 let verification =
                     await AgeVerificationDboEntity.findByPk(
                         interaction.user.id
