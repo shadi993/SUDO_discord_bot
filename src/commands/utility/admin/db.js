@@ -2,7 +2,7 @@ import {SlashCommandBuilder,PermissionFlagsBits,EmbedBuilder} from 'discord.js';
 import fs from 'fs';
 import path from 'path';
 import https from 'https';
-import { Config } from '../../../core/config.mjs';
+import { Settings } from '../../../core/settings.config.js';
 
 export const data = new SlashCommandBuilder()
     .setName('db')
@@ -61,7 +61,7 @@ export async function execute(interaction) {
         const subcommand = interaction.options.getSubcommand();
 
         // Get database configuration
-        const connectionString = Config.database.connection_string;
+        const connectionString = Settings.database.connection_string;
 
         if (!connectionString.startsWith('sqlite:')) {
             return interaction.editReply({

@@ -7,6 +7,7 @@ export const data = new SlashCommandBuilder()
     .setDescription('Claim your daily points.');
 
 export async function execute(interaction) {
+    if (!Config.rank.enabled) return interaction.reply({ content: 'Rank commands are disabled.', ephemeral: true });
     const targetChannelName = Config.rank.channel_allowed;
     const targetChannel = interaction.guild.channels.cache.find(channel => channel.name === targetChannelName);
 

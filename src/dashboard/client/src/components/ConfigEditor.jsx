@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { RolesEditor } from './RolesEditor.jsx';
 import { BanEmojiEditor } from './BanEmojiEditor.jsx';
+import { getSectionLayout } from '../layout.config.js';
 
 const pretty = value => value.replaceAll('_', ' ').replaceAll('-', ' ');
 
@@ -11,13 +12,18 @@ function RoleSelect({ value, options, onChange }) {
     </select>;
 }
 
-function Field({ name, value, root, options, roleField = false, onRefresh }) {
+function Field({ name, value, root, options, roleField = false, definition = {}, onRefresh }) {
     const update = nextValue => {
         root[name] = nextValue;
         onRefresh();
     };
-    if (typeof value === 'boolean') {
+    const fieldType = definition.type || (typeof value === 'boolean' ? 'toggle' : undefined);
+    if (fieldType === 'toggle') {
         return <div className="field switch"><label>{pretty(name)}</label><input type="checkbox" defaultChecked={value} onChange={event => update(event.target.checked)} /></div>;
+    }
+    if (fieldType === 'channels' || fieldType === 'roles') {
+        const choices = fieldType === 'channels' ? options.channels : options.roles;
+        return <div className="field"><label>{pretty(name)}</label><select multiple defaultValue={value} size={Math.min(Math.max(choices.length, 4), 8)} onChange={event => update([...event.target.selectedOptions].map(option => option.value))}>{choices.map(option => <option key={option}>{option}</option>)}</select></div>;
     }
     if (Array.isArray(value)) {
         const choices = name.toLowerCase().includes('channel') ? options.channels : name === 'assign_on_join' || name.toLowerCase().includes('role') ? options.roles : [];
@@ -28,13 +34,14 @@ function Field({ name, value, root, options, roleField = false, onRefresh }) {
             return <section className="array-editor">
                 {value.map((item, index) => <section className="card nested-card" key={`${name}-${index}`}>
                     <h3>{pretty(name)} {index + 1}</h3>
-                    {Object.entries(item).map(([childName, childValue]) => <Field key={childName} name={childName} value={childValue} root={item} options={options} onRefresh={onRefresh} />)}
+                    {Object.entries(item).map(([childName, childValue]) => <Field key={childName} name={childName} value={childValue} root={item} options={options} definition={definition.fields?.[childName] || {}} onRefresh={onRefresh} />)}
+                    <button className="button danger" type="button" onClick={() => { root[name] = value.filter((_, itemIndex) => itemIndex !== index); onRefresh(); }}>Delete {definition.itemLabel || pretty(name)}</button>
                 </section>)}
                 <button className="button ghost" onClick={() => {
-                    const template = value[0] || { channel_name: '', threshold: 1, bot_message: '', enabled: false };
+                    const template = value[0] || definition.template || Object.fromEntries(Object.entries(definition.fields || {}).map(([key, field]) => [key, field.type === 'toggle' ? false : field.type === 'number' ? 0 : field.type === 'frames' ? [] : '']));
                     root[name] = [...value, Object.fromEntries(Object.keys(template).map(key => [key, typeof template[key] === 'boolean' ? false : typeof template[key] === 'number' ? 1 : '']))];
                     onRefresh();
-                }}>Add message</button>
+                }}>{definition.addLabel || 'Add entry'}</button>
             </section>;
         }
         return <div className="field"><label>{pretty(name)}</label><textarea defaultValue={JSON.stringify(value, null, 2)} onChange={event => { try { update(JSON.parse(event.target.value)); } catch { /* Keep the last valid value until JSON is valid. */ } }} /></div>;
@@ -58,10 +65,10 @@ function Field({ name, value, root, options, roleField = false, onRefresh }) {
             {isLevelRoles && <button className="button danger" type="button" onClick={() => { delete value[childName]; onRefresh(); }}>Delete</button>}
         </div>)}{isLevelRoles && <button className="button ghost" onClick={() => { const level = window.prompt('New level number:'); if (level && /^\d+$/.test(level) && !(level in value)) { value[level] = ''; onRefresh(); } }}>Add level</button>}</section>;
     }
-    const isChannel = name.toLowerCase().includes('channel') || name.toLowerCase().includes('category');
-    const isRole = roleField || name.toLowerCase().includes('role') || name.toLowerCase().includes('moderator');
+    const isChannel = definition.type === 'channel' || name.toLowerCase().includes('channel') || name.toLowerCase().includes('category');
+    const isRole = definition.type === 'role' || roleField || name.toLowerCase().includes('role') || name.toLowerCase().includes('moderator');
     const choices = isChannel ? options.channels : isRole ? options.roles : [];
-    return <div className="field"><label>{pretty(name)}</label>{choices.length ? (isRole ? <RoleSelect value={value} options={options} onChange={update} /> : <select value={value || ''} onChange={event => update(event.target.value)}>{choices.map(option => <option key={option}>{option}</option>)}</select>) : <input type={typeof value === 'number' ? 'number' : 'text'} defaultValue={value ?? ''} onChange={event => update(typeof value === 'number' ? Number(event.target.value) : event.target.value)} />}</div>;
+    return <div className="field"><label>{definition.label || pretty(name)}</label>{choices.length ? (isRole ? <RoleSelect value={value} options={options} onChange={update} /> : <select value={value || ''} onChange={event => update(event.target.value)}>{choices.map(option => <option key={option}>{option}</option>)}</select>) : <input type={definition.type === 'number' || typeof value === 'number' ? 'number' : 'text'} defaultValue={value ?? ''} onChange={event => update(definition.type === 'number' || typeof value === 'number' ? Number(event.target.value) : event.target.value)} />}</div>;
 }
 
 export function ConfigEditor({ config, options, section, onSave }) {
@@ -71,13 +78,14 @@ export function ConfigEditor({ config, options, section, onSave }) {
     if (section && config.file === 'config.json' && (!sectionConfig || typeof sectionConfig !== 'object' || Array.isArray(sectionConfig))) {
         return <p className="error">This configuration section could not be loaded.</p>;
     }
-    if (config.file === 'roles.json') {
-        return <><RolesEditor value={draft} options={options} onChange={nextValue => setDraft(nextValue)} /><div className="save-row"><button className="button primary" onClick={() => onSave(draft)}>Save changes</button></div></>;
+    const layout = getSectionLayout(section);
+    if (layout.fields.panels?.editor === 'roles' && config.file === 'config.json') {
+        return <><RolesEditor value={draft.roles.panels || []} options={options} onChange={nextValue => setDraft({ ...draft, roles: { ...draft.roles, panels: nextValue } })} /><div className="save-row"><button className="button primary" onClick={() => onSave(draft)}>Save changes</button></div></>;
     }
     if (section === 'ban_emoji' && config.file === 'config.json') {
         return <><BanEmojiEditor value={draft[section]} options={options} onChange={nextValue => setDraft({ ...draft, [section]: nextValue })} /><p className="muted config-note">Configure emoji names or Unicode emojis that the bot should remove and log.</p><div className="save-row"><button className="button primary" onClick={() => onSave(draft)}>Save changes</button></div></>;
     }
     const entries = Object.entries(sectionConfig);
     const refresh = () => setDraft(structuredClone(draft));
-    return <><section className="card"><h3>{section?.replaceAll('_', ' ') || 'Settings'}</h3>{entries.map(([name, value]) => <Field key={name} name={name} value={value} root={sectionConfig} options={options} roleField={section === 'leveling' && name === 'roles'} onRefresh={refresh} />)}</section>{section === 'moderation' && <p className="muted config-note">Used for logging <code>/kick</code>, <code>/ban</code>, <code>/info</code>, and <code>/warn</code> actions.</p>}<div className="save-row"><button className="button primary" onClick={() => onSave(draft)}>Save changes</button></div></>;
+    return <><section className="card"><h3>{layout.label || section?.replaceAll('_', ' ') || 'Settings'}</h3>{entries.map(([name, value]) => <Field key={name} name={name} value={value} root={sectionConfig} options={options} definition={layout.fields[name] || {}} roleField={section === 'leveling' && name === 'roles'} onRefresh={refresh} />)}</section>{section === 'moderation' && <p className="muted config-note">Used for logging <code>/kick</code>, <code>/ban</code>, <code>/info</code>, and <code>/warn</code> actions.</p>}<div className="save-row"><button className="button primary" onClick={() => onSave(draft)}>Save changes</button></div></>;
 }

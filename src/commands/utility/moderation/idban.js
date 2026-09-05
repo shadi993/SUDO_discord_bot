@@ -9,6 +9,7 @@ export const data = new SlashCommandBuilder()
     .setDefaultMemberPermissions(PermissionFlagsBits.BanMembers);
 
 export async function execute(interaction) {
+    if (!Config.moderation.enabled) return interaction.reply({ content: 'Moderation is disabled.', ephemeral: true });
     const userId = interaction.options.getString('id').trim();
     const reason = interaction.options.getString('reason') || 'No reason provided';
 

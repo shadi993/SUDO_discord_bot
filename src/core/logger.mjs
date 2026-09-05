@@ -1,5 +1,5 @@
 import log4js from 'log4js';
-import { Config } from '../core/config.mjs';
+import { Settings } from './settings.config.js';
 
 export var Logger;
 
@@ -10,7 +10,7 @@ export var Logger;
  */
 export const InitLogger = () => {
     Logger = log4js.getLogger()
-    Logger.level = Config.general.log_level || 'info';
+    Logger.level = Settings.general.log_level || 'info';
 }
 
 /**
@@ -20,7 +20,7 @@ export const InitLogger = () => {
  * @param {string} default_log_level - The default log level to use if none is specified in the config.
  * @returns {Logger} The logger instance.
  */
-export const CreateLogger = (name, default_log_level = Config.general.log_level) => {
+export const CreateLogger = (name, default_log_level = Settings.general.log_level) => {
     var logger = log4js.getLogger(name);
     logger.level = default_log_level;
     return logger;

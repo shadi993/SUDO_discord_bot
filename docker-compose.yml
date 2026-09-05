@@ -6,7 +6,6 @@ services:
       - ./package.json:/package.json
       - ./package-lock.json:/package-lock.json
       - ./.env:/.env
-      - ./roles.json:/roles.json
       - ./config.json:/config.json
     command: >
       bash -c "npm install && npm start"

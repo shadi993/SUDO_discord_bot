@@ -13,11 +13,7 @@ const app = express();
 const sessions = new Map();
 const root = path.resolve(path.dirname(url.fileURLToPath(import.meta.url)), '../..');
 const dashboardFiles = {
-    'config.json': 'config.json',
-    'honeypot.json': 'honeypot.json',
-    'persistentMessages.json': 'persistentMessages.json',
-    'roles.json': 'roles.json',
-    'thresholdMessages.json': 'thresholdMessages.json'
+    'config.json': 'config.json'
 };
 
 app.use(express.json({ limit: '256kb' }));
@@ -58,7 +54,14 @@ const discordRequest = async (endpoint, options = {}) => {
 const isAdmin = (member, guild) => guild.owner_id === member.user.id
     || (BigInt(member.permissions) & BigInt(PermissionFlagsBits.Administrator)) !== 0n;
 
-const readConfig = (file) => JSON.parse(fs.readFileSync(path.join(root, dashboardFiles[file]), 'utf8'));
+const readConfig = (file) => {
+    const config = JSON.parse(fs.readFileSync(path.join(root, dashboardFiles[file]), 'utf8'));
+    if (file === 'config.json') {
+        delete config.general;
+        delete config.database;
+    }
+    return config;
+};
 
 app.get('/auth/login', (_request, response) => {
     const clientId = process.env.DISCORD_DASHBOARD_CLIENT_ID || process.env.DISCORD_CLIENT_ID;
@@ -161,11 +164,21 @@ app.put('/api/config/:file', requireAdmin, (request, response) => {
     const file = request.params.file;
     if (!dashboardFiles[file]) return response.status(404).json({ error: 'Unknown configuration.' });
     if (request.body === null || typeof request.body !== 'object') return response.status(400).json({ error: 'Configuration must be JSON.' });
+    const config = structuredClone(request.body);
+    if (file === 'config.json') {
+        delete config.general;
+        delete config.database;
+        for (const value of Object.values(config)) {
+            if (value && typeof value === 'object' && !Array.isArray(value) && !Object.hasOwn(value, 'enabled')) {
+                value.enabled = true;
+            }
+        }
+    }
     const target = path.join(root, dashboardFiles[file]);
-    fs.writeFileSync(target, `${JSON.stringify(request.body, null, 4)}\n`);
-    if (file === 'config.json') UpdateConfig(request.body);
+    fs.writeFileSync(target, `${JSON.stringify(config, null, 4)}\n`);
+    if (file === 'config.json') UpdateConfig(config);
     logger.info(`Dashboard configuration saved: ${file} by ${request.dashboardUser.username}`);
-    return response.json({ saved: true, config: request.body });
+    return response.json({ saved: true, config });
 });
 
 export const InitDashboard = () => {

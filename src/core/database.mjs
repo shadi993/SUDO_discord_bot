@@ -1,5 +1,5 @@
 import { Sequelize, DataTypes, Model } from 'sequelize';
-import { Config } from './config.mjs';
+import { Settings } from './settings.config.js';
 import { CreateLogger } from './logger.mjs';
 
 var SequelizeDb;
@@ -12,10 +12,13 @@ export class AgeVerificationDboEntity extends Model { }
  * Initialize the database connection.
  */
 export const InitDatabase = async () => {
-    DatabaseLogger = CreateLogger('Database', Config.database.log_level);
+    if (!Settings.database.connection_string) {
+        throw new Error('DATABASE_CONNECTION_STRING must be set in .env.');
+    }
+    DatabaseLogger = CreateLogger('Database', Settings.database.log_level);
 
     DatabaseLogger.log('debug', 'Creating database instance...');
-    SequelizeDb = new Sequelize(Config.database.connection_string, {
+    SequelizeDb = new Sequelize(Settings.database.connection_string, {
         logging: (...msg) => DatabaseLogger.log('trace', msg)
     });
 
