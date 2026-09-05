@@ -190,6 +190,10 @@ textarea { min-height: 90px; resize: vertical; }
 .login-card .button { width: 100%; margin-top: 24px; }
 .muted { color: var(--muted); line-height: 1.6; }
 .error { color: #ff8e9d; font-size: 13px; }
+.config-note { margin: -4px 0 18px; font-size: 13px; }
+.emoji-list { display: grid; gap: 10px; }
+.emoji-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px; align-items: center; }
+.emoji-input { display: grid; grid-template-columns: 180px minmax(0, 1fr); gap: 8px; }
 .status-controls { display: flex; gap: 8px; margin-bottom: 18px; flex-wrap: wrap; }
 .status-controls .button { text-transform: capitalize; }
 .status-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 18px; }

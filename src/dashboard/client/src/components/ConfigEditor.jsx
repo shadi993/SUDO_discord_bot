@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { RolesEditor } from './RolesEditor.jsx';
+import { BanEmojiEditor } from './BanEmojiEditor.jsx';
 
 const pretty = value => value.replaceAll('_', ' ').replaceAll('-', ' ');
 
@@ -73,7 +74,10 @@ export function ConfigEditor({ config, options, section, onSave }) {
     if (config.file === 'roles.json') {
         return <><RolesEditor value={draft} options={options} onChange={nextValue => setDraft(nextValue)} /><div className="save-row"><button className="button primary" onClick={() => onSave(draft)}>Save changes</button></div></>;
     }
+    if (section === 'ban_emoji' && config.file === 'config.json') {
+        return <><BanEmojiEditor value={draft[section]} options={options} onChange={nextValue => setDraft({ ...draft, [section]: nextValue })} /><p className="muted config-note">Configure emoji names or Unicode emojis that the bot should remove and log.</p><div className="save-row"><button className="button primary" onClick={() => onSave(draft)}>Save changes</button></div></>;
+    }
     const entries = Object.entries(sectionConfig);
     const refresh = () => setDraft(structuredClone(draft));
-    return <><section className="card"><h3>{section?.replaceAll('_', ' ') || 'Settings'}</h3>{entries.map(([name, value]) => <Field key={name} name={name} value={value} root={sectionConfig} options={options} roleField={section === 'leveling' && name === 'roles'} onRefresh={refresh} />)}</section><div className="save-row"><button className="button primary" onClick={() => onSave(draft)}>Save changes</button></div></>;
+    return <><section className="card"><h3>{section?.replaceAll('_', ' ') || 'Settings'}</h3>{entries.map(([name, value]) => <Field key={name} name={name} value={value} root={sectionConfig} options={options} roleField={section === 'leveling' && name === 'roles'} onRefresh={refresh} />)}</section>{section === 'moderation' && <p className="muted config-note">Used for logging <code>/kick</code>, <code>/ban</code>, <code>/info</code>, and <code>/warn</code> actions.</p>}<div className="save-row"><button className="button primary" onClick={() => onSave(draft)}>Save changes</button></div></>;
 }

@@ -134,9 +134,15 @@ app.get('/api/config/:file', requireAdmin, (request, response) => {
 app.get('/api/discord-options', requireAdmin, async (request, response) => {
     const guild = await discordRequest(`/guilds/${process.env.DISCORD_GUILD_ID}/channels`);
     const roles = await discordRequest(`/guilds/${process.env.DISCORD_GUILD_ID}/roles`);
+    const emojis = await discordRequest(`/guilds/${process.env.DISCORD_GUILD_ID}/emojis`);
     return response.json({
         channels: guild.filter(channel => channel.type === 0).map(channel => channel.name).sort(),
-        roles: roles.filter(role => role.name !== '@everyone').map(role => role.name).sort()
+        roles: roles.filter(role => role.name !== '@everyone').map(role => role.name).sort(),
+        emojis: emojis.filter(emoji => emoji.name).map(emoji => ({
+            name: emoji.name,
+            value: `:${emoji.name}:`,
+            label: `${emoji.name}${emoji.animated ? ' (animated)' : ''}`
+        })).sort((a, b) => a.name.localeCompare(b.name))
     });
 });
 
