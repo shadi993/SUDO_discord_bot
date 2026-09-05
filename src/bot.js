@@ -16,6 +16,7 @@ import { TicketSystem } from './modules/ticketSystem.mjs';
 import { HoneypotModule } from './modules/honeypot.mjs';
 import { DobCheck } from './modules/dobCheck.mjs';
 import { BanEmoji } from './modules/banEmoji.mjs';
+import { InitDashboard } from './dashboard/server.mjs';
 
 dotenv.config();
 InitConfig();
@@ -36,3 +37,4 @@ RegisterDiscordModule(new DobCheck());
 RegisterDiscordModule(new BanEmoji());
 
 InitCommands(DiscordClient);
+InitDashboard();

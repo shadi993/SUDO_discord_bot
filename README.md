@@ -15,6 +15,9 @@ After that create a .env file in the root directory, and paste in the following:
 DISCORD_CLIENT_ID=CHANGE_ME
 DISCORD_GUILD_ID=CHANGE_ME
 DISCORD_BOT_TOKEN=CHANGE_ME
+DISCORD_DASHBOARD_CLIENT_SECRET=CHANGE_ME
+DISCORD_DASHBOARD_REDIRECT_URI=http://localhost:3000/auth/callback
+DISCORD_DASHBOARD_PORT=3000
 ```
 
 You must create an application on:
@@ -64,6 +67,23 @@ Type the following:
 ```
 npm run dev
 ```
+
+### Admin dashboard
+
+The bot serves an administrator-only dashboard at `http://localhost:3000`.
+Add the matching `DISCORD_DASHBOARD_REDIRECT_URI` to the Discord developer
+portal. Sign-in checks the user against `DISCORD_GUILD_ID` and only permits
+server administrators or the server owner. The dashboard edits and saves
+`config.json`, `honeypot.json`, `persistentMessages.json`, `roles.json`, and
+`thresholdMessages.json`; `userid_levels.json` is intentionally excluded.
+
+`npm run dev` continues to run the bot and show its existing terminal logs.
+The main config is updated immediately; restart after saving module-specific
+files so those modules reload their startup configuration.
+
+The dashboard frontend is a modular React application under
+`src/dashboard/client`. Run `npm run dashboard:build` to rebuild its Vite
+bundle; `npm run dev` runs that build automatically before starting the bot.
 
 ## Submitting changes
 

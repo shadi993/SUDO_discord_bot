@@ -575,11 +575,23 @@ export const DobCheck = class {
             const existing =
                 await AgeVerificationDboEntity.findByPk(member.id);
 
+            const firstJoinedAt = member.joinedAt || new Date();
+
+            if (existing && !existing.first_joined_at) {
+                existing.first_joined_at = firstJoinedAt;
+                await existing.save();
+                this.#logger.log(
+                    'info',
+                    `Repaired first join for existing member ${member.user.tag}.`
+                );
+                continue;
+            }
+
             if (!existing) {
                 await AgeVerificationDboEntity.create({
                     discord_id: member.id,
                     dob: null,
-                    first_joined_at: null,
+                    first_joined_at: firstJoinedAt,
                 });
 
                 this.#logger.log(

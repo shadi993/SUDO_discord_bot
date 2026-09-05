@@ -1,5 +1,6 @@
 import { Client, GatewayIntentBits, Events ,Partials} from 'discord.js';
 import { Logger } from './logger.mjs';
+import { recordDailyStat } from '../dashboard/stats.mjs';
 
 export var DiscordClient;
 
@@ -87,6 +88,7 @@ export const InitDiscordClient = () => {
     DiscordClient.on(Events.MessageCreate, async (message) => {
         // Avoid events from messages that the bot has sent.
         if (message.author.id === process.env.DISCORD_CLIENT_ID) return;
+        recordDailyStat('messages');
 
         // Debug logs to check if event is getting triggers
         console.log(`Received message: "${message.content}" from ${message.author.tag} in ${message.channel.type}`);
@@ -105,6 +107,9 @@ export const InitDiscordClient = () => {
         }
         await Promise.all(promises);
     });
+
+    DiscordClient.on(Events.GuildMemberAdd, () => recordDailyStat('joins'));
+    DiscordClient.on(Events.GuildMemberRemove, () => recordDailyStat('leaves'));
 
     DiscordClient.on(Events.MessageReactionAdd, async (reaction, user) => {
         const results = await Promise.allSettled(

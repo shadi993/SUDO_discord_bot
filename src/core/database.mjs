@@ -59,6 +59,16 @@ export const InitDatabase = async () => {
         },
         { sequelize: SequelizeDb, modelName: 'AgeVerification',timestamps: false },
     );
+
+    // Create missing tables without altering or deleting existing data. This
+    // keeps normal bot startup safe when a fresh or older SQLite file is used.
+    try {
+        await SequelizeDb.sync();
+        DatabaseLogger.log('info', 'Database tables are ready.');
+    } catch (error) {
+        DatabaseLogger.log('error', 'Unable to initialize database tables:', error);
+        throw error;
+    }
 }
 
 /**

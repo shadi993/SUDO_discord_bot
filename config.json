@@ -2,20 +2,30 @@
     "general": {
         "environment": "development",
         "log_level": "debug"
-    }
-    ,
+    },
     "database": {
         "log_level": "debug",
         "connection_string_a": "postgres://admin:my-secret-dev-password@sudo-bot-db:5432/sudobotdb",
         "connection_string_b": "sqlite::memory:",
         "connection_string": "sqlite:data/sudobotdb.sqlite"
-    }
-    ,
+    },
     "leveling": {
         "enabled": true,
         "min_time_between_messages_seconds": 60,
         "announcement_channel_name": "📈｜leveling-up",
-        "ignore_channels": ["📈｜leveling-up", "💬｜nsfw-chat", "🎴｜nsfw-irl","😂｜shitpost","💝｜general-hentai","🔥｜general-porn","🎼｜music-channel","💾｜media","🌇｜sfw-irl","🤣｜nsfw-shitpost","🌸｜anime"],
+        "ignore_channels": [
+            "📈｜leveling-up",
+            "💬｜nsfw-chat",
+            "🎴｜nsfw-irl",
+            "😂｜shitpost",
+            "💝｜general-hentai",
+            "🔥｜general-porn",
+            "🎼｜music-channel",
+            "💾｜media",
+            "🌇｜sfw-irl",
+            "🤣｜nsfw-shitpost",
+            "🌸｜anime"
+        ],
         "roles": {
             "2": "Bit",
             "5": "Byte",
@@ -27,45 +37,40 @@
             "70": "Exabyte",
             "90": "Zettabyte"
         }
-    }
-    ,
+    },
     "disboard": {
         "enabled": true,
         "message": "You can bump again!"
-    }
-    ,
+    },
     "autorole": {
         "enabled": true,
-        "assign_on_join": ["----------Server Member----------", "-------Programming Language---------"]
-    }
-    ,
+        "assign_on_join": [
+            "----------Server Member----------",
+            "-------Programming Language---------"
+        ]
+    },
     "notify": {
         "enabled": true,
         "channel": "bot-log"
-    }
-    ,
+    },
     "rank": {
         "enabled": true,
         "channel_allowed": "📈｜leveling-up"
-    }
-    ,
-    "autokick":{
-        "enabled":true,
-        "account_age_limit":30,
+    },
+    "autokick": {
+        "enabled": true,
+        "account_age_limit": 30,
         "info_enabled": true,
         "info_channel": "bot-log"
-    }
-    ,
+    },
     "moderation": {
-        "channel_name": "moderation" 
-    }
-    ,
+        "channel_name": "moderation"
+    },
     "ticketSystem": {
         "category_name": "ticket",
-        "moderator": "Moderator" ,
+        "moderator": "Moderator",
         "archives_channel": "transcript-archives"
-    }
-    ,
+    },
     "dob_check": {
         "enabled": true,
         "channel_name": "📜｜rules",
@@ -77,17 +82,16 @@
         "button_emoji": "✅",
         "button_style": "Success",
         "toggle": false
-    }
-    ,
+    },
     "ban_emoji": {
-    "enabled": true,
-    "log": true,
-    "log_channel": "bot-log",
-    "emojis": [
-        ":pregnant_man:",
-        ":pregnant_person:",
-        "🫄",
-        "🫃"
-    ]
-}
+        "enabled": true,
+        "log": true,
+        "log_channel": "bot-log",
+        "emojis": [
+            ":pregnant_man:",
+            ":pregnant_person:",
+            "🫄",
+            "🫃"
+        ]
+    }
 }
