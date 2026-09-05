@@ -72,8 +72,7 @@
         "description": "if you accept the conditions press the ✅",
         "button_text": "",
         "button_emoji": "✅",
-        "button_style": "Success",
-        "toggle": false
+        "button_style": "Success"
     },
     "ban_emoji": {
         "enabled": true,

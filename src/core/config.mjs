@@ -14,7 +14,7 @@ const defaultConfig = {
     autokick: { enabled: true, account_age_limit: 30, info_enabled: true, info_channel: '' },
     moderation: { enabled: true, channel_name: '' },
     ticketSystem: { enabled: true, category_name: '', moderator: '', archives_channel: '' },
-    dob_check: { enabled: true, channel_name: '', moderation_channel: '', verified_role: '', title: '', description: '', button_text: '', button_emoji: '✅', button_style: 'Success', toggle: false },
+    dob_check: { enabled: true, channel_name: '', moderation_channel: '', verified_role: '', title: '', description: '', button_text: '', button_emoji: '✅', button_style: 'Success' },
     ban_emoji: { enabled: true, log: true, log_channel: '', emojis: [] },
     honeypot: { enabled: true, channel_name: '', log_channel_name: '', title: '', description: '', button_text: '', punishment: 'kick' },
     persistentMessages: { enabled: true, messages: [] },

@@ -66,8 +66,7 @@ export const dashboardLayout = {
                 description: {type: 'text'},
                 button_text: {type: 'text'},
                 button_emoji: {type: 'text'},
-                button_style: {type: 'text'},
-                toggle: {type: 'toggle'}
+                button_style: {type: 'text'}
             }
         },
         ban_emoji: {
