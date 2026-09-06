@@ -5,6 +5,8 @@ import { Sidebar } from './components/Sidebar.jsx';
 import { LoginScreen } from './components/LoginScreen.jsx';
 import { ServerStatus } from './components/ServerStatus.jsx';
 
+const STATUS_REFRESH_INTERVAL_MS = 24 * 60 * 60 * 1000;
+
 export function Dashboard() {
     const [session, setSession] = useState(null);
     const [configs, setConfigs] = useState([]);
@@ -32,6 +34,21 @@ export function Dashboard() {
             })
             .catch(nextError => setError(nextError.message));
     }, []);
+
+    useEffect(() => {
+        if (!session) return undefined;
+
+        const refreshTimer = setInterval(() => {
+            refreshStatus().catch(nextError => setError(nextError.message));
+        }, STATUS_REFRESH_INTERVAL_MS);
+
+        return () => clearInterval(refreshTimer);
+    }, [session]);
+
+    const refreshStatus = async () => {
+        const nextStatus = await api('/api/server-status');
+        setStatus(nextStatus);
+    };
 
     if (!session) return <LoginScreen error={error} />;
     const current = configs.find(config => config.file === active.file);
@@ -77,7 +94,7 @@ export function Dashboard() {
         <Sidebar configs={configs} active={active} onSelect={(file, section) => setActive({ file, section })} />
         <main className="main">
             <header className="topbar"><div><p className="eyebrow">ADMIN CONSOLE</p><h2>{active.file === '__status__' ? 'Server status' : active.section?.replaceAll('_', ' ')}</h2></div><div className="account"><span>{session.user.username}</span><button className="button ghost" onClick={exportConfig}>Export config</button><label className="button ghost" htmlFor="config-import">Import config</label><input id="config-import" type="file" accept="application/json" hidden onChange={importConfig} /><button className="button ghost" onClick={async () => { await api('/auth/logout', { method: 'POST' }); location.reload(); }}>Log out</button></div></header>
-            <section className="content">{active.file === '__status__' && status ? <ServerStatus status={status} /> : current && <ConfigEditor key={`${active.file}:${active.section || 'root'}`} config={current} section={active.section} options={options} onSave={save} />}{error && <p className="error">{error}</p>}</section>
+            <section className="content">{active.file === '__status__' && status ? <ServerStatus status={status} refreshIntervalMs={STATUS_REFRESH_INTERVAL_MS} onRefresh={() => refreshStatus().catch(nextError => setError(nextError.message))} /> : current && <ConfigEditor key={`${active.file}:${active.section || 'root'}`} config={current} section={active.section} options={options} onSave={save} />}{error && <p className="error">{error}</p>}</section>
         </main>
         {notice && <div className="toast">{notice}</div>}
     </div>;

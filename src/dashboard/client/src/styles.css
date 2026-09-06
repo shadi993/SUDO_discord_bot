@@ -196,6 +196,8 @@ textarea { min-height: 90px; resize: vertical; }
 .emoji-input { display: grid; grid-template-columns: 180px minmax(0, 1fr); gap: 8px; }
 .status-controls { display: flex; gap: 8px; margin-bottom: 18px; flex-wrap: wrap; }
 .status-controls .button { text-transform: capitalize; }
+.status-next-update { align-self: center; margin-left: 4px; color: var(--muted); font-size: 12px; }
+.status-controls button:disabled { cursor: wait; opacity: .6; }
 .status-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 18px; }
 .stat-card { display: grid; gap: 8px; margin: 0; }
 .stat-card span { color: var(--muted); font-size: 12px; }

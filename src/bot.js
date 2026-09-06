@@ -17,11 +17,13 @@ import { HoneypotModule } from './modules/honeypot.mjs';
 import { DobCheck } from './modules/dobCheck.mjs';
 import { BanEmoji } from './modules/banEmoji.mjs';
 import { InitDashboard } from './dashboard/server.mjs';
+import { migrateLegacyStats } from './dashboard/stats.mjs';
 
 dotenv.config();
 InitConfig();
 InitLogger();
 await InitDatabase();
+await migrateLegacyStats();
 InitDiscordClient();
 RegisterDiscordModule(new NotifyModule());
 RegisterDiscordModule(new LevelingModule());

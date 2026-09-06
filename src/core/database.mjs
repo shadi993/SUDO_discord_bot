@@ -7,6 +7,7 @@ var DatabaseLogger;
 
 export class PostCountDboEntity extends Model { }
 export class AgeVerificationDboEntity extends Model { }
+export class DashboardDailyStatDboEntity extends Model { }
 
 /**
  * Initialize the database connection.
@@ -63,10 +64,41 @@ export const InitDatabase = async () => {
         { sequelize: SequelizeDb, modelName: 'AgeVerification',timestamps: false },
     );
 
+    DashboardDailyStatDboEntity.init(
+        {
+            date: {
+                type: DataTypes.DATEONLY,
+                primaryKey: true,
+            },
+            messages: {
+                type: DataTypes.INTEGER,
+                allowNull: false,
+                defaultValue: 0,
+            },
+            joins: {
+                type: DataTypes.INTEGER,
+                allowNull: false,
+                defaultValue: 0,
+            },
+            leaves: {
+                type: DataTypes.INTEGER,
+                allowNull: false,
+                defaultValue: 0,
+            },
+            member_count: {
+                type: DataTypes.INTEGER,
+                allowNull: false,
+                defaultValue: 0,
+            },
+        },
+        { sequelize: SequelizeDb, modelName: 'DashboardDailyStat', timestamps: false },
+    );
+
     // Create missing tables without altering or deleting existing data. This
     // keeps normal bot startup safe when a fresh or older SQLite file is used.
     try {
         await SequelizeDb.sync();
+        await DashboardDailyStatDboEntity.sync({ alter: true });
         DatabaseLogger.log('info', 'Database tables are ready.');
     } catch (error) {
         DatabaseLogger.log('error', 'Unable to initialize database tables:', error);

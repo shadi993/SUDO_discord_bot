@@ -6,7 +6,7 @@ import url from 'node:url';
 import { PermissionFlagsBits } from 'discord.js';
 import { UpdateConfig } from '../core/config.mjs';
 import { CreateLogger } from '../core/logger.mjs';
-import { getDailyStats } from './stats.mjs';
+import { getDailyStats, recordDailyMemberCount } from './stats.mjs';
 
 let logger;
 const app = express();
@@ -151,12 +151,15 @@ app.get('/api/discord-options', requireAdmin, async (request, response) => {
 
 app.get('/api/server-status', requireAdmin, async (request, response) => {
     const guild = await discordRequest(`/guilds/${process.env.DISCORD_GUILD_ID}?with_counts=true`);
+    const memberCount = guild.approximate_member_count || guild.member_count || 0;
+    await recordDailyMemberCount(memberCount);
     return response.json({
         name: guild.name,
         icon: guild.icon,
-        memberCount: guild.approximate_member_count || guild.member_count || 0,
+        memberCount,
         onlineCount: guild.approximate_presence_count || 0,
-        daily: getDailyStats()
+        daily: await getDailyStats(),
+        updatedAt: Date.now()
     });
 });
 

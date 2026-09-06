@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 
 const periods = ['day', 'week', 'month', 'year', 'all'];
 
@@ -27,8 +27,36 @@ function Chart({ title, data, color }) {
     </section>;
 }
 
-export function ServerStatus({ status }) {
+function formatCountdown(milliseconds) {
+    const totalSeconds = Math.max(0, Math.ceil(milliseconds / 1000));
+    const days = Math.floor(totalSeconds / 86400);
+    const hours = Math.floor((totalSeconds % 86400) / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = totalSeconds % 60;
+    if (days > 0) return `${days}d ${hours}h`;
+    return `${hours}h ${minutes}m ${seconds}s`;
+}
+
+export function ServerStatus({ status, refreshIntervalMs, onRefresh }) {
     const [period, setPeriod] = useState('week');
+    const [now, setNow] = useState(Date.now());
+    const [refreshing, setRefreshing] = useState(false);
+    const nextUpdate = (status.updatedAt || now) + refreshIntervalMs;
+
+    useEffect(() => {
+        const timer = setInterval(() => setNow(Date.now()), 1000);
+        return () => clearInterval(timer);
+    }, []);
+
+    const refreshNow = async () => {
+        setRefreshing(true);
+        try {
+            await onRefresh();
+        } finally {
+            setRefreshing(false);
+        }
+    };
+
     const data = useMemo(() => {
         const cutoff = startDate(period);
         return Object.entries(status.daily)
@@ -37,9 +65,10 @@ export function ServerStatus({ status }) {
     }, [period, status.daily]);
     const toChart = key => data.map(day => ({ label: day.date.slice(5), value: day[key] || 0 }));
     return <div className="status-page">
-        <div className="status-controls">{periods.map(option => <button key={option} className={`button ${period === option ? 'primary' : 'ghost'}`} onClick={() => setPeriod(option)}>{option}</button>)}</div>
+        <div className="status-controls">{periods.map(option => <button key={option} className={`button ${period === option ? 'primary' : 'ghost'}`} onClick={() => setPeriod(option)}>{option}</button>)}<span className="status-next-update">Next update in {formatCountdown(nextUpdate - now)}</span><button className="button ghost" onClick={refreshNow} disabled={refreshing}>{refreshing ? 'Updating…' : 'Grab data now'}</button></div>
         <div className="status-cards"><div className="card stat-card"><span>Members</span><strong>{status.memberCount.toLocaleString()}</strong></div><div className="card stat-card"><span>Online now</span><strong>{status.onlineCount.toLocaleString()}</strong></div><div className="card stat-card"><span>Tracked days</span><strong>{data.length}</strong></div></div>
         <Chart title="Messages" data={toChart('messages')} color="#d32b52" />
+        <Chart title="Member count" data={toChart('member_count')} color="#65b7e8" />
         <Chart title="Members joined" data={toChart('joins')} color="#e56883" />
         <Chart title="Members left" data={toChart('leaves')} color="#9b9da8" />
     </div>;
