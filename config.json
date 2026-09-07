@@ -2,19 +2,19 @@
     "leveling": {
         "enabled": true,
         "min_time_between_messages_seconds": 60,
-        "announcement_channel_name": "📈｜leveling-up",
+        "announcement_channel_name": "1277642830243954722",
         "ignore_channels": [
-            "📈｜leveling-up",
-            "💬｜nsfw-chat",
-            "🎴｜nsfw-irl",
-            "😂｜shitpost",
-            "💝｜general-hentai",
-            "🔥｜general-porn",
-            "🎼｜music-channel",
-            "💾｜media",
-            "🌇｜sfw-irl",
-            "🤣｜nsfw-shitpost",
-            "🌸｜anime"
+            "1277642830243954722",
+            "1277642830462062633",
+            "1277642830642286706",
+            "1277642830462062627",
+            "1277642830642286705",
+            "1277642830642286704",
+            "1277642830462062629",
+            "1277642830462062630",
+            "1277642830462062631",
+            "1330225475330511000",
+            "1277642830462062628"
         ],
         "roles": {
             "2": "Bit",
@@ -41,32 +41,32 @@
     },
     "notify": {
         "enabled": true,
-        "channel": "bot-log"
+        "channel": "1277642830784889025"
     },
     "rank": {
         "enabled": true,
-        "channel_allowed": "📈｜leveling-up"
+        "channel_allowed": "1277642830243954722"
     },
     "autokick": {
         "enabled": true,
         "account_age_limit": 30,
         "info_enabled": true,
-        "info_channel": "bot-log"
+        "info_channel": "1277642830784889025"
     },
     "moderation": {
         "enabled": true,
-        "channel_name": "moderation"
+        "channel_name": "1277642830784889024"
     },
     "ticketSystem": {
         "enabled": true,
-        "category_name": "ticket",
+        "category_name": "1330643468825133076",
         "moderator": "Moderator",
-        "archives_channel": "transcript-archives"
+        "archives_channel": "1330643759083290686"
     },
     "dob_check": {
         "enabled": true,
-        "channel_name": "📜｜rules",
-        "moderation_channel": "dob-log",
+        "channel_name": "1277642829803290800",
+        "moderation_channel": "1543670731450359809",
         "verified_role": "SUDO Member",
         "title": "Rules",
         "description": "if you accept the conditions press the ✅",
@@ -77,7 +77,7 @@
     "ban_emoji": {
         "enabled": true,
         "log": true,
-        "log_channel": "bot-log",
+        "log_channel": "1277642830784889025",
         "emojis": [
             ":pregnant_man:",
             ":pregnant_person:",
@@ -87,8 +87,8 @@
     },
     "honeypot": {
         "enabled": true,
-        "channel_name": "👾｜roles",
-        "log_channel_name": "bot-log",
+        "channel_name": "1277642829803290802",
+        "log_channel_name": "1277642830784889025",
         "title": "Honeypot - Please Ignore",
         "description": "Don't click the button or you will be kicked from the server. this honeypot meant for bots only.",
         "button_text": "Do NOT click",
@@ -98,11 +98,11 @@
         "enabled": true,
         "messages": [
             {
-                "channel_name": "🌐｜resources",
+                "channel_name": "1277642830243954728",
                 "message": "This channel is for sharing resources only, please avoid making comments or chatting here.\n**use thread for comments**"
             },
             {
-                "channel_name": "🎥｜tutorials",
+                "channel_name": "1277642830243954726",
                 "message": "This channel is for sharing tutorials videos only, please avoid making comments or chatting here.\n**use thread for comments**"
             }
         ]
@@ -111,7 +111,7 @@
         "enabled": true,
         "panels": [
             {
-                "channel_name": "👾｜roles",
+                "channel_name": "1277642829803290802",
                 "id": 0,
                 "title": "click on the languages you know or you are currently learning.",
                 "options": [
@@ -223,7 +223,7 @@
                 ]
             },
             {
-                "channel_name": "👾｜roles",
+                "channel_name": "1277642829803290802",
                 "id": 1,
                 "title": "NSFW Roles",
                 "options": [
@@ -251,7 +251,7 @@
                 ]
             },
             {
-                "channel_name": "👾｜roles",
+                "channel_name": "1277642829803290802",
                 "id": 3,
                 "title": "Custom Colors.(level 15 minimum required)",
                 "exclusive_group": true,
@@ -429,7 +429,7 @@
                 ]
             },
             {
-                "channel_name": "👾｜roles",
+                "channel_name": "1277642829803290802",
                 "id": 4,
                 "title": "notification Roles",
                 "options": [
@@ -455,13 +455,13 @@
         "enabled": true,
         "messages": [
             {
-                "channel_name": "😂｜shitpost",
+                "channel_name": "1277642830462062627",
                 "threshold": 6,
                 "bot_message": "**please keep the chat to minimum**\n check the rules in channel's description for more info",
                 "enabled": false
             },
             {
-                "channel_name": "🌇｜sfw-irl",
+                "channel_name": "1277642830462062631",
                 "threshold": 6,
                 "bot_message": "**please keep the chat to minimum**\n check the rules in channel's description for more info",
                 "enabled": false

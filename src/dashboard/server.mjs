@@ -54,6 +54,20 @@ const discordRequest = async (endpoint, options = {}) => {
 const isAdmin = (member, guild) => guild.owner_id === member.user.id
     || (BigInt(member.permissions) & BigInt(PermissionFlagsBits.Administrator)) !== 0n;
 
+const channelSetting = key => key.toLowerCase().includes('channel') || key.toLowerCase().includes('category');
+
+const replaceChannelNames = (value, channels, key = '') => {
+    if (Array.isArray(value)) return value.map(item => replaceChannelNames(item, channels, key));
+    if (!value || typeof value !== 'object') {
+        if (!channelSetting(key) || typeof value !== 'string') return value;
+        return channels.find(channel => channel.id === value || channel.name === value)?.id || value;
+    }
+    return Object.fromEntries(Object.entries(value).map(([childKey, childValue]) => [
+        childKey,
+        replaceChannelNames(childValue, channels, childKey)
+    ]));
+};
+
 const readConfig = (file) => {
     const config = JSON.parse(fs.readFileSync(path.join(root, dashboardFiles[file]), 'utf8'));
     if (file === 'config.json') {
@@ -139,7 +153,7 @@ app.get('/api/discord-options', requireAdmin, async (request, response) => {
     const roles = await discordRequest(`/guilds/${process.env.DISCORD_GUILD_ID}/roles`);
     const emojis = await discordRequest(`/guilds/${process.env.DISCORD_GUILD_ID}/emojis`);
     return response.json({
-        channels: guild.filter(channel => channel.type === 0).map(channel => channel.name).sort(),
+        channels: guild.filter(channel => channel.type === 0 || channel.type === 4).map(channel => ({ id: channel.id, name: channel.name, type: channel.type })).sort((a, b) => a.name.localeCompare(b.name)),
         roles: roles.filter(role => role.name !== '@everyone').map(role => role.name).sort(),
         emojis: emojis.filter(emoji => emoji.name).map(emoji => ({
             name: emoji.name,
@@ -163,7 +177,7 @@ app.get('/api/server-status', requireAdmin, async (request, response) => {
     });
 });
 
-app.put('/api/config/:file', requireAdmin, (request, response) => {
+app.put('/api/config/:file', requireAdmin, async (request, response) => {
     const file = request.params.file;
     if (!dashboardFiles[file]) return response.status(404).json({ error: 'Unknown configuration.' });
     if (request.body === null || typeof request.body !== 'object') return response.status(400).json({ error: 'Configuration must be JSON.' });
@@ -171,6 +185,8 @@ app.put('/api/config/:file', requireAdmin, (request, response) => {
     if (file === 'config.json') {
         delete config.general;
         delete config.database;
+        const channels = await discordRequest(`/guilds/${process.env.DISCORD_GUILD_ID}/channels`);
+        Object.assign(config, replaceChannelNames(config, channels.filter(channel => channel.type === 0 || channel.type === 4)));
         for (const value of Object.values(config)) {
             if (value && typeof value === 'object' && !Array.isArray(value) && !Object.hasOwn(value, 'enabled')) {
                 value.enabled = true;

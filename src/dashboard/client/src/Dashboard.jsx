@@ -5,7 +5,12 @@ import { Sidebar } from './components/Sidebar.jsx';
 import { LoginScreen } from './components/LoginScreen.jsx';
 import { ServerStatus } from './components/ServerStatus.jsx';
 
-const STATUS_REFRESH_INTERVAL_MS = 24 * 60 * 60 * 1000;
+const getNextStatusUpdate = () => {
+    const nextUpdate = new Date();
+    nextUpdate.setHours(1, 0, 0, 0);
+    if (nextUpdate.getTime() <= Date.now()) nextUpdate.setDate(nextUpdate.getDate() + 1);
+    return nextUpdate.getTime();
+};
 
 export function Dashboard() {
     const [session, setSession] = useState(null);
@@ -38,11 +43,20 @@ export function Dashboard() {
     useEffect(() => {
         if (!session) return undefined;
 
-        const refreshTimer = setInterval(() => {
-            refreshStatus().catch(nextError => setError(nextError.message));
-        }, STATUS_REFRESH_INTERVAL_MS);
+        let timer;
+        const scheduleRefresh = () => {
+            timer = setTimeout(async () => {
+                try {
+                    await refreshStatus();
+                } catch (nextError) {
+                    setError(nextError.message);
+                }
+                scheduleRefresh();
+            }, Math.max(0, getNextStatusUpdate() - Date.now()));
+        };
+        scheduleRefresh();
 
-        return () => clearInterval(refreshTimer);
+        return () => clearTimeout(timer);
     }, [session]);
 
     const refreshStatus = async () => {
@@ -55,7 +69,9 @@ export function Dashboard() {
     const save = async draft => {
         try {
             const result = await api(`/api/config/${active.file}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(draft) });
-            setConfigs(configs.map(config => config.file === active.file ? { ...config, config: result.config } : config));
+            setConfigs(previousConfigs => previousConfigs.map(config => config.file === active.file
+                ? { ...config, config: structuredClone(result.config) }
+                : config));
             setNotice('Configuration saved');
             setTimeout(() => setNotice(''), 2500);
         } catch (saveError) {
@@ -94,7 +110,7 @@ export function Dashboard() {
         <Sidebar configs={configs} active={active} onSelect={(file, section) => setActive({ file, section })} />
         <main className="main">
             <header className="topbar"><div><p className="eyebrow">ADMIN CONSOLE</p><h2>{active.file === '__status__' ? 'Server status' : active.section?.replaceAll('_', ' ')}</h2></div><div className="account"><span>{session.user.username}</span><button className="button ghost" onClick={exportConfig}>Export config</button><label className="button ghost" htmlFor="config-import">Import config</label><input id="config-import" type="file" accept="application/json" hidden onChange={importConfig} /><button className="button ghost" onClick={async () => { await api('/auth/logout', { method: 'POST' }); location.reload(); }}>Log out</button></div></header>
-            <section className="content">{active.file === '__status__' && status ? <ServerStatus status={status} refreshIntervalMs={STATUS_REFRESH_INTERVAL_MS} onRefresh={() => refreshStatus().catch(nextError => setError(nextError.message))} /> : current && <ConfigEditor key={`${active.file}:${active.section || 'root'}`} config={current} section={active.section} options={options} onSave={save} />}{error && <p className="error">{error}</p>}</section>
+            <section className="content">{active.file === '__status__' && status ? <ServerStatus status={status} onRefresh={() => refreshStatus().catch(nextError => setError(nextError.message))} /> : current && <ConfigEditor key={`${active.file}:${active.section || 'root'}`} config={current} section={active.section} options={options} onSave={save} />}{error && <p className="error">{error}</p>}</section>
         </main>
         {notice && <div className="toast">{notice}</div>}
     </div>;

@@ -73,3 +73,25 @@ export const UpdateConfig = (nextConfig) => {
         Config = nextConfig;
     }
 };
+
+export const MigrateChannelNames = (channels) => {
+    const isChannelKey = key => key.toLowerCase().includes('channel') || key.toLowerCase().includes('category');
+    const migrate = (value, key = '') => {
+        if (Array.isArray(value)) return value.map(item => migrate(item, key));
+        if (!value || typeof value !== 'object') {
+            if (!isChannelKey(key) || typeof value !== 'string') return value;
+            return channels.find(channel => channel.id === value || channel.name === value)?.id || value;
+        }
+        return Object.fromEntries(Object.entries(value).map(([childKey, childValue]) => [
+            childKey,
+            migrate(childValue, childKey)
+        ]));
+    };
+
+    const migrated = migrate(Config);
+    if (JSON.stringify(migrated) !== JSON.stringify(Config)) {
+        for (const key of Object.keys(Config)) delete Config[key];
+        Object.assign(Config, migrated);
+        fs.writeFileSync('config.json', `${JSON.stringify(Config, null, 4)}\n`);
+    }
+};

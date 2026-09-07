@@ -1,6 +1,7 @@
 import { CreateLogger } from '../core/logger.mjs';
 import { Config } from '../core/config.mjs';
 import { PostCountDboEntity } from '../core/database.mjs';
+import { findDiscordChannel } from '../core/discord-helpers.mjs';
 
 
 
@@ -254,7 +255,7 @@ export const LevelingModule = class {
         this.#discordRoles = roles;
 
         for (const channelName of Config.leveling.ignore_channels ?? []) {
-            const channel = channels.find(channel => channel.name === channelName);
+            const channel = findDiscordChannel(channels, channelName);
             if (channel) {
                 this.#channelsToIgnore.push(channel.id);
             } else {
@@ -268,7 +269,7 @@ export const LevelingModule = class {
             return;
         }
 
-        this.#levelupAnnouncementChannel = channels.find(channel => channel.name === Config.leveling.announcement_channel_name);
+        this.#levelupAnnouncementChannel = findDiscordChannel(channels, Config.leveling.announcement_channel_name);
 
         if (!this.#levelupAnnouncementChannel) {
             this.#logger.log('warn', `Leveling announcement channel ${Config.leveling.announcement_channel_name} was not found in the server. Level-up announcements are disabled until the channel is created or configured.`);

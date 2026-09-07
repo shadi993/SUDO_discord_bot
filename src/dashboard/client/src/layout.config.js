@@ -50,7 +50,7 @@ export const dashboardLayout = {
             label: 'Ticket system',
             fields: {
                 enabled: {type: 'toggle'},
-                category_name: {type: 'channel'},
+                category_name: {type: 'category'},
                 moderator: {type: 'role'},
                 archives_channel: {type: 'channel'}
             }

@@ -59,7 +59,7 @@ export async function execute(interaction) {
         const modChannelName = Config.moderation.channel_name;
 
         const modChannel = interaction.guild.channels.cache.find(
-            channel => channel.name === modChannelName
+            channel => channel.id === modChannelName || channel.name === modChannelName
         );
 
         if (modChannel) {

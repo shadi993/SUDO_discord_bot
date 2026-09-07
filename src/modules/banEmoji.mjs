@@ -68,7 +68,7 @@ export const BanEmoji = class {
 
             this.#logChannel = channels.find(
                 (channel) =>
-                    channel.name === this.#config.log_channel
+                    channel.id === this.#config.log_channel || channel.name === this.#config.log_channel
             );
 
             if (!this.#logChannel) {

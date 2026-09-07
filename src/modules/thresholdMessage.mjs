@@ -3,6 +3,7 @@
 // the bot will keep posting the same message or work similar to persistentMessage module until someone post a media and the count will rest
 import { CreateLogger } from '../core/logger.mjs';
 import { Config } from '../core/config.mjs';
+import { findDiscordChannel } from '../core/discord-helpers.mjs';
 
 export const ThresholdMessage = class {
     #logger;
@@ -68,7 +69,7 @@ export const ThresholdMessage = class {
 
         // Initialize message count for each monitored channel
         for (const { channel_name, enabled } of this.#config) {
-            const channel = this.#discordChannels.find((ch) => ch.name === channel_name);
+            const channel = findDiscordChannel(this.#discordChannels, channel_name);
 
             if (channel) {
                 if (enabled) {

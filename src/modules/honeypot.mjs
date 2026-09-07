@@ -1,6 +1,7 @@
 import { CreateLogger } from '../core/logger.mjs';
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder } from 'discord.js';
 import { Config } from '../core/config.mjs';
+import { findDiscordChannel } from '../core/discord-helpers.mjs';
 
 export const HoneypotModule = class {
     #logger;
@@ -22,13 +23,9 @@ export const HoneypotModule = class {
 
     this.#discordChannels = channels;
 
-    const channel = this.#discordChannels.find(
-        c => c.name === this.#config.channel_name
-    );
+    const channel = findDiscordChannel(this.#discordChannels, this.#config.channel_name);
 
-    this.#logChannel = this.#discordChannels.find(
-        c => c.name === this.#config.log_channel_name
-    );
+    this.#logChannel = findDiscordChannel(this.#discordChannels, this.#config.log_channel_name);
 
     if (!channel) {
         this.#logger.log('error', `Channel not found: ${this.#config.channel_name}`);

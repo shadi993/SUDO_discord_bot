@@ -46,7 +46,7 @@ export const DobCheck = class {
         this.#discordChannels = channels;
 
         const channel = this.#discordChannels.find(
-            (ch) => ch.name === this.#config.channel_name
+            (ch) => ch.id === this.#config.channel_name || ch.name === this.#config.channel_name
         );
         if (!channel) {this.#logger.log('error',`DOB verification channel not found: ${this.#config.channel_name}`);
             return;

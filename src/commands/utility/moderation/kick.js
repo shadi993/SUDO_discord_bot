@@ -34,7 +34,7 @@ export async function execute(interaction) {
         await member.kick(reason);
 
         const modChannelName = Config.moderation.channel_name; 
-        const modChannel = interaction.guild.channels.cache.find(channel => channel.name === modChannelName);
+        const modChannel = interaction.guild.channels.cache.find(channel => channel.id === modChannelName || channel.name === modChannelName);
 
         if (modChannel) {
             await modChannel.send({ embeds: [modLogEmbed] });

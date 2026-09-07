@@ -1,6 +1,7 @@
 import { Client, GatewayIntentBits, Events ,Partials} from 'discord.js';
 import { Logger } from './logger.mjs';
 import { recordDailyStat } from '../dashboard/stats.mjs';
+import { MigrateChannelNames } from './config.mjs';
 
 export var DiscordClient;
 
@@ -56,6 +57,7 @@ export const InitDiscordClient = () => {
                     .then((channels) => {
                         Logger.log('debug', `Loaded ${channels.size} channels.`);
                         DiscordChannels = channels;
+                        MigrateChannelNames([...DiscordChannels.values()]);
 
                         Logger.log('debug', 'Fetching roles...');
                         guild.roles.fetch()
@@ -67,7 +69,9 @@ export const InitDiscordClient = () => {
                                 for (const module of ClientReadyModules) {
                                     promises.push(module.onDiscordReady(DiscordGuild, DiscordChannels, DiscordRoles));
                                 }
-                                Promise.all(promises);
+                                Promise.all(promises).catch((error) => {
+                                    Logger.log('error', `A Discord module failed during startup: ${error.message}`);
+                                });
                             })
                             .catch((error) => {
                                 Logger.log('error', `Failed to fetch roles: ${error}`);

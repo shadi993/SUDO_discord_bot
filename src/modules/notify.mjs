@@ -2,6 +2,7 @@ import { CreateLogger } from '../core/logger.mjs';
 import { DiscordClient } from "../core/discord-client.mjs";
 import { Events, EmbedBuilder, AuditLogEvent, PermissionsBitField } from 'discord.js';
 import { Config } from "../core/config.mjs";
+import { findDiscordChannel } from '../core/discord-helpers.mjs';
 
 /**
  * Module for handling event notifications.
@@ -23,7 +24,7 @@ export const NotifyModule = class {
         if (!Config.notify.enabled) return;
         this.#logger.log('info', 'NotifyModule module is ready.');
         this.#logger.log('info', 'NotifyModule registering additional callbacks.');
-        this.#notifyChannel = channels.find(channel => channel.name === Config.notify.channel);
+        this.#notifyChannel = findDiscordChannel(channels, Config.notify.channel);
         //this.#guild = guild;
         
         DiscordClient.on(Events.GuildMemberAdd, async (member) => {

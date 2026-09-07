@@ -1,5 +1,6 @@
 import { CreateLogger } from '../core/logger.mjs';
 import { Config } from '../core/config.mjs';
+import { findDiscordChannel } from '../core/discord-helpers.mjs';
 
 export const PersistentMessage = class {
     #logger;
@@ -75,7 +76,7 @@ export const PersistentMessage = class {
         this.#discordChannels = channels;
 
         for (const { channel_name, message } of this.#messages) {
-            const channel = this.#discordChannels.find((ch) => ch.name === channel_name);
+            const channel = findDiscordChannel(this.#discordChannels, channel_name);
 
             if (channel) {
                 await this.#ensurePersistentMessage(channel, message);

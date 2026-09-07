@@ -3,6 +3,7 @@ import { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder } from 'disc
 import { Config } from '../core/config.mjs';
 import { PostCountDboEntity } from '../core/database.mjs';
 import { LevelingModule } from '../modules/leveling.mjs';
+import { findDiscordChannel } from '../core/discord-helpers.mjs';
 
 /**
  * Module for handling roles.
@@ -27,16 +28,12 @@ export const RolesModule = class {
     }
 
     async #createOrUpdateMessage(role) {
-        // Find channel by name in the guild
         this.#logger.log('debug', `Looking for channel: ${role.channel_name}`);
-        
-        //find channel by id for future reference
-        //const channel = this.#discordChannels.find((channel) => channel.id === role.channel_id);
-        const channel = this.#discordChannels.find((channel) => channel.name === role.channel_name);
+        const channel = findDiscordChannel(this.#discordChannels, role.channel_name);
 
         if (!channel) {
-            this.#logger.log('error', `Channel not found: ${role.channel_name}`);
-            throw new Error(`Channel not found: ${role.channel_name}`);
+            this.#logger.log('warn', `Role panel channel not found: ${role.channel_name}. Skipping this panel.`);
+            return;
         }
 
         let messages = await channel.messages.fetch({ limit: 20 });
@@ -74,9 +71,9 @@ export const RolesModule = class {
         this.#discordRoles = roles;
 
         //this function should be moved in a singular class so it can also be called from a command so you dont have to restart the bot after adding or removing roles.
-        for (const role of this.#roles) {
-            this.#createOrUpdateMessage(role);
-        }
+        await Promise.all(this.#roles.map(role => this.#createOrUpdateMessage(role).catch(error => {
+            this.#logger.log('error', `Failed to initialize role panel ${role.title || role.id}: ${error.message}`);
+        })));
     }
 
     async onDiscordInteraction(interaction) {

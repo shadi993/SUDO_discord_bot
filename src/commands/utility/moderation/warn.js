@@ -162,7 +162,7 @@ export async function execute(interaction) {
         // Log the warning in the moderation channel
         const modChannelName = Config.moderation.channel_name;
         const modChannel = guild.channels.cache.find(
-            channel => channel.name === modChannelName
+            channel => channel.id === modChannelName || channel.name === modChannelName
         );
 
         if (modChannel) {
