@@ -192,6 +192,7 @@ export const TicketSystem = class {
     }
 
     async onDiscordReady(guild, channels) {
+        if (!Config.ticketSystem.enabled) return;
         this.#logger.log('info', 'TicketSystem module is ready.');
         this.#logger.log('info', 'Registering additional callbacks.');
 

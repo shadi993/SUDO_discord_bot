@@ -15,6 +15,9 @@ After that create a .env file in the root directory, and paste in the following:
 DISCORD_CLIENT_ID=CHANGE_ME
 DISCORD_GUILD_ID=CHANGE_ME
 DISCORD_BOT_TOKEN=CHANGE_ME
+DISCORD_DASHBOARD_CLIENT_SECRET=CHANGE_ME
+DISCORD_DASHBOARD_REDIRECT_URI=http://localhost:3000/auth/callback
+DISCORD_DASHBOARD_PORT=3000
 ```
 
 You must create an application on:
@@ -64,6 +67,35 @@ Type the following:
 ```
 npm run dev
 ```
+
+### Admin dashboard
+
+The bot serves an administrator-only dashboard at `http://localhost:3000`.
+General and database runtime settings are stored in `src/core/settings.config.js`
+and are intentionally not dashboard feature configuration.
+Add the matching `DISCORD_DASHBOARD_REDIRECT_URI` to the Discord developer
+portal. Sign-in checks the user against `DISCORD_GUILD_ID` and only permits
+server administrators or the server owner. The dashboard edits and saves the consolidated `config.json`; each module is
+stored under its own named section (for example `"honeypot": {"enabled": true}`)
+and `userid_levels.json` is intentionally excluded. The dashboard also provides
+top-right import and export controls for the consolidated configuration.
+
+`npm run dev` continues to run the bot and show its existing terminal logs.
+The main config is updated immediately. Module enable switches are respected by
+both event modules and their related commands.
+
+The dashboard frontend is a modular React application under
+`src/dashboard/client`. Run `npm run dashboard:build` to rebuild its Vite
+bundle; `npm run dev` runs that build automatically before starting the bot.
+Dashboard tabs and field controls are declarative in
+`src/dashboard/client/src/layout.config.js`. Add a new top-level module section
+to `config.json`, then register its label and field types there. Supported
+controls include toggles, channel and role selectors, repeatable frames with
+add/delete actions, and numeric fields. Repeatable frames can define nested
+`fields`, so a module can describe complete panels and options without adding
+dashboard component code. The existing roles panel demonstrates nested channel,
+title, role option, description, role name, button emoji, button text,
+requirements, and required-role controls.
 
 ## Submitting changes
 

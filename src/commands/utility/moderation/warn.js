@@ -15,6 +15,7 @@ export const data = new SlashCommandBuilder()
     .setDefaultMemberPermissions(PermissionFlagsBits.KickMembers);
 
 export async function execute(interaction) {
+    if (!Config.moderation.enabled) return interaction.reply({ content: 'Moderation is disabled.', ephemeral: true });
     const target = interaction.options.getUser('target');
     const reason = interaction.options.getString('reason');
     const timeoutType = interaction.options.getString('timeout_type');

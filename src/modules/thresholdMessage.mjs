@@ -2,7 +2,7 @@
 // after certain amount of messages, the bot will send a post as reminder to members to keep the chat to minimum
 // the bot will keep posting the same message or work similar to persistentMessage module until someone post a media and the count will rest
 import { CreateLogger } from '../core/logger.mjs';
-import * as fs from 'node:fs';
+import { Config } from '../core/config.mjs';
 
 export const ThresholdMessage = class {
     #logger;
@@ -17,7 +17,7 @@ export const ThresholdMessage = class {
         this.#messageCounts = {};
         this.#activeBotMessages = {};
         this.#activeCollectors = {};
-        this.#config = JSON.parse(fs.readFileSync('thresholdMessages.json'));
+        this.#config = Config.thresholdMessages?.messages || [];
 
         if (!Array.isArray(this.#config)) {
             this.#logger.log('error', 'Config must be an array.');
@@ -62,6 +62,7 @@ export const ThresholdMessage = class {
     }
 
     async onDiscordReady(guild, channels) {
+        if (!Config.thresholdMessages?.enabled) return;
         this.#logger.log('info', 'ThresholdMessage module is ready.');
         this.#discordChannels = channels;
 
@@ -83,6 +84,7 @@ export const ThresholdMessage = class {
     }
 
     async onDiscordMessage(message) {
+        if (!Config.thresholdMessages?.enabled) return;
         if (message.author.bot) return;
 
         const monitoredChannel = this.#config.find(

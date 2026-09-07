@@ -1,5 +1,5 @@
 import { CreateLogger } from '../core/logger.mjs';
-import * as fs from 'node:fs';
+import { Config } from '../core/config.mjs';
 
 export const PersistentMessage = class {
     #logger;
@@ -8,7 +8,7 @@ export const PersistentMessage = class {
 
     constructor() {
         this.#logger = CreateLogger('PersistentMessage');
-        this.#messages = JSON.parse(fs.readFileSync('persistentMessages.json'));
+        this.#messages = Config.persistentMessages?.messages || [];
 
         if (!Array.isArray(this.#messages)) {
             this.#logger.log('error', 'Messages must be an array.');
@@ -69,6 +69,7 @@ export const PersistentMessage = class {
     }
 
     async onDiscordReady(guild, channels) {
+        if (!Config.persistentMessages?.enabled) return;
         this.#logger.log('info', 'PersistentMessage module is ready.');
 
         this.#discordChannels = channels;
@@ -85,6 +86,7 @@ export const PersistentMessage = class {
     }
 
     async onDiscordMessage(message) {
+        if (!Config.persistentMessages?.enabled) return;
         if (message.author.bot) return; // Ignore bot messages
 
         // Check if the message is in one of the monitored channels

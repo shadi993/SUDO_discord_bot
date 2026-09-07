@@ -1,6 +1,6 @@
 import { CreateLogger } from '../core/logger.mjs';
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder } from 'discord.js';
-import * as fs from 'node:fs';
+import { Config } from '../core/config.mjs';
 
 export const HoneypotModule = class {
     #logger;
@@ -10,7 +10,7 @@ export const HoneypotModule = class {
 
     constructor() {
         this.#logger = CreateLogger('HoneypotModule');
-        this.#config = JSON.parse(fs.readFileSync('honeypot.json'));
+        this.#config = Config.honeypot;
 
         if (!this.#config.enabled) {
             this.#logger.log('info', 'Honeypot is disabled.');
@@ -74,6 +74,7 @@ export const HoneypotModule = class {
     }
 
     async onDiscordInteraction(interaction) {
+        if (!this.#config.enabled) return;
         if (!interaction.isButton()) return;
         if (interaction.customId !== 'honeypot_trigger') return;
 

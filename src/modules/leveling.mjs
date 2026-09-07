@@ -244,10 +244,16 @@ export const LevelingModule = class {
     async onDiscordReady(guild, channels, roles) {
         this.#logger.log('info', 'Leveling module is ready.');
 
+        if (!Config.leveling.enabled) {
+            this.#logger.log('info', 'Leveling module is disabled in config.json.');
+            return;
+        }
+
         this.#guild = guild;
         this.#channelsToIgnore = [];
         this.#discordRoles = roles;
-        for (const channelName of Config.leveling.ignore_channels) {
+
+        for (const channelName of Config.leveling.ignore_channels ?? []) {
             const channel = channels.find(channel => channel.name === channelName);
             if (channel) {
                 this.#channelsToIgnore.push(channel.id);
@@ -256,11 +262,17 @@ export const LevelingModule = class {
             }
         }
 
+        if (!Config.leveling.announcement_channel_name) {
+            this.#logger.log('warn', 'Leveling announcement channel is not configured. Level-up announcements are disabled until a channel is set in the dashboard or config.json.');
+            this.#levelupAnnouncementChannel = null;
+            return;
+        }
+
         this.#levelupAnnouncementChannel = channels.find(channel => channel.name === Config.leveling.announcement_channel_name);
 
         if (!this.#levelupAnnouncementChannel) {
-            this.#logger.log('error', `Channel ${Config.leveling.announcement_channel_name} not found in the server.`);
-            throw new Error('Leveling announcement channel not found.');
+            this.#logger.log('warn', `Leveling announcement channel ${Config.leveling.announcement_channel_name} was not found in the server. Level-up announcements are disabled until the channel is created or configured.`);
+            return;
         }
     }
 
@@ -309,10 +321,16 @@ export const LevelingModule = class {
     }
 
     async sendLevelupMessage(discordId, level) {
+        if (!this.#levelupAnnouncementChannel) {
+            return;
+        }
+
         this.#guild.members.fetch(discordId).then(async (user) => {
             const message = 
                 `:partying_face: **Congratulations**, ${user}!\n You climbed from level **${level-1}** to **${level}**. Keep it up!`;
             await this.#levelupAnnouncementChannel.send(message);
+        }).catch((error) => {
+            this.#logger.log('warn', `Failed to send level-up message for ${discordId}: ${error.message}`);
         });
     }
     

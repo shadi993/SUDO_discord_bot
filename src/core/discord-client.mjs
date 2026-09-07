@@ -1,5 +1,6 @@
 import { Client, GatewayIntentBits, Events ,Partials} from 'discord.js';
 import { Logger } from './logger.mjs';
+import { recordDailyStat } from '../dashboard/stats.mjs';
 
 export var DiscordClient;
 
@@ -87,6 +88,13 @@ export const InitDiscordClient = () => {
     DiscordClient.on(Events.MessageCreate, async (message) => {
         // Avoid events from messages that the bot has sent.
         if (message.author.id === process.env.DISCORD_CLIENT_ID) return;
+        if (message.guild) {
+            try {
+                await recordDailyStat('messages');
+            } catch (error) {
+                Logger.log('error', `Failed to record message statistic: ${error.message}`);
+            }
+        }
 
         // Debug logs to check if event is getting triggers
         console.log(`Received message: "${message.content}" from ${message.author.tag} in ${message.channel.type}`);
@@ -104,6 +112,21 @@ export const InitDiscordClient = () => {
             promises.push(module.onDiscordMessage(message));
         }
         await Promise.all(promises);
+    });
+
+    DiscordClient.on(Events.GuildMemberAdd, async () => {
+        try {
+            await recordDailyStat('joins');
+        } catch (error) {
+            Logger.log('error', `Failed to record member join statistic: ${error.message}`);
+        }
+    });
+    DiscordClient.on(Events.GuildMemberRemove, async () => {
+        try {
+            await recordDailyStat('leaves');
+        } catch (error) {
+            Logger.log('error', `Failed to record member leave statistic: ${error.message}`);
+        }
     });
 
     DiscordClient.on(Events.MessageReactionAdd, async (reaction, user) => {

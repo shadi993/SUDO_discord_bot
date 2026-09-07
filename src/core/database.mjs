@@ -1,5 +1,5 @@
 import { Sequelize, DataTypes, Model } from 'sequelize';
-import { Config } from './config.mjs';
+import { Settings } from './settings.config.js';
 import { CreateLogger } from './logger.mjs';
 
 var SequelizeDb;
@@ -7,15 +7,19 @@ var DatabaseLogger;
 
 export class PostCountDboEntity extends Model { }
 export class AgeVerificationDboEntity extends Model { }
+export class DashboardDailyStatDboEntity extends Model { }
 
 /**
  * Initialize the database connection.
  */
 export const InitDatabase = async () => {
-    DatabaseLogger = CreateLogger('Database', Config.database.log_level);
+    if (!Settings.database.connection_string) {
+        throw new Error('DATABASE_CONNECTION_STRING must be set in .env.');
+    }
+    DatabaseLogger = CreateLogger('Database', Settings.database.log_level);
 
     DatabaseLogger.log('debug', 'Creating database instance...');
-    SequelizeDb = new Sequelize(Config.database.connection_string, {
+    SequelizeDb = new Sequelize(Settings.database.connection_string, {
         logging: (...msg) => DatabaseLogger.log('trace', msg)
     });
 
@@ -59,6 +63,47 @@ export const InitDatabase = async () => {
         },
         { sequelize: SequelizeDb, modelName: 'AgeVerification',timestamps: false },
     );
+
+    DashboardDailyStatDboEntity.init(
+        {
+            date: {
+                type: DataTypes.DATEONLY,
+                primaryKey: true,
+            },
+            messages: {
+                type: DataTypes.INTEGER,
+                allowNull: false,
+                defaultValue: 0,
+            },
+            joins: {
+                type: DataTypes.INTEGER,
+                allowNull: false,
+                defaultValue: 0,
+            },
+            leaves: {
+                type: DataTypes.INTEGER,
+                allowNull: false,
+                defaultValue: 0,
+            },
+            member_count: {
+                type: DataTypes.INTEGER,
+                allowNull: false,
+                defaultValue: 0,
+            },
+        },
+        { sequelize: SequelizeDb, modelName: 'DashboardDailyStat', timestamps: false },
+    );
+
+    // Create missing tables without altering or deleting existing data. This
+    // keeps normal bot startup safe when a fresh or older SQLite file is used.
+    try {
+        await SequelizeDb.sync();
+        await DashboardDailyStatDboEntity.sync({ alter: true });
+        DatabaseLogger.log('info', 'Database tables are ready.');
+    } catch (error) {
+        DatabaseLogger.log('error', 'Unable to initialize database tables:', error);
+        throw error;
+    }
 }
 
 /**

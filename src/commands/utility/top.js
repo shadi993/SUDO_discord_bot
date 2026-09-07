@@ -7,6 +7,7 @@ export const data = new SlashCommandBuilder()
     .setDescription('Show the top 10 members with the highest level');
 
 export async function execute(interaction) {
+    if (!Config.rank.enabled) return interaction.reply({ content: 'Rank commands are disabled.', ephemeral: true });
     const allowedChannel = Config.rank.channel_allowed;
 
     if (interaction.channel.name !== allowedChannel) {

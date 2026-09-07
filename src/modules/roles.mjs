@@ -1,6 +1,6 @@
 import { CreateLogger } from '../core/logger.mjs';
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder } from 'discord.js';
-import * as fs from 'node:fs';
+import { Config } from '../core/config.mjs';
 import { PostCountDboEntity } from '../core/database.mjs';
 import { LevelingModule } from '../modules/leveling.mjs';
 
@@ -18,7 +18,7 @@ export const RolesModule = class {
     constructor() {
         this.#logger = CreateLogger('RolesModule');
 
-        this.#roles = JSON.parse(fs.readFileSync('roles.json'));
+        this.#roles = Config.roles?.panels || [];
 
         if (!Array.isArray(this.#roles)) {
             this.#logger.log('error', 'Roles must be an array.');
@@ -67,6 +67,7 @@ export const RolesModule = class {
     }
 
     async onDiscordReady(guild, channels, roles) {
+        if (!Config.roles?.enabled) return;
         this.#logger.log('info', 'Channels loaded. Roles module is loading...');
 
         this.#discordChannels = channels;
@@ -79,6 +80,7 @@ export const RolesModule = class {
     }
 
     async onDiscordInteraction(interaction) {
+        if (!Config.roles?.enabled) return;
         if (!interaction.isButton()) return;
     
         const [action, roleId, optionIndex] = interaction.customId.split('_');
