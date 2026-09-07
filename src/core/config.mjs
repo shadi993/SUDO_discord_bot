@@ -6,20 +6,20 @@ import * as fs from 'node:fs';
 export var Config;
 
 const defaultConfig = {
-    leveling: { enabled: true, min_time_between_messages_seconds: 60, announcement_channel_name: '', ignore_channels: [], roles: {} },
-    disboard: { enabled: true, message: 'You can bump again!' },
-    autorole: { enabled: true, assign_on_join: [] },
-    notify: { enabled: true, channel: '' },
-    rank: { enabled: true, channel_allowed: '' },
-    autokick: { enabled: true, account_age_limit: 30, info_enabled: true, info_channel: '' },
-    moderation: { enabled: true, channel_name: '' },
-    ticketSystem: { enabled: true, category_name: '', moderator: '', archives_channel: '' },
-    dob_check: { enabled: true, channel_name: '', moderation_channel: '', verified_role: '', title: '', description: '', button_text: '', button_emoji: '✅', button_style: 'Success' },
-    ban_emoji: { enabled: true, log: true, log_channel: '', emojis: [] },
-    honeypot: { enabled: true, channel_name: '', log_channel_name: '', title: '', description: '', button_text: '', punishment: 'kick' },
-    persistentMessages: { enabled: true, messages: [] },
-    roles: { enabled: true, panels: [] },
-    thresholdMessages: { enabled: true, messages: [] }
+    leveling: { enabled: false, min_time_between_messages_seconds: 60, announcement_channel_name: '', ignore_channels: [], roles: {} },
+    disboard: { enabled: false, message: 'You can bump again!' },
+    autorole: { enabled: false, assign_on_join: [] },
+    notify: { enabled: false, channel: '' },
+    rank: { enabled: false, channel_allowed: '' },
+    autokick: { enabled: false, account_age_limit: 30, info_enabled: true, info_channel: '' },
+    moderation: { enabled: false, channel_name: '' },
+    ticketSystem: { enabled: false, category_name: '', moderator: '', archives_channel: '' },
+    dob_check: { enabled: false, channel_name: '', moderation_channel: '', verified_role: '', title: '', description: '', button_text: '', button_emoji: '✅', button_style: 'Success' },
+    ban_emoji: { enabled: false, log: true, log_channel: '', emojis: [] },
+    honeypot: { enabled: false, channel_name: '', log_channel_name: '', title: '', description: '', button_text: '', punishment: 'kick' },
+    persistentMessages: { enabled: false, messages: [] },
+    roles: { enabled: false, panels: [] },
+    thresholdMessages: { enabled: false, messages: [] }
 };
 
 /**
