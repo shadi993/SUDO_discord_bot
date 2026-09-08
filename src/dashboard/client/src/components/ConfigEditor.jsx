@@ -67,6 +67,13 @@ function Field({ name, value, root, options, roleField = false, definition = {},
     if (fieldType === 'toggle') {
         return <div className="field switch"><label>{pretty(name)}</label><input type="checkbox" defaultChecked={value} onChange={event => update(event.target.checked)} /></div>;
     }
+    if (fieldType === 'select') {
+        const choices = definition.options || [];
+        return <div className="field"><label>{definition.label || pretty(name)}</label><select value={value || ''} onChange={event => update(event.target.value)}>
+            <option value="">Select an option</option>
+            {choices.map(option => <option key={option} value={option}>{option}</option>)}
+        </select></div>;
+    }
     if (fieldType === 'channels' || fieldType === 'roles') {
         const choices = fieldType === 'channels' ? channelChoices(options, 'channel') : options.roles;
         return <div className="field"><label>{pretty(name)}</label><MultiChoice value={value} choices={choices} isChannel={fieldType === 'channels'} onChange={update} /></div>;
