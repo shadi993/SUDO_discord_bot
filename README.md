@@ -18,6 +18,7 @@ DISCORD_BOT_TOKEN=CHANGE_ME
 DISCORD_DASHBOARD_CLIENT_SECRET=CHANGE_ME
 DISCORD_DASHBOARD_REDIRECT_URI=http://localhost:3000/auth/callback
 DISCORD_DASHBOARD_PORT=3000
+DATABASE_CONNECTION_STRING=sqlite:data/sudobotdb.sqlite
 ```
 
 You must create an application on:
@@ -71,13 +72,13 @@ npm run dev
 ### Admin dashboard
 
 The bot serves an administrator-only dashboard at `http://localhost:3000`.
-General and database runtime settings are stored in `src/core/settings.config.js`
+General runtime settings are stored in `src/core/settings.config.js`
 and are intentionally not dashboard feature configuration.
 Add the matching `DISCORD_DASHBOARD_REDIRECT_URI` to the Discord developer
 portal. Sign-in checks the user against `DISCORD_GUILD_ID` and only permits
 server administrators or the server owner. The dashboard edits and saves the consolidated `config.json`; each module is
 stored under its own named section (for example `"honeypot": {"enabled": true}`)
-and `userid_levels.json` is intentionally excluded. The dashboard also provides
+. The dashboard also provides
 top-right import and export controls for the consolidated configuration.
 
 `npm run dev` continues to run the bot and show its existing terminal logs.
