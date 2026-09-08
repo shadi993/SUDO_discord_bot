@@ -4,6 +4,12 @@ import * as fs from 'node:fs';
  * The configuration object as loaded from the config.json file.
  */
 export var Config;
+const configUpdateListeners = new Set();
+
+export const RegisterConfigUpdateListener = listener => {
+    configUpdateListeners.add(listener);
+    return () => configUpdateListeners.delete(listener);
+};
 
 const defaultConfig = {
     leveling: { enabled: false, min_time_between_messages_seconds: 60, announcement_channel_name: '', ignore_channels: [], roles: {} },
@@ -66,11 +72,36 @@ export const UpdateConfig = (nextConfig) => {
         throw new Error('Config must be an object.');
     }
 
-    if (Config) {
-        for (const key of Object.keys(Config)) delete Config[key];
-        Object.assign(Config, nextConfig);
-    } else {
+    if (!Config) {
         Config = nextConfig;
+        return;
+    }
+
+    const syncValue = (current, next) => {
+        if (Array.isArray(current) && Array.isArray(next)) {
+            current.splice(0, current.length, ...next.map(value => structuredClone(value)));
+            return current;
+        }
+        if (current && next && typeof current === 'object' && typeof next === 'object'
+            && !Array.isArray(current) && !Array.isArray(next)) {
+            for (const key of Object.keys(current)) {
+                if (!Object.hasOwn(next, key)) delete current[key];
+            }
+            for (const [key, value] of Object.entries(next)) {
+                current[key] = Object.hasOwn(current, key)
+                    ? syncValue(current[key], value)
+                    : structuredClone(value);
+            }
+            return current;
+        }
+        return structuredClone(next);
+    };
+
+    syncValue(Config, nextConfig);
+    for (const listener of configUpdateListeners) {
+        Promise.resolve(listener(Config)).catch(error => {
+            console.error(`Failed to apply live configuration update: ${error.message}`);
+        });
     }
 };
 

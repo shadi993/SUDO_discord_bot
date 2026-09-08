@@ -277,6 +277,10 @@ export const LevelingModule = class {
         }
     }
 
+    async onConfigUpdate(guild, channels, roles) {
+        return this.onDiscordReady(guild, channels, roles);
+    }
+
     async onDiscordMessage(message) {
         //to ignore messages from bots
         if (message.author.bot) {

@@ -83,7 +83,13 @@ export const PersistentMessage = class {
             } else {
                 this.#logger.log('error', `Channel not found: ${channel_name}`);
             }
+
         }
+    }
+
+    async onConfigUpdate(guild, channels) {
+        this.#messages = Config.persistentMessages?.messages || [];
+        return this.onDiscordReady(guild, channels);
     }
 
     async onDiscordMessage(message) {

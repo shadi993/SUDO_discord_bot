@@ -76,6 +76,11 @@ export const RolesModule = class {
         })));
     }
 
+    async onConfigUpdate(guild, channels, roles) {
+        this.#roles = Config.roles?.panels || [];
+        return this.onDiscordReady(guild, channels, roles);
+    }
+
     async onDiscordInteraction(interaction) {
         if (!Config.roles?.enabled) return;
         if (!interaction.isButton()) return;

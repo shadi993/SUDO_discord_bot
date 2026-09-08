@@ -70,6 +70,11 @@ export const HoneypotModule = class {
     }
     }
 
+    async onConfigUpdate(guild, channels) {
+        this.#config = Config.honeypot;
+        return this.onDiscordReady(guild, channels);
+    }
+
     async onDiscordInteraction(interaction) {
         if (!this.#config.enabled) return;
         if (!interaction.isButton()) return;

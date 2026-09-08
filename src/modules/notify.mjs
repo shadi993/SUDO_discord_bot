@@ -12,22 +12,31 @@ import { findDiscordChannel } from '../core/discord-helpers.mjs';
 export const NotifyModule = class {
     #logger;
     #notifyChannel;
+    #eventsRegistered;
     //#guild;
 
 
     constructor() {
         this.#logger = CreateLogger('NotifyModule');
+        this.#eventsRegistered = false;
+    }
+
+    async onConfigUpdate(guild, channels, roles) {
+        return this.onDiscordReady(guild, channels, roles);
     }
 
     /*eslint no-unused-vars: ["error", {"args": "none"}]*/
     async onDiscordReady(guild, channels, roles) {
+        this.#notifyChannel = findDiscordChannel(channels, Config.notify.channel);
         if (!Config.notify.enabled) return;
         this.#logger.log('info', 'NotifyModule module is ready.');
         this.#logger.log('info', 'NotifyModule registering additional callbacks.');
-        this.#notifyChannel = findDiscordChannel(channels, Config.notify.channel);
+        if (this.#eventsRegistered) return;
+        this.#eventsRegistered = true;
         //this.#guild = guild;
         
         DiscordClient.on(Events.GuildMemberAdd, async (member) => {
+            if (!Config.notify.enabled || !this.#notifyChannel) return;
             this.#logger.log('info', `New member joined: ${member.user.tag}`);
             const newJoinEmbed = new EmbedBuilder()
                 .setColor('#57F287')
@@ -44,6 +53,7 @@ export const NotifyModule = class {
         });
 
         DiscordClient.on(Events.GuildMemberRemove, async (member) => {
+            if (!Config.notify.enabled || !this.#notifyChannel) return;
             this.#logger.log('info', `Member left: ${member.user.tag}`);
         
             const joinedAt = member.joinedTimestamp
@@ -67,6 +77,7 @@ export const NotifyModule = class {
         });
 
         DiscordClient.on(Events.MessageDelete, async (message) => {
+            if (!Config.notify.enabled || !this.#notifyChannel) return;
             try {
                 // If the message is partial, attempt to fetch it
                 if (message.partial) {
@@ -75,7 +86,7 @@ export const NotifyModule = class {
                         return;
                     });
                 }
-        
+
                 if (!message.author) {
                     this.#logger.log('warn', 'Message author is null or undefined.');
                     return;
@@ -123,6 +134,7 @@ export const NotifyModule = class {
         }
         
         DiscordClient.on(Events.MessageUpdate, async (oldMessage, newMessage) => {
+            if (!Config.notify.enabled || !this.#notifyChannel) return;
             try {
                 if (oldMessage.partial) await oldMessage.fetch().catch(() => null);
                 if (newMessage.partial) await newMessage.fetch().catch(() => null);

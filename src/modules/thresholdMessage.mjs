@@ -67,6 +67,7 @@ export const ThresholdMessage = class {
                 this.#logger.log('warn', `Threshold channel not found: ${entry.channel_name}`);
                 continue;
             }
+
             if (entry.enabled === false) {
                 this.#logger.log('info', `Threshold monitoring disabled: ${channel.name}`);
                 continue;
@@ -74,6 +75,13 @@ export const ThresholdMessage = class {
             this.#messageCounts[channel.id] = 0;
             this.#logger.log('info', `Monitoring threshold messages in ${channel.name}`);
         }
+    }
+
+    async onConfigUpdate(_guild, channels) {
+        this.#config = Config.thresholdMessages?.messages || [];
+        this.#messageCounts = {};
+        this.#activeChannels.clear();
+        return this.onDiscordReady(_guild, channels);
     }
 
     async onDiscordMessage(message) {

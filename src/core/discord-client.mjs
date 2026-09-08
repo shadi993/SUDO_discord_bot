@@ -2,6 +2,7 @@ import { Client, GatewayIntentBits, Events ,Partials} from 'discord.js';
 import { Logger } from './logger.mjs';
 import { recordDailyStat } from '../dashboard/stats.mjs';
 import { MigrateChannelNames } from './config.mjs';
+import { RegisterConfigUpdateListener } from './config.mjs';
 
 export var DiscordClient;
 
@@ -178,6 +179,7 @@ var ClientReadyModules = [];
 var MessageCreateModules = [];
 var MessageReactionAddModules = [];
 var InteractionModules = [];
+var configUpdateListenerRegistered = false;
 
 /**
  * Register a module to receive Discord events.
@@ -200,5 +202,15 @@ export const RegisterDiscordModule = (module) => {
 
     if (module.onDiscordInteraction) {
         InteractionModules.push(module);
+    }
+
+    if (ClientReadyModules.length === 1 && !configUpdateListenerRegistered) {
+        configUpdateListenerRegistered = true;
+        RegisterConfigUpdateListener(async () => {
+            if (!DiscordGuild || !DiscordChannels || !DiscordRoles) return;
+            await Promise.all(ClientReadyModules
+                .filter(readyModule => readyModule.onConfigUpdate)
+                .map(readyModule => readyModule.onConfigUpdate(DiscordGuild, DiscordChannels, DiscordRoles)));
+        });
     }
 }

@@ -49,7 +49,7 @@
     },
     "autokick": {
         "enabled": true,
-        "account_age_limit": 30,
+        "account_age_limit": 31,
         "info_enabled": true,
         "info_channel": "1277642830784889025"
     },
