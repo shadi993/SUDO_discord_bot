@@ -104,17 +104,11 @@ export const InitDiscordClient = () => {
         // Debug logs to check if event is getting triggers
         console.log(`Received message: "${message.content}" from ${message.author.tag} in ${message.channel.type}`);
 
-        if (message.channel.type === 1) { 
-            for (const module of MessageCreateModules) {
-                if (module.onDiscordMessage) {
-                    await module.onDiscordMessage(message);
-                }
-            }
-        }
-
         var promises = [];
         for (const module of MessageCreateModules) {
-            promises.push(module.onDiscordMessage(message));
+            if (module.onDiscordMessage) {
+                promises.push(module.onDiscordMessage(message));
+            }
         }
         await Promise.all(promises);
     });

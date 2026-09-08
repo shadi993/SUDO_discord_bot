@@ -22,7 +22,7 @@ const defaultConfig = {
     ticketSystem: { enabled: false, category_name: '', moderator: '', archives_channel: '' },
     dob_check: { enabled: false, channel_name: '', moderation_channel: '', verified_role: '', title: '', description: '', button_text: '', button_emoji: '✅', button_style: 'Success' },
     ban_emoji: { enabled: false, log: true, log_channel: '', emojis: [] },
-    honeypot: { enabled: false, channel_name: '', log_channel_name: '', title: '', description: '', button_text: '', punishment: 'kick' },
+    honeypot: { enabled: false, enable_honeypot_channel: false, channel_name: '', log_channel_name: '', title: '', description: '', button_text: '', punishment: 'kick' },
     persistentMessages: { enabled: false, messages: [] },
     roles: { enabled: false, panels: [] },
     thresholdMessages: { enabled: false, messages: [] }
@@ -56,6 +56,12 @@ export const InitConfig = () => {
             value.enabled = true;
             migrated = true;
         }
+
+    }
+
+    if (Config.honeypot && !Object.hasOwn(Config.honeypot, 'enable_honeypot_channel')) {
+        Config.honeypot.enable_honeypot_channel = false;
+        migrated = true;
     }
 
     if (migrated) {

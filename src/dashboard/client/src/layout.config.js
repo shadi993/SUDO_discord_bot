@@ -59,6 +59,7 @@ export const dashboardLayout = {
             label: 'DOB check',
             fields: {
                 enabled: {type: 'toggle'},
+                enable_honeypot_channel: {type: 'toggle', label: 'Enable honeypot channel'},
                 channel_name: {type: 'channel'},
                 moderation_channel: {type: 'channel'},
                 verified_role: {type: 'role'},

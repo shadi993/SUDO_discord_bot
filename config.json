@@ -87,10 +87,11 @@
     },
     "honeypot": {
         "enabled": true,
+        "enable_honeypot_channel": true,
         "channel_name": "1277642829803290802",
         "log_channel_name": "1277642830784889025",
         "title": "Honeypot - Please Ignore",
-        "description": "Don't click the button or you will be kicked from the server. this honeypot meant for bots only.",
+        "description": "Don't click the button or send message here or you will be kicked from the server. this honeypot meant for bots only.",
         "button_text": "Do NOT click",
         "punishment": "kick"
     },
