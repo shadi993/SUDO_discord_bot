@@ -19,6 +19,24 @@ const dashboardFiles = {
 app.use(express.json({ limit: '256kb' }));
 app.use(express.static(path.join(root, 'src/dashboard/dist')));
 
+const getDashboardRedirectUri = request => {
+    const configuredUri = process.env.DISCORD_DASHBOARD_REDIRECT_URI;
+    if (configuredUri) {
+        const configuredUrl = new URL(configuredUri);
+        const requestHost = request.get('host');
+        const isLocalhost = configuredUrl.hostname === 'localhost'
+            || configuredUrl.hostname === '127.0.0.1'
+            || configuredUrl.hostname === '::1';
+        if (!isLocalhost || !requestHost || requestHost.startsWith(`${configuredUrl.hostname}:`)) {
+            return configuredUri;
+        }
+    }
+
+    const forwardedProtocol = request.get('x-forwarded-proto')?.split(',')[0]?.trim();
+    const protocol = forwardedProtocol || request.protocol;
+    return `${protocol}://${request.get('host')}/auth/callback`;
+};
+
 const getCookie = (request, name) => {
     const cookies = request.headers.cookie?.split(';').map(value => value.trim()) || [];
     const cookie = cookies.find(value => value.startsWith(`${name}=`));
@@ -51,8 +69,20 @@ const discordRequest = async (endpoint, options = {}) => {
     return response.json();
 };
 
-const isAdmin = (member, guild) => guild.owner_id === member.user.id
-    || (BigInt(member.permissions) & BigInt(PermissionFlagsBits.Administrator)) !== 0n;
+const isAdmin = (member, guild, roles = []) => {
+    if (!member?.user?.id || !guild?.owner_id) return false;
+    if (guild.owner_id === member.user.id) return true;
+
+    const administrator = BigInt(PermissionFlagsBits.Administrator);
+    const permissionValues = [
+        member.permissions,
+        ...roles
+            .filter(role => member.roles?.includes(role.id) || role.id === guild.id)
+            .map(role => role.permissions)
+    ].filter(value => typeof value === 'string' || typeof value === 'number' || typeof value === 'bigint');
+
+    return permissionValues.some(value => (BigInt(value) & administrator) !== 0n);
+};
 
 const channelSetting = key => key.toLowerCase().includes('channel') || key.toLowerCase().includes('category');
 
@@ -77,9 +107,9 @@ const readConfig = (file) => {
     return config;
 };
 
-app.get('/auth/login', (_request, response) => {
+app.get('/auth/login', (request, response) => {
     const clientId = process.env.DISCORD_DASHBOARD_CLIENT_ID || process.env.DISCORD_CLIENT_ID;
-    const redirectUri = process.env.DISCORD_DASHBOARD_REDIRECT_URI || 'http://localhost:3000/auth/callback';
+    const redirectUri = getDashboardRedirectUri(request);
     if (!clientId || !process.env.DISCORD_DASHBOARD_CLIENT_SECRET) {
         return response.status(503).send('Dashboard OAuth is not configured. Set the dashboard variables in .env.');
     }
@@ -96,7 +126,7 @@ app.get('/auth/callback', async (request, response) => {
     try {
         if (!request.query.code) return response.status(400).send('Missing OAuth code.');
         const clientId = process.env.DISCORD_DASHBOARD_CLIENT_ID || process.env.DISCORD_CLIENT_ID;
-        const redirectUri = process.env.DISCORD_DASHBOARD_REDIRECT_URI || 'http://localhost:3000/auth/callback';
+        const redirectUri = getDashboardRedirectUri(request);
         const tokenResponse = await fetch('https://discord.com/api/v10/oauth2/token', {
             method: 'POST',
             headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -116,7 +146,8 @@ app.get('/auth/callback', async (request, response) => {
         const user = await userResponse.json();
         const guild = await discordRequest(`/guilds/${process.env.DISCORD_GUILD_ID}`);
         const member = await discordRequest(`/guilds/${process.env.DISCORD_GUILD_ID}/members/${user.id}`);
-        if (!isAdmin({ ...member, user }, guild)) return response.status(403).send('Only Discord server administrators can access this dashboard.');
+        const roles = await discordRequest(`/guilds/${process.env.DISCORD_GUILD_ID}/roles`);
+        if (!isAdmin({ ...member, user }, guild, roles)) return response.status(403).send('Only Discord server administrators can access this dashboard.');
         const sessionToken = createSession({ id: user.id, username: user.global_name || user.username, avatar: user.avatar });
         response.setHeader('Set-Cookie', `sudo_dashboard_session=${sessionToken}; HttpOnly; SameSite=Lax; Path=/; Max-Age=28800`);
         return response.redirect('/');
@@ -203,5 +234,5 @@ app.put('/api/config/:file', requireAdmin, async (request, response) => {
 export const InitDashboard = () => {
     logger = CreateLogger('Dashboard');
     const port = Number(process.env.DISCORD_DASHBOARD_PORT || 3000);
-    app.listen(port, () => logger.info(`Dashboard available at http://localhost:${port}`));
+    app.listen(port, () => logger.info(`Dashboard available on port ${port}`));
 };
