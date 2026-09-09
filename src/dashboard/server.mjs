@@ -139,11 +139,18 @@ app.get('/auth/callback', async (request, response) => {
                 redirect_uri: redirectUri
             })
         });
-        if (!tokenResponse.ok) throw new Error('OAuth token exchange failed.');
+        if (!tokenResponse.ok) {
+            const details = await tokenResponse.text();
+            throw new Error(`OAuth token exchange failed (${tokenResponse.status}): ${details}`);
+        }
         const token = await tokenResponse.json();
         const userResponse = await fetch('https://discord.com/api/v10/users/@me', {
             headers: { Authorization: `Bearer ${token.access_token}` }
         });
+        if (!userResponse.ok) {
+            const details = await userResponse.text();
+            throw new Error(`Discord user lookup failed (${userResponse.status}): ${details}`);
+        }
         const user = await userResponse.json();
         const guild = await discordRequest(`/guilds/${process.env.DISCORD_GUILD_ID}`);
         const member = await discordRequest(`/guilds/${process.env.DISCORD_GUILD_ID}/members/${user.id}`);
@@ -153,8 +160,8 @@ app.get('/auth/callback', async (request, response) => {
         response.setHeader('Set-Cookie', `sudo_dashboard_session=${sessionToken}; HttpOnly; SameSite=Lax; Path=/; Max-Age=28800`);
         return response.redirect('/');
     } catch (error) {
-        logger.error(error);
-        return response.status(502).send('Discord login could not be completed.');
+        logger.error(`Discord login failed: ${error.message}`);
+        return response.status(502).send(`Discord login could not be completed: ${error.message}`);
     }
 });
 
