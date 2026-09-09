@@ -70,18 +70,19 @@ const discordRequest = async (endpoint, options = {}) => {
 };
 
 const isAdmin = (member, guild, roles = []) => {
-    if (!member?.user?.id || !guild?.owner_id) return false;
-    if (guild.owner_id === member.user.id) return true;
+    const userId = member?.user?.id;
+    if (!userId || !guild?.id || !guild.owner_id) return false;
+    if (guild.owner_id === userId) return true;
 
     const administrator = BigInt(PermissionFlagsBits.Administrator);
-    const permissionValues = [
-        member.permissions,
-        ...roles
-            .filter(role => member.roles?.includes(role.id) || role.id === guild.id)
-            .map(role => role.permissions)
-    ].filter(value => typeof value === 'string' || typeof value === 'number' || typeof value === 'bigint');
+    const memberRoleIds = new Set(Array.isArray(member.roles) ? member.roles : []);
+    memberRoleIds.add(guild.id);
 
-    return permissionValues.some(value => (BigInt(value) & administrator) !== 0n);
+    return roles.some(role => {
+        if (!role || !memberRoleIds.has(role.id)) return false;
+        if (typeof role.permissions !== 'string' && typeof role.permissions !== 'number') return false;
+        return (BigInt(role.permissions) & administrator) !== 0n;
+    });
 };
 
 const channelSetting = key => key.toLowerCase().includes('channel') || key.toLowerCase().includes('category');
@@ -234,5 +235,5 @@ app.put('/api/config/:file', requireAdmin, async (request, response) => {
 export const InitDashboard = () => {
     logger = CreateLogger('Dashboard');
     const port = Number(process.env.DISCORD_DASHBOARD_PORT || 3000);
-    app.listen(port, () => logger.info(`Dashboard available on port ${port}`));
+    app.listen(port, () => logger.info(`Dashboard available on port ${port} (${root})`));
 };
