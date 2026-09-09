@@ -75,6 +75,12 @@ const isAdmin = (member, guild, roles = []) => {
     if (guild.owner_id === userId) return true;
 
     const administrator = BigInt(PermissionFlagsBits.Administrator);
+    if (member.permissions !== undefined
+        && (typeof member.permissions === 'string' || typeof member.permissions === 'number')
+        && (BigInt(member.permissions) & administrator) !== 0n) {
+        return true;
+    }
+
     const memberRoleIds = new Set(Array.isArray(member.roles) ? member.roles : []);
     memberRoleIds.add(guild.id);
 
@@ -155,7 +161,10 @@ app.get('/auth/callback', async (request, response) => {
         const guild = await discordRequest(`/guilds/${process.env.DISCORD_GUILD_ID}`);
         const member = await discordRequest(`/guilds/${process.env.DISCORD_GUILD_ID}/members/${user.id}`);
         const roles = await discordRequest(`/guilds/${process.env.DISCORD_GUILD_ID}/roles`);
-        if (!isAdmin({ ...member, user }, guild, roles)) return response.status(403).send('Only Discord server administrators can access this dashboard.');
+        if (!isAdmin({ ...member, user }, guild, roles)) {
+            logger.warn(`Dashboard access denied for ${user.id}: member roles=${JSON.stringify(member.roles)}, permissions=${member.permissions ?? 'missing'}, guild=${guild.id}`);
+            return response.status(403).send('Only Discord server administrators can access this dashboard.');
+        }
         const sessionToken = createSession({ id: user.id, username: user.global_name || user.username, avatar: user.avatar });
         response.setHeader('Set-Cookie', `sudo_dashboard_session=${sessionToken}; HttpOnly; SameSite=Lax; Path=/; Max-Age=28800`);
         return response.redirect('/');
