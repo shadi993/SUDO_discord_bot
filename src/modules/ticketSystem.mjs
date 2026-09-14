@@ -13,7 +13,7 @@ export const TicketSystem = class {
 
     constructor() {
         this.#logger = CreateLogger('TicketSystem');
-        this.#tickets = {}; 
+        this.#tickets = {};
         this.#messageMap = new Map();
     }
 
@@ -57,17 +57,17 @@ export const TicketSystem = class {
 
         // Send the initial embed message
         const embed = new EmbedBuilder()
-            .setTitle(`Ticket for ${user.tag}`)
-            .setDescription(
-                `A user messaged the Bot.\n\n**User ID:** ${user.id}\n**Username:** ${user.username}`
-            )
-            .setColor(0x00ff00)
-            .setTimestamp();
+        .setTitle(`Ticket for ${user.tag}`)
+        .setDescription(
+            `A user messaged the Bot.\n\n**User ID:** ${user.id}\n**Username:** ${user.username}`
+        )
+        .setColor(0x00ff00)
+        .setTimestamp();
 
         const archiveButton = new ButtonBuilder()
-            .setCustomId(`archive-ticket-${channel.id}`)
-            .setLabel('Archive and Delete')
-            .setStyle(ButtonStyle.Danger);
+        .setCustomId(`archive-ticket-${channel.id}`)
+        .setLabel('Archive and Delete')
+        .setStyle(ButtonStyle.Danger);
 
         const row = new ActionRowBuilder().addComponents(archiveButton);
 
@@ -107,89 +107,89 @@ export const TicketSystem = class {
         <!DOCTYPE html>
         <html lang="en">
         <head>
-            <meta charset="UTF-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>Ticket Transcript: ${channel.name}</title>
-            <style>
-                body { font-family: Arial, sans-serif; line-height: 1.6; margin: 20px; }
-                .message { margin-bottom: 10px; }
-                .author { font-weight: bold; }
-                .timestamp { font-size: 0.9em; color: gray; }
-                .attachment { margin-top: 5px; }
-            </style>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Ticket Transcript: ${channel.name}</title>
+        <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; margin: 20px; }
+        .message { margin-bottom: 10px; }
+        .author { font-weight: bold; }
+        .timestamp { font-size: 0.9em; color: gray; }
+        .attachment { margin-top: 5px; }
+        </style>
         </head>
         <body>
-            <h1>Transcript for Ticket: ${channel.name}</h1>
-            <p><strong>Users involved:</strong></p>
-            <ul>
-                ${Array.from(new Map(messages.map(msg => [msg.author.id, msg.author])).values())
-                    .map(user => `<li>${user.tag} (${user.id})</li>`)
-                    .join('')}
+        <h1>Transcript for Ticket: ${channel.name}</h1>
+        <p><strong>Users involved:</strong></p>
+        <ul>
+        ${Array.from(new Map(messages.map(msg => [msg.author.id, msg.author])).values())
+            .map(user => `<li>${user.tag} (${user.id})</li>`)
+            .join('')}
             </ul>
             <hr>
             <div>
-                ${messages
-                    .map(
-                        (msg) => `
+            ${messages
+                .map(
+                    (msg) => `
                     <div class="message">
-                        <span class="author">${msg.author.tag}</span>
-                        <span class="timestamp">[${msg.createdAt.toISOString()}]</span>:
-                        <p>${msg.content || '(No content)'}</p>
-                        ${
-                            msg.attachments.size > 0
-                                ? Array.from(msg.attachments.values())
-                                      .map(
-                                          (attachment) =>
-                                              `<div class="attachment"><a href="${attachment.url}" target="_blank">${attachment.name}</a></div>`
-                                      )
-                                      .join('')
-                                : ''
-                        }
+                    <span class="author">${msg.author.tag}</span>
+                    <span class="timestamp">[${msg.createdAt.toISOString()}]</span>:
+                    <p>${msg.content || '(No content)'}</p>
+                    ${
+                        msg.attachments.size > 0
+                        ? Array.from(msg.attachments.values())
+                        .map(
+                            (attachment) =>
+                            `<div class="attachment"><a href="${attachment.url}" target="_blank">${attachment.name}</a></div>`
+                        )
+                        .join('')
+                        : ''
+                    }
                     </div>
-                `
-                    )
-                    .reverse()
-                    .join('')}
-            </div>
-        </body>
-        </html>`;
+                    `
+                )
+                .reverse()
+                .join('')}
+                </div>
+                </body>
+                </html>`;
 
-        const uniqueUsers = new Map();
-            messages.forEach((msg) => {
-             if (!uniqueUsers.has(msg.author.id)) {
-                uniqueUsers.set(msg.author.id, msg.author);
-            }
-        });
+                const uniqueUsers = new Map();
+                messages.forEach((msg) => {
+                    if (!uniqueUsers.has(msg.author.id)) {
+                        uniqueUsers.set(msg.author.id, msg.author);
+                    }
+                });
 
-        const embed = new EmbedBuilder()
-            .setTitle(`Ticket Transcript: ${channel.name}`)
-            .setDescription('Users involved in the ticket.')
-            .setColor(0x00ff00)
-            .setTimestamp();
+                const embed = new EmbedBuilder()
+                .setTitle(`Ticket Transcript: ${channel.name}`)
+                .setDescription('Users involved in the ticket.')
+                .setColor(0x00ff00)
+                .setTimestamp();
 
-        uniqueUsers.forEach((author) => {
-            embed.addFields({
-                name: `in ticket`,
-                value: `<@${author.id}> - ${author.tag}`,
-            });
-        });
-        embed.addFields({
-            name: `in DM`,
-            value: `<@${user.user.id}> - ${user.user.username}`,
-        });
+                uniqueUsers.forEach((author) => {
+                    embed.addFields({
+                        name: `in ticket`,
+                        value: `<@${author.id}> - ${author.tag}`,
+                    });
+                });
+                embed.addFields({
+                    name: `in DM`,
+                    value: `<@${user.user.id}> - ${user.user.username}`,
+                });
 
-        await archiveChannel.send({
-            content: `Transcript for ${channel.name}:`,
-            files: [{ attachment: Buffer.from(transcriptHTML, 'utf-8'), name: `${channel.name}-transcript.html` }],
-            embeds: [embed],
-        });
+                await archiveChannel.send({
+                    content: `Transcript for ${channel.name}:`,
+                    files: [{ attachment: Buffer.from(transcriptHTML, 'utf-8'), name: `${channel.name}-transcript.html` }],
+                                          embeds: [embed],
+                });
 
-        await user.send(`**Hello** ${user.user.username}**, your ticket has been closed. Thank you for reaching out.**`);
+                await user.send(`**Hello** ${user.user.username}**, your ticket has been closed. Thank you for reaching out.**`);
 
-        await channel.delete();
-        this.#logger.log('info', `Archived and deleted ticket channel: ${channel.name}`);
+                await channel.delete();
+                this.#logger.log('info', `Archived and deleted ticket channel: ${channel.name}`);
 
-        delete this.#tickets[userId];
+                delete this.#tickets[userId];
     }
 
     async onDiscordReady(guild, channels) {
@@ -254,11 +254,11 @@ export const TicketSystem = class {
         DiscordClient.on(Events.MessageUpdate, async (oldMessage, newMessage) => {
             if (newMessage.partial) await newMessage.fetch(); // Fetch partial messages
             if (newMessage.author.bot || !newMessage.guild || !Object.values(this.#tickets).includes(newMessage.channel.id)) return;
-        
+
             this.#logger.log('info', `Message edited in ticket channel by ${newMessage.author.tag}: ${newMessage.content}`);
             const userId = Object.keys(this.#tickets).find((key) => this.#tickets[key] === newMessage.channel.id);
             if (!userId) return;
-        
+
             try {
                 const user = await this.#guild.members.fetch(userId);
                 const dmMessageId = this.#messageMap.get(newMessage.id);
@@ -278,12 +278,12 @@ export const TicketSystem = class {
                 this.#logger.log('error', `Failed to update DM message: ${error.message}`);
             }
         });
-        
+
         // Add this event listener for message updates in DMs
         DiscordClient.on(Events.MessageUpdate, async (oldMessage, newMessage) => {
             if (newMessage.partial) await newMessage.fetch(); // Fetch partial messages
             if (newMessage.author.bot || newMessage.guild || newMessage.channel.type !== ChannelType.DM) return;
-        
+
             this.#logger.log('info', `DM edited by ${newMessage.author.tag}: ${newMessage.content}`);
             const ticketMessageId = this.#messageMap.get(oldMessage.id);
             if (ticketMessageId) {
@@ -304,10 +304,10 @@ export const TicketSystem = class {
         // Listen for messages in ticket channels to forward to the user
         DiscordClient.on(Events.MessageCreate, async (message) => {
             if (message.author.bot || !message.guild || !Object.values(this.#tickets).includes(message.channel.id)) return;
-        
+
             const userId = Object.keys(this.#tickets).find((key) => this.#tickets[key] === message.channel.id);
             if (!userId) return;
-        
+
             try {
                 const user = await this.#guild.members.fetch(userId);
                 // Forward the text message
@@ -316,7 +316,7 @@ export const TicketSystem = class {
                     this.#logger.log('info', `Forwarded message to ${user.user.tag}: ${message.content}`);
                     this.#messageMap.set(message.id, dmMessage.id);
                     this.#messageMap.set(dmMessage.id, message.id);
-                }  
+                }
                 // Forward the attachments
                 if (message.attachments.size > 0) {
                     for (const attachment of message.attachments.values()) {
@@ -335,21 +335,21 @@ export const TicketSystem = class {
         DiscordClient.on(Events.InteractionCreate, async (interaction) => {
             if (!interaction.isButton()) return;
 
-            if (interaction.partial) await interaction.fetch(); // Fetch partial interactions 
+            if (interaction.partial) await interaction.fetch(); // Fetch partial interactions
 
             const { customId, channelId } = interaction;
 
             if (customId.startsWith('archive-ticket-')) {
                 this.#archiveAndDeleteTicket(channelId)
-                    .then(() =>
-                        interaction.reply({
-                            content: 'Ticket has been archived and deleted.',
-                            ephemeral: true,
-                        })
-                    )
-                    .catch((error) =>
-                        this.#logger.log('error', `Failed to archive ticket: ${error.message}`)
-                    );
+                .then(() =>
+                interaction.reply({
+                    content: 'Ticket has been archived and deleted.',
+                    ephemeral: true,
+                })
+                )
+                .catch((error) =>
+                this.#logger.log('error', `Failed to archive ticket: ${error.message}`)
+                );
             }
         });
     }

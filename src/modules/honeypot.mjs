@@ -1,6 +1,7 @@
 import { CreateLogger } from '../core/logger.mjs';
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder } from 'discord.js';
 import { Config } from '../core/config.mjs';
+import { findDiscordChannel } from '../core/discord-helpers.mjs';
 
 export const HoneypotModule = class {
     #logger;
@@ -18,47 +19,47 @@ export const HoneypotModule = class {
     }
 
     async onDiscordReady(guild, channels) {
-    if (!this.#config.enabled) return;
+        if (!this.#config.enabled) return;
 
-    this.#discordChannels = channels;
+        this.#discordChannels = channels;
 
-    const channel = findDiscordChannel(this.#discordChannels, this.#config.channel_name);
+        const channel = findDiscordChannel(this.#discordChannels, this.#config.channel_name);
 
-    this.#logChannel = findDiscordChannel(this.#discordChannels, this.#config.log_channel_name);
+        this.#logChannel = findDiscordChannel(this.#discordChannels, this.#config.log_channel_name);
 
-    if (!channel) {
-        this.#logger.log('error', `Channel not found: ${this.#config.channel_name}`);
-        return;
-    }
+        if (!channel) {
+            this.#logger.log('error', `Channel not found: ${this.#config.channel_name}`);
+            return;
+        }
 
-    if (!this.#logChannel) {
-        this.#logger.log('warning', `Log channel not found: ${this.#config.log_channel_name}`);
-    }
+        if (!this.#logChannel) {
+            this.#logger.log('warning', `Log channel not found: ${this.#config.log_channel_name}`);
+        }
 
-    const messages = await channel.messages.fetch({ limit: 20 });
+        const messages = await channel.messages.fetch({ limit: 20 });
 
-    const existingMessage = messages.find(msg =>
+        const existingMessage = messages.find(msg =>
         msg.author.id === process.env.DISCORD_CLIENT_ID &&
         msg.embeds.length > 0 &&
         msg.embeds[0].title === this.#config.title
-    );
+        );
 
         const embed = new EmbedBuilder()
-            .setTitle(this.#config.title)
-            .setDescription(this.#config.description)
-            .setColor(0xff0000);
+        .setTitle(this.#config.title)
+        .setDescription(this.#config.description)
+        .setColor(0xff0000);
 
         const button = new ButtonBuilder()
-            .setCustomId('honeypot_trigger')
-            .setLabel(this.#config.button_text)
-            .setStyle(ButtonStyle.Danger);
+        .setCustomId('honeypot_trigger')
+        .setLabel(this.#config.button_text)
+        .setStyle(ButtonStyle.Danger);
 
         const row = new ActionRowBuilder().addComponents(button);
 
-            const payload = {
-        embeds: [embed],
-        components: [row]
-    };
+        const payload = {
+            embeds: [embed],
+            components: [row]
+        };
 
         if (existingMessage) {
             this.#logger.log('info', 'Honeypot message found. Updating...');
@@ -66,7 +67,7 @@ export const HoneypotModule = class {
         } else {
             this.#logger.log('info', 'Honeypot message not found. Creating...');
             await channel.send(payload);
-    }
+        }
     }
 
     async onConfigUpdate(guild, channels) {
@@ -86,16 +87,16 @@ export const HoneypotModule = class {
         // send log
         if (this.#logChannel) {
             const logEmbed = new EmbedBuilder()
-                .setTitle(' Honeypot Triggered')
-                .setColor('#ED4245')
-                .setAuthor({ name: `${interaction.user.tag}`, iconURL: interaction.user.displayAvatarURL() })
-                .setThumbnail(interaction.user.displayAvatarURL())
-                .addFields(
-                    { name: '\u200B', value: `<@${interaction.user.id}> has Triggered the honeypot.` },
-                    { name: 'Action', value: this.#config.punishment, inline: true }
-                )
-                .setTimestamp()
-                .setFooter({ text: 'SUDO' });
+            .setTitle(' Honeypot Triggered')
+            .setColor('#ED4245')
+            .setAuthor({ name: `${interaction.user.tag}`, iconURL: interaction.user.displayAvatarURL() })
+            .setThumbnail(interaction.user.displayAvatarURL())
+            .addFields(
+                { name: '\u200B', value: `<@${interaction.user.id}> has Triggered the honeypot.` },
+                { name: 'Action', value: this.#config.punishment, inline: true }
+            )
+            .setTimestamp()
+            .setFooter({ text: 'SUDO' });
 
             try {
                 await this.#logChannel.send({ embeds: [logEmbed] });
@@ -127,23 +128,23 @@ export const HoneypotModule = class {
         if (!this.#config.enabled || !this.#config.enable_honeypot_channel) return;
         if (!message.guild || message.author.bot) return;
         const honeypotChannel = this.#discordChannels
-            ? findDiscordChannel(this.#discordChannels, this.#config.channel_name)
-            : undefined;
+        ? findDiscordChannel(this.#discordChannels, this.#config.channel_name)
+        : undefined;
         if (!honeypotChannel || message.channel.id !== honeypotChannel.id) return;
 
         this.#logger.log('warn', `Honeypot channel message from ${message.author.tag}`);
         if (this.#logChannel) {
             const logEmbed = new EmbedBuilder()
-                .setTitle('Honeypot Channel Triggered')
-                .setColor('#ED4245')
-                .setAuthor({ name: message.author.tag, iconURL: message.author.displayAvatarURL() })
-                .addFields(
-                    { name: 'User', value: `<@${message.author.id}>`, inline: true },
-                    { name: 'Action', value: this.#config.punishment, inline: true },
-                    { name: 'Channel', value: `<#${message.channel.id}>`, inline: true }
-                )
-                .setTimestamp()
-                .setFooter({ text: 'SUDO' });
+            .setTitle('Honeypot Channel Triggered')
+            .setColor('#ED4245')
+            .setAuthor({ name: message.author.tag, iconURL: message.author.displayAvatarURL() })
+            .addFields(
+                { name: 'User', value: `<@${message.author.id}>`, inline: true },
+                { name: 'Action', value: this.#config.punishment, inline: true },
+                { name: 'Channel', value: `<#${message.channel.id}>`, inline: true }
+            )
+            .setTimestamp()
+            .setFooter({ text: 'SUDO' });
             try {
                 await this.#logChannel.send({ embeds: [logEmbed] });
             } catch (error) {

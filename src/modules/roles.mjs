@@ -42,9 +42,9 @@ export const RolesModule = class {
 
         //Message id's should be stored in the database once this is ready. Searching on title is not unique.
         let message = messages.find((message) =>
-            message.author.id === process.env.DISCORD_CLIENT_ID &&
-            message.embeds.length > 0 &&
-            message.embeds[0].title === role.title);
+        message.author.id === process.env.DISCORD_CLIENT_ID &&
+        message.embeds.length > 0 &&
+        message.embeds[0].title === role.title);
 
         let embedGenerator = new ButtonEmbedGenerator(role);
         let generatedMessage = {
@@ -84,52 +84,52 @@ export const RolesModule = class {
     async onDiscordInteraction(interaction) {
         if (!Config.roles?.enabled) return;
         if (!interaction.isButton()) return;
-    
+
         const [action, roleId, optionIndex] = interaction.customId.split('_');
-    
+
         if (action !== 'roleselection') return;
-    
+
         this.#logger.log('debug', `Received button press from user ${interaction.user.tag} ${interaction.customId}`);
-    
+
         const role = this.#roles.find((role) => role.id === Number(roleId));
-    
+
         if (!role) {
             this.#logger.log('warning', `Received button press for unknown role: ${roleId} from user: ${interaction.user.tag}`);
             return;
         }
-    
+
         const option = role.options[optionIndex];
-    
+
         if (!option) {
             this.#logger.log('warning', `Received button press for unknown option: ${optionIndex} from user: ${interaction.user.tag}`);
             return;
         }
-    
+
         // Check level requirements if defined
         if (option.requirements && option.requirements.level) {
             const userInfo = await PostCountDboEntity.findOne({ where: { discord_id: interaction.user.id } });
-    
+
             if (!userInfo) {
                 await interaction.reply({ content: `You do not meet the level requirements for this role.`, ephemeral: true });
                 return;
             }
-    
+
             const userLevel = LevelingModule.calculateLevel(userInfo.xp);
-    
+
             if (userLevel < option.requirements.level) {
                 await interaction.reply({ content: `You need to be at least level ${option.requirements.level} to get this role.`, ephemeral: true });
                 return;
             }
         }
-    
+
         this.#logger.log('info', `Received button press from user ${interaction.user.tag} for role '${role.title}' option '${option.description}'`);
-    
+
         const member = interaction.member;
 
         // Check role requirements if defined
         if (option.required_role) {
             const requiredRole = this.#discordRoles.find((discordRole) => discordRole.name === option.required_role);
-    
+
             if (!requiredRole) {
                 this.#logger.log('error', `Required role '${option.required_role}' does not exist.`);
                 await interaction.reply({
@@ -138,7 +138,7 @@ export const RolesModule = class {
                 });
                 return;
             }
-    
+
             if (!member.roles.cache.has(requiredRole.id)) {
                 await interaction.reply({
                     content: `You need to have the role '${option.required_role}' to claim this role.`,
@@ -148,22 +148,22 @@ export const RolesModule = class {
             }
         }
         const discordRole = this.#discordRoles.find((discordRole) => discordRole.name === option.role_name);
-    
+
         if (!discordRole) {
             this.#logger.log('error', `Role '${option.role_name}' does not exist in the current guild.`);
             return;
         }
-    
+
         // Handle exclusive group
         const isExclusiveGroup = role.exclusive_group ?? false;
-    
+
         if (isExclusiveGroup) {
             this.#logger.log('info', `Role '${role.title}' is part of an exclusive group.`);
-    
+
             const exclusiveRoles = role.options
-                .map((opt) => this.#discordRoles.find((r) => r.name === opt.role_name))
-                .filter((r) => r && member.roles.cache.has(r.id)); // Roles the member currently has in this group
-    
+            .map((opt) => this.#discordRoles.find((r) => r.name === opt.role_name))
+            .filter((r) => r && member.roles.cache.has(r.id)); // Roles the member currently has in this group
+
             for (const exclusiveRole of exclusiveRoles) {
                 if (exclusiveRole.id !== discordRole.id) {
                     await member.roles.remove(exclusiveRole);
@@ -171,9 +171,9 @@ export const RolesModule = class {
                 }
             }
         }
-    
+
         let roleAction = "";
-    
+
         if (member.roles.cache.has(discordRole.id)) {
             if (option.toggle !== false) {
                 this.#logger.log('info', `User ${interaction.user.tag} already has role '${option.role_name}'. Removing...`);
@@ -187,7 +187,7 @@ export const RolesModule = class {
             await member.roles.add(discordRole);
             roleAction = 'Assigned';
         }
-    
+
         await interaction.reply({
             embeds: [{
                 title: `${roleAction} role`,
@@ -195,7 +195,7 @@ export const RolesModule = class {
             }],
             ephemeral: true
         });
-    }    
+    }
 };
 
 const ButtonEmbedGenerator = class {
@@ -216,39 +216,39 @@ const ButtonEmbedGenerator = class {
         }
 
         this.#embed = new EmbedBuilder()
-            .setTitle(role.title)
-            .setColor(0x0099FF)
-            .addFields({
-                name: '\u200B',
-                value: role.options.map(option =>
-                    `${option.description} ${option.level_required ? `(Level ${option.level_required}+)` : ''} ${option.xp_required ? `(${option.xp_required} XP+)` : ''}`
-                ).join('\n'),
-                inline: false
-            });
+        .setTitle(role.title)
+        .setColor(0x0099FF)
+        .addFields({
+            name: '\u200B',
+            value: role.options.map(option =>
+            `${option.description} ${option.level_required ? `(Level ${option.level_required}+)` : ''} ${option.xp_required ? `(${option.xp_required} XP+)` : ''}`
+            ).join('\n'),
+                   inline: false
+        });
     }
 
     #generateButton(role, option, i, buttons) {
-        const button = new ButtonBuilder()
-            .setCustomId('roleselection_' + role.id + '_' + i)
-            .setStyle(this.#getButtonStyleFromString(option.button_style))
-            .setLabel(option.button_text || '\u200B');
-        
-        if (option.button_emoji) {
-            button.setEmoji(option.button_emoji);
-        }
-    
-        buttons.push(button);
+    const button = new ButtonBuilder()
+    .setCustomId('roleselection_' + role.id + '_' + i)
+    .setStyle(this.#getButtonStyleFromString(option.button_style))
+    .setLabel(option.button_text || '\u200B');
+
+    if (option.button_emoji) {
+        button.setEmoji(option.button_emoji);
+    }
+
+    buttons.push(button);
     }
 
     #getButtonStyleFromString(style) {
-        switch (style) {
-            case 'Primary': return ButtonStyle.Primary;
-            case 'Secondary': return ButtonStyle.Secondary;
-            case 'Success': return ButtonStyle.Success;
-            case 'Danger': return ButtonStyle.Danger;
-            case 'Link': return ButtonStyle.Link;
-            default: return ButtonStyle.Secondary;
-        }
+    switch (style) {
+        case 'Primary': return ButtonStyle.Primary;
+        case 'Secondary': return ButtonStyle.Secondary;
+        case 'Success': return ButtonStyle.Success;
+        case 'Danger': return ButtonStyle.Danger;
+        case 'Link': return ButtonStyle.Link;
+        default: return ButtonStyle.Secondary;
+    }
     }
 
     getEmbed() {

@@ -36,8 +36,8 @@ export const DobCheck = class {
     async onDiscordReady(guild, channels) {
         this.#logger.log('info', 'DOB Check module is ready.');
         if (!this.#config.enabled) {
-        this.#logger.log('info','DOB Check module is disabled in config.json.');
-        return;
+            this.#logger.log('info','DOB Check module is disabled in config.json.');
+            return;
         }
 
         this.#logger.log('info',`DOB config: ${JSON.stringify(this.#config)}`);
@@ -50,7 +50,7 @@ export const DobCheck = class {
             (ch) => ch.id === this.#config.channel_name || ch.name === this.#config.channel_name
         );
         if (!channel) {this.#logger.log('error',`DOB verification channel not found: ${this.#config.channel_name}`);
-            return;
+        return;
         }
         this.#logger.log('info',`DOB verification channel found: ${channel.name}`);
         await this.#ensureVerificationMessage(channel);
@@ -61,7 +61,7 @@ export const DobCheck = class {
         if (!this.#config.enabled) {return;}
         try {
             const existing =
-                await AgeVerificationDboEntity.findByPk(member.id);
+            await AgeVerificationDboEntity.findByPk(member.id);
 
             if (existing) {
                 this.#logger.log(
@@ -112,19 +112,19 @@ export const DobCheck = class {
 
                 if (verifiedRole && member.roles.cache.has(verifiedRole.id)) {
                     await interaction.reply({content: `✅ You already have the ${verifiedRole.name}.`,ephemeral: true});
-        return;
-    }
+                    return;
+                }
                 let verification =
-                    await AgeVerificationDboEntity.findByPk(
-                        interaction.user.id
-                    );
+                await AgeVerificationDboEntity.findByPk(
+                    interaction.user.id
+                );
                 if (!verification) {
                     verification =
-                        await AgeVerificationDboEntity.create({
-                            discord_id: interaction.user.id,
-                            dob: null,
-                            first_joined_at: new Date(),
-                        });
+                    await AgeVerificationDboEntity.create({
+                        discord_id: interaction.user.id,
+                        dob: null,
+                        first_joined_at: new Date(),
+                    });
 
                     this.#logger.log(
                         'info',
@@ -151,20 +151,20 @@ export const DobCheck = class {
                 }
                 //show DOB modal
                 const modal = new ModalBuilder()
-                    .setCustomId('dob_check_modal')
-                    .setTitle('Age Verification');
+                .setCustomId('dob_check_modal')
+                .setTitle('Age Verification');
 
                 const dobInput = new TextInputBuilder()
-                    .setCustomId('dob_input')
-                    .setLabel('Date of Birth')
-                    .setPlaceholder('DD/MM/YYYY')
-                    .setStyle(TextInputStyle.Short)
-                    .setRequired(true)
-                    .setMinLength(10)
-                    .setMaxLength(10);
+                .setCustomId('dob_input')
+                .setLabel('Date of Birth')
+                .setPlaceholder('DD/MM/YYYY')
+                .setStyle(TextInputStyle.Short)
+                .setRequired(true)
+                .setMinLength(10)
+                .setMaxLength(10);
 
                 const row = new ActionRowBuilder()
-                    .addComponents(dobInput);
+                .addComponents(dobInput);
 
                 modal.addComponents(row);
 
@@ -194,7 +194,7 @@ export const DobCheck = class {
             ) {
                 await interaction.reply({
                     content:
-                        '❌ Something went wrong while processing your verification. Please contact a moderator.',
+                    '❌ Something went wrong while processing your verification. Please contact a moderator.',
                     ephemeral: true,
                 });
             }
@@ -209,7 +209,7 @@ export const DobCheck = class {
         if (!dob) {
             await interaction.reply({
                 content:
-                    '❌ Invalid date. Please enter your date of birth in DD/MM/YYYY format.',
+                '❌ Invalid date. Please enter your date of birth in DD/MM/YYYY format.',
                 ephemeral: true,
             });
 
@@ -217,7 +217,7 @@ export const DobCheck = class {
         }
         // Find user in DB
         let verification =
-            await AgeVerificationDboEntity.findByPk(interaction.user.id);
+        await AgeVerificationDboEntity.findByPk(interaction.user.id);
 
         /*
          * This shouldn't normally happen because guildMemberAdd
@@ -259,7 +259,7 @@ export const DobCheck = class {
 
                 await interaction.reply({
                     content:
-                        '❌ The date of birth you entered does not match the date previously registered to this Discord account. Please contact a moderator if you believe this is an error.',
+                    '❌ The date of birth you entered does not match the date previously registered to this Discord account. Please contact a moderator if you believe this is an error.',
                     ephemeral: true,
                 });
 
@@ -270,75 +270,75 @@ export const DobCheck = class {
                 'info',
                 `Existing DOB confirmed for ${interaction.user.tag} (${interaction.user.id}).`
             );
-            
+
             // is 18 or older check
-        if (this.#is18OrOlder(dob)) {
-            const member = await interaction.guild.members.fetch(interaction.user.id);
-            const verifiedRole = interaction.guild.roles.cache.find(
-                (role) => role.name === this.#config.verified_role
-            );
-        if (!verifiedRole) {
-            this.#logger.log(
-                'error',
-                `Verified role not found: ${this.#config.verified_role}`
-            );
+            if (this.#is18OrOlder(dob)) {
+                const member = await interaction.guild.members.fetch(interaction.user.id);
+                const verifiedRole = interaction.guild.roles.cache.find(
+                    (role) => role.name === this.#config.verified_role
+                );
+                if (!verifiedRole) {
+                    this.#logger.log(
+                        'error',
+                        `Verified role not found: ${this.#config.verified_role}`
+                    );
 
-        await interaction.reply({
-            content:
-                '⚠️ Your age is verified, but I could not find the Member role. Please contact a moderator.',
-            ephemeral: true,
-            });
+                    await interaction.reply({
+                        content:
+                        '⚠️ Your age is verified, but I could not find the Member role. Please contact a moderator.',
+                        ephemeral: true,
+                    });
 
-        return;
-    }
+                    return;
+                }
 
-    // User is verified in the database but no longer has the role.
-    if (!member.roles.cache.has(verifiedRole.id)) {
-        if (!verifiedRole.editable) {
-            this.#logger.log(
-                'error',
-                `Cannot assign verified role ${verifiedRole.name} (${verifiedRole.id}) to ${interaction.user.id}. Role is not editable by the bot.`
-            );
+                // User is verified in the database but no longer has the role.
+                if (!member.roles.cache.has(verifiedRole.id)) {
+                    if (!verifiedRole.editable) {
+                        this.#logger.log(
+                            'error',
+                            `Cannot assign verified role ${verifiedRole.name} (${verifiedRole.id}) to ${interaction.user.id}. Role is not editable by the bot.`
+                        );
 
-            await interaction.reply({
-                content:
-                    '⚠️ Your age is verified, but I could not assign your member role. Please contact a moderator.',
-                ephemeral: true,
-            });
+                        await interaction.reply({
+                            content:
+                            '⚠️ Your age is verified, but I could not assign your member role. Please contact a moderator.',
+                            ephemeral: true,
+                        });
 
-            return;
-        }
+                        return;
+                    }
 
-        await member.roles.add(
-            verifiedRole,
-            'Restored verified role after age verification'
-        );
+                    await member.roles.add(
+                        verifiedRole,
+                        'Restored verified role after age verification'
+                    );
 
-        this.#logger.log(
-            'info',
-            `Restored verified role for ${interaction.user.tag} (${interaction.user.id}).`
-        );
+                    this.#logger.log(
+                        'info',
+                        `Restored verified role for ${interaction.user.tag} (${interaction.user.id}).`
+                    );
 
-            await interaction.reply({
-                content:
-                    '✅ Your age verification is complete. Your member role has been restored.',
-                ephemeral: true,
-         });
+                    await interaction.reply({
+                        content:
+                        '✅ Your age verification is complete. Your member role has been restored.',
+                        ephemeral: true,
+                    });
 
-            return;
-        }
+                    return;
+                }
 
-        // User already has the role.
-        await interaction.reply({
-            content:
-             '✅ Your age verification is already complete.',
-            ephemeral: true,
-        });
+                // User already has the role.
+                await interaction.reply({
+                    content:
+                    '✅ Your age verification is already complete.',
+                    ephemeral: true,
+                });
 
-        return;
-    }
+                return;
+            }
 
-             // Stored DOB says the user is under 18.
+            // Stored DOB says the user is under 18.
             await this.#banUnderageUser(
                 interaction,
                 verification,
@@ -348,7 +348,7 @@ export const DobCheck = class {
             return;
         }
 
-         // First DOB submission.
+        // First DOB submission.
         await verification.update({
             dob: dob,
         });
@@ -357,7 +357,7 @@ export const DobCheck = class {
             'info',
             `DOB registered for ${interaction.user.tag} (${interaction.user.id}).`
         );
-         // Check age.
+        // Check age.
         if (!this.#is18OrOlder(dob)) {
             await this.#banUnderageUser(
                 interaction,
@@ -368,56 +368,56 @@ export const DobCheck = class {
             return;
         }
 
-         // User is 18+.
+        // User is 18+.
         this.#logger.log(
-    'info',
-    `${interaction.user.tag} (${interaction.user.id}) passed age verification.`
-    );
+            'info',
+            `${interaction.user.tag} (${interaction.user.id}) passed age verification.`
+        );
 
-    const member = await interaction.guild.members.fetch(
-    interaction.user.id
-    );
+        const member = await interaction.guild.members.fetch(
+            interaction.user.id
+        );
 
-    const verifiedRole = interaction.guild.roles.cache.find(
-    (role) => role.name === this.#config.verified_role
-    );
+        const verifiedRole = interaction.guild.roles.cache.find(
+            (role) => role.name === this.#config.verified_role
+        );
 
-    if (!verifiedRole) {
-    this.#logger.log(
-        'error',
-        `Verified role not found: ${this.#config.verified_role}`
-    );
+        if (!verifiedRole) {
+            this.#logger.log(
+                'error',
+                `Verified role not found: ${this.#config.verified_role}`
+            );
 
-    await interaction.reply({
-        content:
-            '⚠️ Your age was verified, but I could not assign your verified role. Please contact a moderator.',
-        ephemeral: true,
-    });
+            await interaction.reply({
+                content:
+                '⚠️ Your age was verified, but I could not assign your verified role. Please contact a moderator.',
+                ephemeral: true,
+            });
 
-    return;
+            return;
+        }
+
+        await member.roles.add(
+            verifiedRole,
+            'Passed 18+ age verification'
+        );
+
+        await interaction.reply({
+            content:
+            '✅ Age verification successful. Welcome to the server!',
+            ephemeral: true,
+        });
+
+        await this.#sendModerationLog(
+            interaction,
+            verification,
+            dob,
+            'Age Verification Passed',
+            0x57F287
+        );
     }
 
-    await member.roles.add(
-    verifiedRole,
-    'Passed 18+ age verification'
-    );
-
-    await interaction.reply({
-    content:
-        '✅ Age verification successful. Welcome to the server!',
-    ephemeral: true,
-    });
-
-    await this.#sendModerationLog(
-    interaction,
-    verification,
-    dob,
-    'Age Verification Passed',
-    0x57F287
-    );
-    }
-
-     // Ban an underage user.
+    // Ban an underage user.
     async #banUnderageUser(interaction, verification, dob) {
         this.#logger.log(
             'warning',
@@ -426,7 +426,7 @@ export const DobCheck = class {
 
         await interaction.reply({
             content:
-                '❌ You must be 18 or older to access this server.',
+            '❌ You must be 18 or older to access this server.',
             ephemeral: true,
         });
 
@@ -459,7 +459,7 @@ export const DobCheck = class {
         }
     }
 
-     // Send a moderation log embed.
+    // Send a moderation log embed.
     async #sendModerationLog(
         interaction,
         verification,
@@ -480,7 +480,7 @@ export const DobCheck = class {
 
         const moderationChannel = this.#discordChannels.find(
             (channel) =>
-                channel.name === config.moderation_channel
+            channel.name === config.moderation_channel
         );
 
         if (!moderationChannel) {
@@ -499,44 +499,44 @@ export const DobCheck = class {
         .addFields(
             {name: 'User',value: `<@${target.id}> ID: ${target.id}`,inline: true},
             {name: 'DOB',value: this.#formatDate(dob),inline: true},
-            {name: 'First Joined',value: `<t:${Math.floor(new Date(verification.first_joined_at).getTime() / 1000)}:F>`,inline: true},
-            {name: 'Date',value: `<t:${Math.floor(Date.now() / 1000)}:F>`,inline: true}
+                   {name: 'First Joined',value: `<t:${Math.floor(new Date(verification.first_joined_at).getTime() / 1000)}:F>`,inline: true},
+                   {name: 'Date',value: `<t:${Math.floor(Date.now() / 1000)}:F>`,inline: true}
         )
         .setTimestamp();
 
         await moderationChannel.send({
-        embeds: [modLogEmbed],
+            embeds: [modLogEmbed],
         });
     }
 
     async #ensureVerificationMessage(channel) {
-    const messages = await channel.messages.fetch({
-        limit: 50,
-    });
+        const messages = await channel.messages.fetch({
+            limit: 50,
+        });
 
-    const existingMessage = messages.find(
-        (message) =>
+        const existingMessage = messages.find(
+            (message) =>
             message.author.id === message.client.user.id &&
             message.embeds.length > 0 &&
             message.embeds[0].title === this.#config.title
-    );
-
-    if (existingMessage) {
-        this.#logger.log(
-            'debug',
-            `DOB verification message already exists in ${channel.name}.`
         );
 
-        return;
-    }
+        if (existingMessage) {
+            this.#logger.log(
+                'debug',
+                `DOB verification message already exists in ${channel.name}.`
+            );
 
-    const embed = new EmbedBuilder()
+            return;
+        }
+
+        const embed = new EmbedBuilder()
         .setTitle(this.#config.title)
         .setDescription(this.#config.description)
         .setColor(0x5865F2)
         .setFooter({text: 'Your date of birth will not be displayed publicly.'});
 
-    const button = new ButtonBuilder()
+        const button = new ButtonBuilder()
         .setCustomId('dob_check_button')
         .setStyle(
             this.#getButtonStyle(
@@ -544,28 +544,28 @@ export const DobCheck = class {
             )
         );
 
-    if (this.#config.button_text) {
-    button.setLabel(this.#config.button_text);
-    }  
-    if (this.#config.button_emoji) {
-        button.setEmoji(this.#config.button_emoji);
-    }
+        if (this.#config.button_text) {
+            button.setLabel(this.#config.button_text);
+        }
+        if (this.#config.button_emoji) {
+            button.setEmoji(this.#config.button_emoji);
+        }
 
-    const row = new ActionRowBuilder()
+        const row = new ActionRowBuilder()
         .addComponents(button);
 
-    await channel.send({
-        embeds: [embed],
-        components: [row],
-    });
+        await channel.send({
+            embeds: [embed],
+            components: [row],
+        });
 
-    this.#logger.log(
-        'info',
-        `Posted DOB verification message in ${channel.name}.`
-    );
+        this.#logger.log(
+            'info',
+            `Posted DOB verification message in ${channel.name}.`
+        );
     }
 
-     // Register all existing guild members.
+    // Register all existing guild members.
     async #registerExistingMembers() {
         if (!this.#discordGuild) {
             return;
@@ -579,7 +579,7 @@ export const DobCheck = class {
             }
 
             const existing =
-                await AgeVerificationDboEntity.findByPk(member.id);
+            await AgeVerificationDboEntity.findByPk(member.id);
 
             const firstJoinedAt = member.joinedAt || new Date();
 
@@ -608,109 +608,109 @@ export const DobCheck = class {
         }
     }
 
-     // Parse DD/MM/YYYY.
+    // Parse DD/MM/YYYY.
     #parseDob(value) {
-        const match = value.trim().match(
-            /^(\d{2})\/(\d{2})\/(\d{4})$/
-        );
+    const match = value.trim().match(
+        /^(\d{2})\/(\d{2})\/(\d{4})$/
+    );
 
-        if (!match) {
-            return null;
-        }
+    if (!match) {
+        return null;
+    }
 
-        const day = Number(match[1]);
-        const month = Number(match[2]);
-        const year = Number(match[3]);
+    const day = Number(match[1]);
+    const month = Number(match[2]);
+    const year = Number(match[3]);
 
-        const date = new Date(
-            year,
-            month - 1,
-            day
-        );
+    const date = new Date(
+        year,
+        month - 1,
+        day
+    );
 
-         // Check invalid dates such as 31/02/2005.
-        if (
-            date.getFullYear() !== year ||
-            date.getMonth() !== month - 1 ||
-            date.getDate() !== day
-        ) {
-            return null;
-        }
+    // Check invalid dates such as 31/02/2005.
+    if (
+        date.getFullYear() !== year ||
+        date.getMonth() !== month - 1 ||
+        date.getDate() !== day
+    ) {
+        return null;
+    }
 
-        // Don't allow future DOBs.
-        if (date > new Date()) {
-            return null;
-        }
+    // Don't allow future DOBs.
+    if (date > new Date()) {
+        return null;
+    }
 
-        return date;
+    return date;
     }
 
     // Check if DOB is 18+.
     #is18OrOlder(dob) {
-        const today = new Date();
+    const today = new Date();
 
-        let age =
-            today.getFullYear() -
-            dob.getFullYear();
+    let age =
+    today.getFullYear() -
+    dob.getFullYear();
 
-        const monthDifference =
-            today.getMonth() -
-            dob.getMonth();
+    const monthDifference =
+    today.getMonth() -
+    dob.getMonth();
 
-        if (
-            monthDifference < 0 ||
-            (
-                monthDifference === 0 &&
-                today.getDate() < dob.getDate()
-            )
-        ) {
-            age--;
-        }
+    if (
+        monthDifference < 0 ||
+        (
+            monthDifference === 0 &&
+            today.getDate() < dob.getDate()
+        )
+    ) {
+        age--;
+    }
 
-        return age >= 18;
+    return age >= 18;
     }
 
     // Normalize date for comparison.
     #normaliseDate(date) {
-        const parsed = new Date(date);
+    const parsed = new Date(date);
 
-        return `${parsed.getFullYear()}-${String(
-            parsed.getMonth() + 1
-        ).padStart(2, '0')}-${String(
-            parsed.getDate()
-        ).padStart(2, '0')}`;
+    return `${parsed.getFullYear()}-${String(
+        parsed.getMonth() + 1
+    ).padStart(2, '0')}-${String(
+        parsed.getDate()
+    ).padStart(2, '0')}`;
     }
-     // Format date for Discord moderation logs.
+    // Format date for Discord moderation logs.
     #formatDate(date) {
-        if (!date) {
-            return 'Unknown';
-        }
-
-        return new Date(date).toLocaleDateString(
-            'en-GB',
-            {
-                day: '2-digit',
-                month: '2-digit',
-                year: 'numeric',
-            }
-        );
+    if (!date) {
+        return 'Unknown';
     }
-    
-     // Convert config button style to Discord ButtonStyle.
-    #getButtonStyle(style) {
-        switch (style?.toLowerCase()) {
-            case 'primary':
-                return ButtonStyle.Primary;
 
-            case 'secondary':
-                return ButtonStyle.Secondary;
-
-            case 'danger':
-                return ButtonStyle.Danger;
-
-            case 'success':
-            default:
-                return ButtonStyle.Success;
+    return new Date(date).toLocaleDateString(
+        'en-GB',
+        {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
         }
+    );
+    }
+
+    // Convert config button style to Discord ButtonStyle.
+    #getButtonStyle(style) {
+    switch (style?.toLowerCase()) {
+        case 'primary':
+            return ButtonStyle.Primary;
+
+        case 'secondary':
+            return ButtonStyle.Secondary;
+
+        case 'danger':
+            return ButtonStyle.Danger;
+
+        case 'success':
+        default:
+            return ButtonStyle.Success;
+    }
     }
 };

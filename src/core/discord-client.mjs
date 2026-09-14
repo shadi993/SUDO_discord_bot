@@ -1,6 +1,8 @@
 import { Client, GatewayIntentBits, Events ,Partials} from 'discord.js';
 import { Logger } from './logger.mjs';
 import { recordDailyStat } from '../dashboard/stats.mjs';
+import { MigrateChannelNames } from './config.mjs';
+import { RegisterConfigUpdateListener } from './config.mjs';
 
 export var DiscordClient;
 
@@ -34,7 +36,7 @@ export const InitDiscordClient = () => {
             Partials.User, // For uncached users
             Partials.GuildMember, // For guild member events
             Partials.ThreadMember
-            ],
+        ],
 
     });
 
@@ -47,45 +49,45 @@ export const InitDiscordClient = () => {
 
         Logger.log('debug', 'Fetching guild...');
         DiscordClient.guilds.fetch(process.env.DISCORD_GUILD_ID)
-            .then((guild) => {
-                Logger.log('debug', `Guild loaded: ${guild.name}`);
-                DiscordGuild = guild;
+        .then((guild) => {
+            Logger.log('debug', `Guild loaded: ${guild.name}`);
+            DiscordGuild = guild;
 
-                Logger.log('debug', 'Fetching channels...');
-                guild.channels.fetch()
-                    .then((channels) => {
-                        Logger.log('debug', `Loaded ${channels.size} channels.`);
-                        DiscordChannels = channels;
-                        MigrateChannelNames([...DiscordChannels.values()]);
+            Logger.log('debug', 'Fetching channels...');
+            guild.channels.fetch()
+            .then((channels) => {
+                Logger.log('debug', `Loaded ${channels.size} channels.`);
+                DiscordChannels = channels;
+                MigrateChannelNames([...DiscordChannels.values()]);
 
-                        Logger.log('debug', 'Fetching roles...');
-                        guild.roles.fetch()
-                            .then((roles) => {
-                                Logger.log('debug', `Loaded ${roles.size} roles.`);
-                                DiscordRoles = roles;
+                Logger.log('debug', 'Fetching roles...');
+                guild.roles.fetch()
+                .then((roles) => {
+                    Logger.log('debug', `Loaded ${roles.size} roles.`);
+                    DiscordRoles = roles;
 
-                                var promises = [];
-                                for (const module of ClientReadyModules) {
-                                    promises.push(module.onDiscordReady(DiscordGuild, DiscordChannels, DiscordRoles));
-                                }
-                                Promise.all(promises).catch((error) => {
-                                    Logger.log('error', `A Discord module failed during startup: ${error.message}`);
-                                });
-                            })
-                            .catch((error) => {
-                                Logger.log('error', `Failed to fetch roles: ${error}`);
-                                throw new Error(`Failed to fetch roles: ${error}`);
-                            });
-                    })
-                    .catch((error) => {
-                        Logger.log('error', `Failed to fetch channels: ${error}`);
-                        throw new Error(`Failed to fetch channels: ${error}`);
+                    var promises = [];
+                    for (const module of ClientReadyModules) {
+                        promises.push(module.onDiscordReady(DiscordGuild, DiscordChannels, DiscordRoles));
+                    }
+                    Promise.all(promises).catch((error) => {
+                        Logger.log('error', `A Discord module failed during startup: ${error.message}`);
                     });
+                })
+                .catch((error) => {
+                    Logger.log('error', `Failed to fetch roles: ${error}`);
+                    throw new Error(`Failed to fetch roles: ${error}`);
+                });
             })
             .catch((error) => {
-                Logger.log('error', `Failed to fetch guild: ${error}`);
-                throw new Error(`Failed to fetch guild: ${error}`);
+                Logger.log('error', `Failed to fetch channels: ${error}`);
+                throw new Error(`Failed to fetch channels: ${error}`);
             });
+        })
+        .catch((error) => {
+            Logger.log('error', `Failed to fetch guild: ${error}`);
+            throw new Error(`Failed to fetch guild: ${error}`);
+        });
     });
 
     DiscordClient.on(Events.MessageCreate, async (message) => {
@@ -130,10 +132,10 @@ export const InitDiscordClient = () => {
         const results = await Promise.allSettled(
             MessageReactionAddModules.map(
                 module =>
-                    module.onDiscordMessageReactionAdd?.(
-                        reaction,
-                        user
-                    )
+                module.onDiscordMessageReactionAdd?.(
+                    reaction,
+                    user
+                )
             )
         );
         for (const result of results) {
@@ -146,22 +148,22 @@ export const InitDiscordClient = () => {
         }
     });
     /*DiscordClient.on(Events.InteractionCreate, async (interaction) => {
-        var promises = [];
-        for (const module of InteractionModules) {
-            promises.push(module.onDiscordInteraction(interaction));
-        }
-        await Promise.allSettled(promises);
-    });*/
+     *        var promises = [];
+     *        for (const module of InteractionModules) {
+     *            promises.push(module.onDiscordInteraction(interaction));
+}
+await Promise.allSettled(promises);
+});*/
     DiscordClient.on(Events.InteractionCreate, async (interaction) => {
-    const results = await Promise.allSettled(
-        InteractionModules.map(m => m.onDiscordInteraction?.(interaction))
-    );
+        const results = await Promise.allSettled(
+            InteractionModules.map(m => m.onDiscordInteraction?.(interaction))
+        );
 
-    for (const result of results) {
-        if (result.status === 'rejected') {
-            Logger.log('error', result.reason);
+        for (const result of results) {
+            if (result.status === 'rejected') {
+                Logger.log('error', result.reason);
+            }
         }
-    }
     });
 
     DiscordClient.login(process.env.DISCORD_BOT_TOKEN);
@@ -201,8 +203,8 @@ export const RegisterDiscordModule = (module) => {
         RegisterConfigUpdateListener(async () => {
             if (!DiscordGuild || !DiscordChannels || !DiscordRoles) return;
             await Promise.all(ClientReadyModules
-                .filter(readyModule => readyModule.onConfigUpdate)
-                .map(readyModule => readyModule.onConfigUpdate(DiscordGuild, DiscordChannels, DiscordRoles)));
+            .filter(readyModule => readyModule.onConfigUpdate)
+            .map(readyModule => readyModule.onConfigUpdate(DiscordGuild, DiscordChannels, DiscordRoles)));
         });
     }
 }

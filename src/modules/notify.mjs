@@ -27,26 +27,27 @@ export const NotifyModule = class {
 
     /*eslint no-unused-vars: ["error", {"args": "none"}]*/
     async onDiscordReady(guild, channels, roles) {
+        this.#notifyChannel = findDiscordChannel(channels, Config.notify.channel);
         if (!Config.notify.enabled) return;
         this.#logger.log('info', 'NotifyModule module is ready.');
         this.#logger.log('info', 'NotifyModule registering additional callbacks.');
         if (this.#eventsRegistered) return;
         this.#eventsRegistered = true;
         //this.#guild = guild;
-        
+
         DiscordClient.on(Events.GuildMemberAdd, async (member) => {
             if (!Config.notify.enabled || !this.#notifyChannel) return;
             this.#logger.log('info', `New member joined: ${member.user.tag}`);
             const newJoinEmbed = new EmbedBuilder()
-                .setColor('#57F287')
-                .setAuthor({ name: `${member.user.tag}`, iconURL: member.user.displayAvatarURL() })
-                .setThumbnail(member.user.displayAvatarURL())
-                .addFields({ name: '\u200B', value: `<@${member.user.id}> **has joined the server**` },
-                    { name: 'Display Name', value: `${member.user.displayName}`},
-                    { name: 'Joined at', value: `<t:${(member.joinedTimestamp / 1000).toString().split('.')[0]}> (<t:${(member.joinedTimestamp / 1000).toString().split('.')[0]}:R>)` },
-                    { name: 'Created at', value: `<t:${(member.user.createdTimestamp / 1000).toString().split('.')[0]}> (<t:${(member.user.createdTimestamp / 1000).toString().split('.')[0]}:R>)` })
-                .setTimestamp()
-                .setFooter({ text: 'SUDO' })
+            .setColor('#57F287')
+            .setAuthor({ name: `${member.user.tag}`, iconURL: member.user.displayAvatarURL() })
+            .setThumbnail(member.user.displayAvatarURL())
+            .addFields({ name: '\u200B', value: `<@${member.user.id}> **has joined the server**` },
+                       { name: 'Display Name', value: `${member.user.displayName}`},
+                       { name: 'Joined at', value: `<t:${(member.joinedTimestamp / 1000).toString().split('.')[0]}> (<t:${(member.joinedTimestamp / 1000).toString().split('.')[0]}:R>)` },
+                       { name: 'Created at', value: `<t:${(member.user.createdTimestamp / 1000).toString().split('.')[0]}> (<t:${(member.user.createdTimestamp / 1000).toString().split('.')[0]}:R>)` })
+            .setTimestamp()
+            .setFooter({ text: 'SUDO' })
 
             await this.#notifyChannel.send({ embeds: [newJoinEmbed] });
         });
@@ -54,24 +55,24 @@ export const NotifyModule = class {
         DiscordClient.on(Events.GuildMemberRemove, async (member) => {
             if (!Config.notify.enabled || !this.#notifyChannel) return;
             this.#logger.log('info', `Member left: ${member.user.tag}`);
-        
+
             const joinedAt = member.joinedTimestamp
-                ? `<t:${Math.floor(member.joinedTimestamp / 1000)}> (<t:${Math.floor(member.joinedTimestamp / 1000)}:R>)`
-                : 'Unknown';
+            ? `<t:${Math.floor(member.joinedTimestamp / 1000)}> (<t:${Math.floor(member.joinedTimestamp / 1000)}:R>)`
+            : 'Unknown';
             const leftAt = `<t:${Math.floor(Date.now() / 1000)}> (<t:${Math.floor(Date.now() / 1000)}:R>)`;
-        
+
             const leftServerEmbed = new EmbedBuilder()
-                .setColor('#ED4245')
-                .setAuthor({ name: `${member.user.tag}`, iconURL: member.user.displayAvatarURL() })
-                .setThumbnail(member.user.displayAvatarURL())
-                .addFields(
-                    { name: '\u200B', value: `<@${member.user.id}> has left the server.` },
-                    { name: 'Joined Server At', value: joinedAt},
-                    { name: 'Left Server At', value: leftAt}
-                )
-                .setTimestamp()
-                .setFooter({ text: 'SUDO' });
-        
+            .setColor('#ED4245')
+            .setAuthor({ name: `${member.user.tag}`, iconURL: member.user.displayAvatarURL() })
+            .setThumbnail(member.user.displayAvatarURL())
+            .addFields(
+                { name: '\u200B', value: `<@${member.user.id}> has left the server.` },
+                { name: 'Joined Server At', value: joinedAt},
+                { name: 'Left Server At', value: leftAt}
+            )
+            .setTimestamp()
+            .setFooter({ text: 'SUDO' });
+
             await this.#notifyChannel.send({ embeds: [leftServerEmbed] });
         });
 
@@ -90,40 +91,40 @@ export const NotifyModule = class {
                     this.#logger.log('warn', 'Message author is null or undefined.');
                     return;
                 }
-        
+
                 this.#logger.log(
                     'info',
                     `${message.author.globalName || message.author.username} deleted: ${message.content || 'No text content'}`
                 );
-        
+
                 if (message.member?.user.bot) return;
-        
+
                 const deletedMessageEmbed = new EmbedBuilder()
-                    .setColor('#ED4245')
-                    .setAuthor({name: `${message.author.globalName || message.author.username}`,iconURL: message.author.displayAvatarURL()})
-                    .addFields({name: '\u200B',value: `🗑 <@${message.author.id}> deleted a message in ${message.channel.toString()}`})
-                    .setTimestamp()
-                    .setFooter({ text: 'SUDO' });
-        
+                .setColor('#ED4245')
+                .setAuthor({name: `${message.author.globalName || message.author.username}`,iconURL: message.author.displayAvatarURL()})
+                .addFields({name: '\u200B',value: `🗑 <@${message.author.id}> deleted a message in ${message.channel.toString()}`})
+                .setTimestamp()
+                .setFooter({ text: 'SUDO' });
+
                 if (message.content) {
                     deletedMessageEmbed.addFields({ name: 'Message:', value: message.content });
                 } else {
                     deletedMessageEmbed.addFields({ name: 'Message:', value: 'No text content' });
                 }
-        
+
                 // Check for attachments (including GIFs)
                 if (message.attachments.size > 0) {
                     const attachmentURLs = message.attachments.map((attachment) => attachment.url).join('\n');
                     deletedMessageEmbed.addFields({ name: 'Attachments:', value: attachmentURLs });
                 }
-        
+
                 await this.#notifyChannel.send({ embeds: [deletedMessageEmbed] });
             } catch (error) {
                 this.#logger.log('error', `Error handling message deletion: ${error.message}`);
             }
         });
-        
-        
+
+
         function splitIntoChunks(content, maxLength = 1024) {
             const chunks = [];
             for (let i = 0; i < content.length; i += maxLength) {
@@ -131,7 +132,7 @@ export const NotifyModule = class {
             }
             return chunks;
         }
-        
+
         DiscordClient.on(Events.MessageUpdate, async (oldMessage, newMessage) => {
             if (!Config.notify.enabled || !this.#notifyChannel) return;
             try {
@@ -142,30 +143,30 @@ export const NotifyModule = class {
                 if (oldMessage.author.bot) return;
 
                 if (oldMessage.content === newMessage.content) return;
-        
+
                 const guildID = oldMessage.guild.id;
                 if (!guildID) return;
 
                 const oldContent = oldMessage.content || "No content";
                 const newContent = newMessage.content || "No content";
-        
+
                 if (!oldContent.trim() && !newContent.trim()) return;
-        
+
                 const oldChunks = splitIntoChunks(oldContent, 1024 - 6); // Reserve space for code block formatting
                 const newChunks = splitIntoChunks(newContent, 1024 - 6);
-        
+
                 const embed = new EmbedBuilder()
-                    .setColor('#ED4245')
-                    .setAuthor({
-                        name: `${oldMessage.author.globalName || oldMessage.author.username}`,
-                        iconURL: oldMessage.author.displayAvatarURL(),
-                    })
-                    .setDescription(
-                        `✍️ <@${oldMessage.author.id}> modified a message in ${oldMessage.channel} [Jump to Message](https://discord.com/channels/${guildID}/${oldMessage.channelId}/${oldMessage.id})`
-                    )
-                    .setTimestamp()
-                    .setFooter({ text: 'SUDO' });
-        
+                .setColor('#ED4245')
+                .setAuthor({
+                    name: `${oldMessage.author.globalName || oldMessage.author.username}`,
+                    iconURL: oldMessage.author.displayAvatarURL(),
+                })
+                .setDescription(
+                    `✍️ <@${oldMessage.author.id}> modified a message in ${oldMessage.channel} [Jump to Message](https://discord.com/channels/${guildID}/${oldMessage.channelId}/${oldMessage.id})`
+                )
+                .setTimestamp()
+                .setFooter({ text: 'SUDO' });
+
                 oldChunks.forEach((chunk, index) => {
                     embed.addFields({
                         name: index === 0 ? 'Old:' : '\u200B',
@@ -173,7 +174,7 @@ export const NotifyModule = class {
                         inline: false,
                     });
                 });
-        
+
                 newChunks.forEach((chunk, index) => {
                     embed.addFields({
                         name: index === 0 ? 'New:' : '\u200B',
@@ -181,32 +182,32 @@ export const NotifyModule = class {
                         inline: false,
                     });
                 });
-        
+
                 if (embed.data.fields.length > 25) {
-                    embed.spliceFields(24); 
+                    embed.spliceFields(24);
                     embed.addFields({
                         name: 'Note:',
                         value: 'Message content was truncated due to Discord embed field limits.',
                     });
                 }
-        
+
                 await this.#notifyChannel.send({ embeds: [embed] });
             } catch (error) {
                 this.#logger.error('Error in MessageUpdate event:', error);
             }
         });
-        
+
 
         DiscordClient.on(Events.GuildMemberUpdate, async (oldMember, newMember) => {
             this.#logger.log('info', `Member updated: ${oldMember.user.tag} -> ${newMember.user.tag}`);
 
-            
+
             const embed = new EmbedBuilder()
             .setAuthor({ name: `${newMember.user.tag}`, iconURL: newMember.user.displayAvatarURL() })
             .setColor('#E67E22')
             .setTitle('Member Updated')
             .setTimestamp();
-    
+
             // Check for nickname change
             if (oldMember.nickname !== newMember.nickname) {
                 embed.addFields({name: '\u200B',value: `<@${oldMember.user.id}>`},{
@@ -214,32 +215,32 @@ export const NotifyModule = class {
                     value: `Old: ${oldMember.nickname || 'None'}\nNew: ${newMember.nickname || 'None'}`,
                 }),
                 embed.setThumbnail(oldMember.user.displayAvatarURL()),
-                embed.setTimestamp(),
-                embed.setFooter({ text: 'SUDO' });
+                         embed.setTimestamp(),
+                         embed.setFooter({ text: 'SUDO' });
             }
-    
+
             // Check for role changes
             const oldRoles = oldMember.roles.cache.map(role => role.name);
             const newRoles = newMember.roles.cache.map(role => role.name);
-    
+
             if (oldRoles.length !== newRoles.length) {
                 const removedRoles = oldRoles.filter(role => !newRoles.includes(role));
                 const addedRoles = newRoles.filter(role => !oldRoles.includes(role));
-    
+
                 if (addedRoles.length > 0) {
                     embed.addFields({name: '\u200B',value: `<@${oldMember.user.id}>`},{ name: 'Roles Added', value:"✅ "+ addedRoles.join(', ') }),
-                    embed.setThumbnail(oldMember.user.displayAvatarURL()),
-                    embed.setTimestamp(),
-                    embed.setFooter({ text: 'SUDO' });
+                         embed.setThumbnail(oldMember.user.displayAvatarURL()),
+                         embed.setTimestamp(),
+                         embed.setFooter({ text: 'SUDO' });
                 }
                 if (removedRoles.length > 0) {
                     embed.addFields({name: '\u200B',value: `<@${oldMember.user.id}>`},{ name: 'Roles Removed', value:"⛔️ "+ removedRoles.join(', ') })
                     embed.setThumbnail(oldMember.user.displayAvatarURL()),
-                    embed.setTimestamp(),
-                    embed.setFooter({ text: 'SUDO' });
+                         embed.setTimestamp(),
+                         embed.setFooter({ text: 'SUDO' });
                 }
             }
-    
+
             // Check for avatar change
             if (oldMember.user.displayAvatarURL() !== newMember.user.displayAvatarURL()) {
                 embed.addFields({
@@ -247,10 +248,10 @@ export const NotifyModule = class {
                     value: `<@${oldMember.user.id}> updated their profile picture.`,
                 })
                 .setThumbnail(newMember.user.displayAvatarURL()),
-                embed.setTimestamp(),
-                embed.setFooter({ text: 'SUDO' }); 
+                         embed.setTimestamp(),
+                         embed.setFooter({ text: 'SUDO' });
             }
-    
+
             if (embed.data.fields && embed.data.fields.length > 0) {
                 await this.#notifyChannel.send({ embeds: [embed] });
             }
@@ -274,13 +275,13 @@ export const NotifyModule = class {
             }
 
             const bannedEmbed = new EmbedBuilder()
-                .setColor('#ED4245')
-                .setAuthor({ name: `${user.globalName}`, iconURL: user.displayAvatarURL() })
-                .setThumbnail(user.displayAvatarURL())
-                .addFields({ name: 'Banned User', value: `${user.globalName} (<@${user.id}>)`, inline: true },
-                    { name: 'Banned By', value: executor, inline: true })
-                .setTimestamp()
-                .setFooter({ text: 'SUDO' })
+            .setColor('#ED4245')
+            .setAuthor({ name: `${user.globalName}`, iconURL: user.displayAvatarURL() })
+            .setThumbnail(user.displayAvatarURL())
+            .addFields({ name: 'Banned User', value: `${user.globalName} (<@${user.id}>)`, inline: true },
+                       { name: 'Banned By', value: executor, inline: true })
+            .setTimestamp()
+            .setFooter({ text: 'SUDO' })
 
             await this.#notifyChannel.send({ embeds: [bannedEmbed] });
         });
@@ -291,19 +292,19 @@ export const NotifyModule = class {
                     this.#logger.log('warn', 'GuildBanRemove event triggered, but ban or ban.user is undefined.');
                     return;
                 }
-        
+
                 this.#logger.log('info', `User unbanned: ${ban.user.tag}`);
-        
+
                 const unbannedEmbed = new EmbedBuilder()
-                    .setColor('#57F287') 
-                    .setAuthor({ name: `${ban.user.tag}`, iconURL: ban.user.displayAvatarURL() })
-                    .addFields(
-                        { name: 'User', value: `<@${ban.user.id}> (${ban.user.tag})` },
-                        { name: 'Action', value: 'User has been unbanned.' }
-                    )
-                    .setTimestamp()
-                    .setFooter({ text: 'SUDO' });
-        
+                .setColor('#57F287')
+                .setAuthor({ name: `${ban.user.tag}`, iconURL: ban.user.displayAvatarURL() })
+                .addFields(
+                    { name: 'User', value: `<@${ban.user.id}> (${ban.user.tag})` },
+                           { name: 'Action', value: 'User has been unbanned.' }
+                )
+                .setTimestamp()
+                .setFooter({ text: 'SUDO' });
+
                 if (this.#notifyChannel) {
                     await this.#notifyChannel.send({ embeds: [unbannedEmbed] });
                 } else {
@@ -324,38 +325,38 @@ export const NotifyModule = class {
             if (!oldState.channelId && newState.channelId) {
                 this.#logger.log('info', `${oldState.member.user.displayName} joined the voice channel: ${newState.channel.name}`);
                 const voiceStateEmbed = new EmbedBuilder()
-                    .setColor('#57F287')
-                    .setAuthor({ name: `${oldState.member.user.globalName}`, iconURL: oldState.member.user.displayAvatarURL() })
-                    .setDescription(`<@${oldState.member.user.id}> joined the voice channel: **${newState.channel.name}**`)
-                    .setTimestamp()
-                    .setFooter({ text: 'SUDO' });
-        
+                .setColor('#57F287')
+                .setAuthor({ name: `${oldState.member.user.globalName}`, iconURL: oldState.member.user.displayAvatarURL() })
+                .setDescription(`<@${oldState.member.user.id}> joined the voice channel: **${newState.channel.name}**`)
+                .setTimestamp()
+                .setFooter({ text: 'SUDO' });
+
                 await this.#notifyChannel.send({ embeds: [voiceStateEmbed]});
             }
-        
+
             // User left a voice channel
             if (oldState.channelId && !newState.channelId) {
                 this.#logger.log('info', `${oldState.member.user.displayName} left the voice channel: ${oldState.channel.name}`);
                 const voiceStateEmbed = new EmbedBuilder()
-                    .setColor('#ED4245')
-                    .setAuthor({ name: `${oldState.member.user.globalName}`, iconURL: oldState.member.user.displayAvatarURL() })
-                    .setDescription(`<@${oldState.member.user.id}> left the voice channel: **${oldState.channel.name}**`)
-                    .setTimestamp()
-                    .setFooter({ text: 'SUDO' });
-        
+                .setColor('#ED4245')
+                .setAuthor({ name: `${oldState.member.user.globalName}`, iconURL: oldState.member.user.displayAvatarURL() })
+                .setDescription(`<@${oldState.member.user.id}> left the voice channel: **${oldState.channel.name}**`)
+                .setTimestamp()
+                .setFooter({ text: 'SUDO' });
+
                 await this.#notifyChannel.send({ embeds: [voiceStateEmbed]});
             }
-        
+
             // User moved to another voice channel
             if (oldState.channelId && newState.channelId && oldState.channelId !== newState.channelId) {
                 this.#logger.log('info', `${oldState.member.user.displayName} moved from ${oldState.channel.name} to ${newState.channel.name}`);
                 const voiceStateEmbed = new EmbedBuilder()
-                    .setColor('#E67E22')
-                    .setAuthor({ name: `${oldState.member.user.globalName}`, iconURL: oldState.member.user.displayAvatarURL() })
-                    .setDescription(`<@${oldState.member.user.id}> moved from **${oldState.channel.name}** to **${newState.channel.name}**`)
-                    .setTimestamp()
-                    .setFooter({ text: 'SUDO' });
-        
+                .setColor('#E67E22')
+                .setAuthor({ name: `${oldState.member.user.globalName}`, iconURL: oldState.member.user.displayAvatarURL() })
+                .setDescription(`<@${oldState.member.user.id}> moved from **${oldState.channel.name}** to **${newState.channel.name}**`)
+                .setTimestamp()
+                .setFooter({ text: 'SUDO' });
+
                 await this.#notifyChannel.send({ embeds: [voiceStateEmbed]});
             }
         });
@@ -370,9 +371,9 @@ export const NotifyModule = class {
             .addFields({ name: 'Created by', value: `${creator.user.tag} <@${creator.id}>` })
             .setTimestamp()
             .setFooter({ text: 'SUDO' });
-            
-    
-        await this.#notifyChannel.send({ embeds: [threadCreateEmbed] });
+
+
+            await this.#notifyChannel.send({ embeds: [threadCreateEmbed] });
         });
 
         DiscordClient.on(Events.ThreadDelete, async (thread) => {
@@ -395,7 +396,7 @@ export const NotifyModule = class {
             .addFields({ name: 'Deleted by', value: deleter })
             .setTimestamp()
             .setFooter({ text: 'SUDO' });
-    
+
             await this.#notifyChannel.send({ embeds: [threadDeleteEmbed] });
         });
 
@@ -419,7 +420,7 @@ export const NotifyModule = class {
             .addFields({ name: 'Updated by', value: updater })
             .setTimestamp()
             .setFooter({ text: 'SUDO' });
-    
+
             await this.#notifyChannel.send({ embeds: [threadUpdateEmbed] });
         });
 
@@ -428,25 +429,25 @@ export const NotifyModule = class {
                 limit: 1,
                 type: AuditLogEvent.ChannelCreate,
             });
-        
+
             const creationLog = fetchedLogs.entries.first();
             let creator = 'Unknown';
-        
+
             if (creationLog) {
                 const { executor } = creationLog;
                 creator = `${executor.tag} <@${executor.id}>`;
             }
-        
+
             const embed = new EmbedBuilder()
-                .setColor('#57F287')
-                .setTitle('Channel Created')
-                .addFields(
-                    { name: 'Channel', value: `${channel.name} (${channel.type})` },
-                    { name: 'Created by', value: creator }
-                )
-                .setTimestamp()
-                .setFooter({ text: 'SUDO' });
-        
+            .setColor('#57F287')
+            .setTitle('Channel Created')
+            .addFields(
+                { name: 'Channel', value: `${channel.name} (${channel.type})` },
+                       { name: 'Created by', value: creator }
+            )
+            .setTimestamp()
+            .setFooter({ text: 'SUDO' });
+
             await this.#notifyChannel.send({ embeds: [embed] });
         });
 
@@ -455,26 +456,26 @@ export const NotifyModule = class {
                 limit: 1,
                 type: AuditLogEvent.ChannelDelete,
             });
-        
+
             const deletionLog = fetchedLogs.entries.first();
             let deleter = 'Unknown';
-        
+
             if (deletionLog) {
                 const { executor } = deletionLog;
                 deleter = `${executor.tag} <@${executor.id}>`;
             }
-        
+
             const embed = new EmbedBuilder()
-                .setColor('#ED4245')
-                .setTitle('Channel Deleted')
-                .addFields(
-                    { name: 'Channel', value: `${channel.name} (${channel.type})` },
-                    { name: 'Deleted by', value: deleter }
-                )
-                .setTimestamp()
-                .setFooter({ text: 'SUDO' });
-        
-                await this.#notifyChannel.send({ embeds: [embed] });
+            .setColor('#ED4245')
+            .setTitle('Channel Deleted')
+            .addFields(
+                { name: 'Channel', value: `${channel.name} (${channel.type})` },
+                       { name: 'Deleted by', value: deleter }
+            )
+            .setTimestamp()
+            .setFooter({ text: 'SUDO' });
+
+            await this.#notifyChannel.send({ embeds: [embed] });
         });
 
         DiscordClient.on(Events.ChannelUpdate, async (oldChannel, newChannel) => {
@@ -482,21 +483,21 @@ export const NotifyModule = class {
                 limit: 1,
                 type: AuditLogEvent.ChannelUpdate,
             });
-        
+
             const updateLog = fetchedLogs.entries.first();
             let updater = 'Unknown';
-        
+
             if (updateLog) {
                 const { executor } = updateLog;
                 updater = `${executor.tag} <@${executor.id}>`;
             }
-        
+
             const embed = new EmbedBuilder()
-                .setColor('#E67E22')
-                .setTitle('Channel Updated')
-                .setTimestamp()
-                .setFooter({ text: 'SUDO' });
-        
+            .setColor('#E67E22')
+            .setTitle('Channel Updated')
+            .setTimestamp()
+            .setFooter({ text: 'SUDO' });
+
             // Check for name change
             if (oldChannel.name !== newChannel.name) {
                 embed.addFields({
@@ -504,7 +505,7 @@ export const NotifyModule = class {
                     value: `Old: ${oldChannel.name}\nNew: ${newChannel.name}`,
                 });
             }
-        
+
             // Check for topic change
             if (oldChannel.topic !== newChannel.topic) {
                 embed.addFields({
@@ -513,14 +514,14 @@ export const NotifyModule = class {
                 });
             }
 
-                // Permission changes
+            // Permission changes
             const oldPerms = oldChannel.permissionOverwrites.cache;
             const newPerms = newChannel.permissionOverwrites.cache;
             const changes = [];
 
             newPerms.forEach((newPerm, id) => {
                 const oldPerm = oldPerms.get(id);
-                const target = getOverwriteTarget(newPerm, newChannel); 
+                const target = getOverwriteTarget(newPerm, newChannel);
 
                 let addedPerms = '';
                 let removedPerms = '';
@@ -532,21 +533,21 @@ export const NotifyModule = class {
                     // Compare added and removed permissions
                     const addedPermissions = newPerm.allow.bitfield & ~oldPerm.allow.bitfield;
                     const removedPermissions = oldPerm.allow.bitfield & ~newPerm.allow.bitfield;
-        
+
                     if (addedPermissions !== 0) {
                         addedPerms = formatPermissionsWithEmoji(addedPermissions, '✅');
                     }
-        
+
                     if (removedPermissions !== 0) {
                         removedPerms = formatPermissionsWithEmoji(removedPermissions, '❌');
                     }
                 }
-        
+
                 if (addedPerms || removedPerms) {
                     changes.push(`**Permissions for ${target} in <#${newChannel.id}>**\n${addedPerms}${removedPerms ? '\n' + removedPerms : ''}`);
                 }
             });
-        
+
             // Check for removed permission overwrites
             oldPerms.forEach((oldPerm, id) => {
                 if (!newPerms.has(id)) {
@@ -558,16 +559,16 @@ export const NotifyModule = class {
             if (changes.length > 0) {
                 embed.addFields({ name: 'Permissions Changed', value: changes.join('\n\n') });
             }
-        
+
             embed.addFields({ name: 'Updated by', value: updater });
-        
+
             // Send the embed if there are any updates
             if (embed.data.fields.length > 0) {
                 await this.#notifyChannel.send({ embeds: [embed] });
             }
         });
 
-        
+
         // Utility function to get the target of the permission overwrite (role or member)
         function getOverwriteTarget(overwrite, channel) {
             const role = channel.guild.roles.cache.get(overwrite.id);
@@ -588,12 +589,12 @@ export const NotifyModule = class {
             return grantedPermissions.map(perm => `${emoji} \`${perm}\``).join('\n');
         }
         /*DiscordClient.on(Events.Raw, async (packet) => {
-            this.#logger.log('info', `Raw packet.`, packet);
-            if (packet.t == 'GUILD_AUDIT_LOG_ENTRY_CREATE') {
-                packet.d.changes.forEach(change => {
-                    this.#logger.log('info', `Audit log entry: ${change.key} -> ${change.new_value}`, change);
-                });
-            }
-        });*/
+         *            this.#logger.log('info', `Raw packet.`, packet);
+         *            if (packet.t == 'GUILD_AUDIT_LOG_ENTRY_CREATE') {
+         *                packet.d.changes.forEach(change => {
+         *                    this.#logger.log('info', `Audit log entry: ${change.key} -> ${change.new_value}`, change);
+    });
+    }
+    });*/
     }
 };
