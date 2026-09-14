@@ -47,7 +47,7 @@ export const data = new SlashCommandBuilder()
         }
 
         const modChannelName = Config.moderation.channel_name; 
-        const modChannel = interaction.guild.channels.cache.find(channel => channel.name === modChannelName);
+        const modChannel = interaction.guild.channels.cache.find(channel => channel.id === modChannelName || channel.name === modChannelName);
         if (modChannel) {
             await modChannel.send({ embeds: [modLogEmbed] });
         } else {

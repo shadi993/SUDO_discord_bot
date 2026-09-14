@@ -65,7 +65,7 @@ export const AutoKick = class {
             try {
                 const notifyChannel = member.guild.channels.cache.find(
                     channel =>
-                        channel.name === Config.autokick.notify_channel
+                        channel.id === Config.autokick.notify_channel || channel.name === Config.autokick.notify_channel
                 );
 
                 if (!notifyChannel || !notifyChannel.isTextBased()) {

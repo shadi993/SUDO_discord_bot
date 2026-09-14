@@ -2,6 +2,7 @@ import {ActionRowBuilder,ButtonBuilder,ButtonStyle,EmbedBuilder,ModalBuilder,Tex
 import * as fs from 'node:fs';
 import { CreateLogger } from '../core/logger.mjs';
 import { AgeVerificationDboEntity } from '../core/database.mjs';
+import { Config } from '../core/config.mjs';
 
 export const DobCheck = class {
     #logger;
@@ -46,7 +47,7 @@ export const DobCheck = class {
         this.#discordChannels = channels;
 
         const channel = this.#discordChannels.find(
-            (ch) => ch.name === this.#config.channel_name
+            (ch) => ch.id === this.#config.channel_name || ch.name === this.#config.channel_name
         );
         if (!channel) {this.#logger.log('error',`DOB verification channel not found: ${this.#config.channel_name}`);
             return;
@@ -86,6 +87,11 @@ export const DobCheck = class {
                 `Failed to register first join for ${member.id}: ${error.message}`
             );
         }
+    }
+
+    async onConfigUpdate(guild, channels) {
+        this.#config = Config.dob_check;
+        return this.onDiscordReady(guild, channels);
     }
 
     async onDiscordInteraction(interaction) {

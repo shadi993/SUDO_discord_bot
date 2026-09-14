@@ -4,6 +4,29 @@ import * as fs from 'node:fs';
  * The configuration object as loaded from the config.json file.
  */
 export var Config;
+const configUpdateListeners = new Set();
+
+export const RegisterConfigUpdateListener = listener => {
+    configUpdateListeners.add(listener);
+    return () => configUpdateListeners.delete(listener);
+};
+
+const defaultConfig = {
+    leveling: { enabled: false, min_time_between_messages_seconds: 60, announcement_channel_name: '', ignore_channels: [], roles: {} },
+    disboard: { enabled: false, message: 'You can bump again!' },
+    autorole: { enabled: false, assign_on_join: [] },
+    notify: { enabled: false, channel: '' },
+    rank: { enabled: false, channel_allowed: '' },
+    autokick: { enabled: false, account_age_limit: 30, info_enabled: true, info_channel: '' },
+    moderation: { enabled: false, channel_name: '' },
+    ticketSystem: { enabled: false, category_name: '', moderator: '', archives_channel: '' },
+    dob_check: { enabled: false, channel_name: '', moderation_channel: '', verified_role: '', title: '', description: '', button_text: '', button_emoji: '✅', button_style: 'Success' },
+    ban_emoji: { enabled: false, log: true, log_channel: '', emojis: [] },
+    honeypot: { enabled: false, enable_honeypot_channel: false, channel_name: '', log_channel_name: '', title: '', description: '', button_text: '', punishment: 'kick' },
+    persistentMessages: { enabled: false, messages: [] },
+    roles: { enabled: false, panels: [] },
+    thresholdMessages: { enabled: false, messages: [] }
+};
 
 const defaultConfig = {
     leveling: { enabled: true, min_time_between_messages_seconds: 60, announcement_channel_name: '', ignore_channels: [], roles: {} },

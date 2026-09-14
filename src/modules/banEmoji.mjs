@@ -1,6 +1,7 @@
 import { EmbedBuilder } from 'discord.js';
 import * as fs from 'node:fs';
 import { CreateLogger } from '../core/logger.mjs';
+import { Config } from '../core/config.mjs';
 
 export const BanEmoji = class {
     #logger;
@@ -68,7 +69,7 @@ export const BanEmoji = class {
 
             this.#logChannel = channels.find(
                 (channel) =>
-                    channel.name === this.#config.log_channel
+                    channel.id === this.#config.log_channel || channel.name === this.#config.log_channel
             );
 
             if (!this.#logChannel) {
@@ -85,6 +86,11 @@ export const BanEmoji = class {
                 `Emoji ban log channel found: ${this.#logChannel.name}`
             );
         }
+    }
+
+    async onConfigUpdate(guild, channels) {
+        this.#config = Config.ban_emoji;
+        return this.onDiscordReady(guild, channels);
     }
 
     async onDiscordMessage(message) {

@@ -22,13 +22,9 @@ export const HoneypotModule = class {
 
     this.#discordChannels = channels;
 
-    const channel = this.#discordChannels.find(
-        c => c.name === this.#config.channel_name
-    );
+    const channel = findDiscordChannel(this.#discordChannels, this.#config.channel_name);
 
-    this.#logChannel = this.#discordChannels.find(
-        c => c.name === this.#config.log_channel_name
-    );
+    this.#logChannel = findDiscordChannel(this.#discordChannels, this.#config.log_channel_name);
 
     if (!channel) {
         this.#logger.log('error', `Channel not found: ${this.#config.channel_name}`);
@@ -71,6 +67,11 @@ export const HoneypotModule = class {
             this.#logger.log('info', 'Honeypot message not found. Creating...');
             await channel.send(payload);
     }
+    }
+
+    async onConfigUpdate(guild, channels) {
+        this.#config = Config.honeypot;
+        return this.onDiscordReady(guild, channels);
     }
 
     async onDiscordInteraction(interaction) {
@@ -120,5 +121,57 @@ export const HoneypotModule = class {
             this.#logger.log('error', `Failed to punish user: ${err.message}`);
         }
 
+    }
+
+    async onDiscordMessage(message) {
+        if (!this.#config.enabled || !this.#config.enable_honeypot_channel) return;
+        if (!message.guild || message.author.bot) return;
+        const honeypotChannel = this.#discordChannels
+            ? findDiscordChannel(this.#discordChannels, this.#config.channel_name)
+            : undefined;
+        if (!honeypotChannel || message.channel.id !== honeypotChannel.id) return;
+
+        this.#logger.log('warn', `Honeypot channel message from ${message.author.tag}`);
+        if (this.#logChannel) {
+            const logEmbed = new EmbedBuilder()
+                .setTitle('Honeypot Channel Triggered')
+                .setColor('#ED4245')
+                .setAuthor({ name: message.author.tag, iconURL: message.author.displayAvatarURL() })
+                .addFields(
+                    { name: 'User', value: `<@${message.author.id}>`, inline: true },
+                    { name: 'Action', value: this.#config.punishment, inline: true },
+                    { name: 'Channel', value: `<#${message.channel.id}>`, inline: true }
+                )
+                .setTimestamp()
+                .setFooter({ text: 'SUDO' });
+            try {
+                await this.#logChannel.send({ embeds: [logEmbed] });
+            } catch (error) {
+                this.#logger.log('error', `Failed to send honeypot channel log: ${error.message}`);
+            }
+        }
+
+        try {
+            await message.delete();
+        } catch (error) {
+            this.#logger.log('error', `Failed to delete honeypot channel message: ${error.message}`);
+        }
+
+        if (!message.member) {
+            this.#logger.log('error', `Unable to punish ${message.author.tag}: guild member is unavailable.`);
+            return;
+        }
+
+        try {
+            if (this.#config.punishment === 'ban') {
+                await message.member.ban({ reason: 'Posted in honeypot channel' });
+            } else if (this.#config.punishment === 'kick') {
+                await message.member.kick('Posted in honeypot channel');
+            } else {
+                this.#logger.log('error', `Unknown punishment type: ${this.#config.punishment}`);
+            }
+        } catch (error) {
+            this.#logger.log('error', `Failed to punish honeypot channel user: ${error.message}`);
+        }
     }
 };

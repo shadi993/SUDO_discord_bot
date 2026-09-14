@@ -2,6 +2,7 @@ import { CreateLogger } from '../core/logger.mjs';
 import { DiscordClient } from "../core/discord-client.mjs";
 import { Events, EmbedBuilder, ButtonBuilder, ActionRowBuilder, ButtonStyle, ChannelType } from 'discord.js';
 import { Config } from "../core/config.mjs";
+import { findDiscordChannel } from '../core/discord-helpers.mjs';
 
 export const TicketSystem = class {
     #logger;
@@ -19,7 +20,7 @@ export const TicketSystem = class {
     async #createTicketChannel(user) {
         const channelName = `ticket-${user.username}`.toLowerCase().replace(/\s+/g, '-');
         const categoryChannel = this.#discordChannels.find(
-            (ch) => ch.name === Config.ticketSystem.category_name && ch.type === ChannelType.GuildCategory
+            (ch) => (ch.id === Config.ticketSystem.category_name || ch.name === Config.ticketSystem.category_name) && ch.type === ChannelType.GuildCategory
         );
 
         if (!categoryChannel) {
@@ -96,7 +97,7 @@ export const TicketSystem = class {
         const user = await this.#guild.members.fetch(userId);
 
         const messages = await channel.messages.fetch({ limit: 100 });
-        const archiveChannel = this.#discordChannels.find((ch) => ch.name === Config.ticketSystem.archives_channel);
+        const archiveChannel = findDiscordChannel(this.#discordChannels, Config.ticketSystem.archives_channel);
         if (!archiveChannel) {
             this.#logger.log('error', `Archive channel "${Config.ticketSystem.archives_channel}" not found.`);
             return;

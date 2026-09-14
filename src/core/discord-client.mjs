@@ -56,6 +56,7 @@ export const InitDiscordClient = () => {
                     .then((channels) => {
                         Logger.log('debug', `Loaded ${channels.size} channels.`);
                         DiscordChannels = channels;
+                        MigrateChannelNames([...DiscordChannels.values()]);
 
                         Logger.log('debug', 'Fetching roles...');
                         guild.roles.fetch()
@@ -67,7 +68,9 @@ export const InitDiscordClient = () => {
                                 for (const module of ClientReadyModules) {
                                     promises.push(module.onDiscordReady(DiscordGuild, DiscordChannels, DiscordRoles));
                                 }
-                                Promise.all(promises);
+                                Promise.all(promises).catch((error) => {
+                                    Logger.log('error', `A Discord module failed during startup: ${error.message}`);
+                                });
                             })
                             .catch((error) => {
                                 Logger.log('error', `Failed to fetch roles: ${error}`);
@@ -99,17 +102,11 @@ export const InitDiscordClient = () => {
         // Debug logs to check if event is getting triggers
         console.log(`Received message: "${message.content}" from ${message.author.tag} in ${message.channel.type}`);
 
-        if (message.channel.type === 1) { 
-            for (const module of MessageCreateModules) {
-                if (module.onDiscordMessage) {
-                    await module.onDiscordMessage(message);
-                }
-            }
-        }
-
         var promises = [];
         for (const module of MessageCreateModules) {
-            promises.push(module.onDiscordMessage(message));
+            if (module.onDiscordMessage) {
+                promises.push(module.onDiscordMessage(message));
+            }
         }
         await Promise.all(promises);
     });
@@ -174,6 +171,7 @@ var ClientReadyModules = [];
 var MessageCreateModules = [];
 var MessageReactionAddModules = [];
 var InteractionModules = [];
+var configUpdateListenerRegistered = false;
 
 /**
  * Register a module to receive Discord events.
@@ -196,5 +194,15 @@ export const RegisterDiscordModule = (module) => {
 
     if (module.onDiscordInteraction) {
         InteractionModules.push(module);
+    }
+
+    if (ClientReadyModules.length === 1 && !configUpdateListenerRegistered) {
+        configUpdateListenerRegistered = true;
+        RegisterConfigUpdateListener(async () => {
+            if (!DiscordGuild || !DiscordChannels || !DiscordRoles) return;
+            await Promise.all(ClientReadyModules
+                .filter(readyModule => readyModule.onConfigUpdate)
+                .map(readyModule => readyModule.onConfigUpdate(DiscordGuild, DiscordChannels, DiscordRoles)));
+        });
     }
 }

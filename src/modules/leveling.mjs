@@ -1,6 +1,7 @@
 import { CreateLogger } from '../core/logger.mjs';
 import { Config } from '../core/config.mjs';
 import { PostCountDboEntity } from '../core/database.mjs';
+import { findDiscordChannel } from '../core/discord-helpers.mjs';
 
 
 
@@ -274,6 +275,10 @@ export const LevelingModule = class {
             this.#logger.log('warn', `Leveling announcement channel ${Config.leveling.announcement_channel_name} was not found in the server. Level-up announcements are disabled until the channel is created or configured.`);
             return;
         }
+    }
+
+    async onConfigUpdate(guild, channels, roles) {
+        return this.onDiscordReady(guild, channels, roles);
     }
 
     async onDiscordMessage(message) {

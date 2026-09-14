@@ -75,14 +75,20 @@ export const PersistentMessage = class {
         this.#discordChannels = channels;
 
         for (const { channel_name, message } of this.#messages) {
-            const channel = this.#discordChannels.find((ch) => ch.name === channel_name);
+            const channel = findDiscordChannel(this.#discordChannels, channel_name);
 
             if (channel) {
                 await this.#ensurePersistentMessage(channel, message);
             } else {
                 this.#logger.log('error', `Channel not found: ${channel_name}`);
             }
+
         }
+    }
+
+    async onConfigUpdate(guild, channels) {
+        this.#messages = Config.persistentMessages?.messages || [];
+        return this.onDiscordReady(guild, channels);
     }
 
     async onDiscordMessage(message) {

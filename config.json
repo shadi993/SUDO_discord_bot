@@ -65,8 +65,8 @@
     },
     "dob_check": {
         "enabled": true,
-        "channel_name": "📜｜rules",
-        "moderation_channel": "dob-log",
+        "channel_name": "1277642829803290800",
+        "moderation_channel": "1543670731450359809",
         "verified_role": "SUDO Member",
         "title": "Rules",
         "description": "if you accept the conditions press the ✅",
