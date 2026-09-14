@@ -14,12 +14,14 @@ export const ThresholdMessage = class {
     #config;
     #activeBotMessages;
     #activeChannels;
+    #channelOperations;
 
     constructor() {
         this.#logger = CreateLogger('ThresholdMessage');
         this.#messageCounts = {};
         this.#activeBotMessages = {};
         this.#activeChannels = new Set();
+        this.#channelOperations = new Map();
         this.#config = Config.thresholdMessages?.messages || [];
 
         if (!Array.isArray(this.#config)) {
@@ -58,6 +60,20 @@ export const ThresholdMessage = class {
         if (botMessage) this.#activeBotMessages[channel.id] = botMessage;
     }
 
+    async #enqueueChannelOperation(channelId, operation) {
+        const previous = this.#channelOperations.get(channelId) || Promise.resolve();
+        const current = previous
+        .catch(() => undefined)
+        .then(operation)
+        .finally(() => {
+            if (this.#channelOperations.get(channelId) === current) {
+                this.#channelOperations.delete(channelId);
+            }
+        });
+        this.#channelOperations.set(channelId, current);
+        return current;
+    }
+
     async onDiscordReady(_guild, channels) {
         if (!Config.thresholdMessages?.enabled) return;
         this.#logger.log('info', 'ThresholdMessage module is ready.');
@@ -94,31 +110,33 @@ export const ThresholdMessage = class {
         if (!monitoredChannel) return;
 
         const channelId = message.channel.id;
-        if (containsMediaOrLink(message)) {
-            this.#messageCounts[channelId] = 0;
-            this.#activeChannels.delete(channelId);
-            await this.#deleteBotMessage(channelId);
-            this.#logger.log('info', `Media or link detected in ${message.channel.name}; threshold reset.`);
-            return;
-        }
+        await this.#enqueueChannelOperation(channelId, async () => {
+            if (containsMediaOrLink(message)) {
+                this.#messageCounts[channelId] = 0;
+                this.#activeChannels.delete(channelId);
+                await this.#deleteBotMessage(channelId);
+                this.#logger.log('info', `Media or link detected in ${message.channel.name}; threshold reset.`);
+                return;
+            }
 
-        if (this.#activeChannels.has(channelId)) {
-            await this.#keepReminderAtBottom(message.channel, monitoredChannel.bot_message);
-            return;
-        }
+            if (this.#activeChannels.has(channelId)) {
+                await this.#keepReminderAtBottom(message.channel, monitoredChannel.bot_message);
+                return;
+            }
 
-        this.#messageCounts[channelId] = (this.#messageCounts[channelId] || 0) + 1;
-        const threshold = Number(monitoredChannel.threshold);
-        if (!Number.isInteger(threshold) || threshold < 1) {
-            this.#logger.log('warn', `Invalid threshold for ${message.channel.name}: ${monitoredChannel.threshold}`);
-            return;
-        }
+            this.#messageCounts[channelId] = (this.#messageCounts[channelId] || 0) + 1;
+            const threshold = Number(monitoredChannel.threshold);
+            if (!Number.isInteger(threshold) || threshold < 1) {
+                this.#logger.log('warn', `Invalid threshold for ${message.channel.name}: ${monitoredChannel.threshold}`);
+                return;
+            }
 
-        if (this.#messageCounts[channelId] >= threshold) {
-            this.#messageCounts[channelId] = 0;
-            this.#activeChannels.add(channelId);
-            await this.#keepReminderAtBottom(message.channel, monitoredChannel.bot_message);
-            this.#logger.log('info', `Threshold reached in ${message.channel.name}; reminder is active.`);
-        }
+            if (this.#messageCounts[channelId] >= threshold) {
+                this.#messageCounts[channelId] = 0;
+                this.#activeChannels.add(channelId);
+                await this.#keepReminderAtBottom(message.channel, monitoredChannel.bot_message);
+                this.#logger.log('info', `Threshold reached in ${message.channel.name}; reminder is active.`);
+            }
+        });
     }
 };
