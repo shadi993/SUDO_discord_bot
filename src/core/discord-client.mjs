@@ -110,7 +110,12 @@ export const InitDiscordClient = () => {
                 promises.push(module.onDiscordMessage(message));
             }
         }
-        await Promise.all(promises);
+        const results = await Promise.allSettled(promises);
+        for (const result of results) {
+            if (result.status === 'rejected') {
+                Logger.log('error', `A Discord message module failed: ${result.reason?.stack || result.reason}`);
+            }
+        }
     });
 
     DiscordClient.on(Events.GuildMemberAdd, async () => {

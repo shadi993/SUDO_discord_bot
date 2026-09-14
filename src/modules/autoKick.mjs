@@ -33,14 +33,14 @@ export const AutoKick = class {
             this.#logger.log('info', `Kicking ${member.user.tag}, account age: ${accountAgeDays} days (Limit: ${accountAgeLimitDays} days)`);
 
             const dmEmbed = new EmbedBuilder()
-                .setColor('#ED4245')
-                .setTitle('You have been kicked')
-                .setDescription(
-                    `Hello ${member.user.username},\n` +
-                    `Your account was created only **${accountAgeDays} days ago**, which is below our server's minimum requirement of **${accountAgeLimitDays} days**.`
-                )
-                .setTimestamp()
-                .setFooter({ text: 'SUDO Bot' });
+            .setColor('#ED4245')
+            .setTitle('You have been kicked')
+            .setDescription(
+                `Hello ${member.user.username},\n` +
+                `Your account was created only **${accountAgeDays} days ago**, which is below our server's minimum requirement of **${accountAgeLimitDays} days**.`
+            )
+            .setTimestamp()
+            .setFooter({ text: 'SUDO Bot' });
 
             // Send DM
             try {
@@ -55,7 +55,7 @@ export const AutoKick = class {
                 this.#logger.log('info', `Successfully kicked ${member.user.tag}.`);
             } catch (error) {
                 this.#logger.log('error', `Failed to kick ${member.user.tag}: ${error.message}`);
-                return; 
+                return;
             }
 
             // AutoKick info
@@ -65,7 +65,7 @@ export const AutoKick = class {
             try {
                 const notifyChannel = member.guild.channels.cache.find(
                     channel =>
-                        channel.id === Config.autokick.notify_channel || channel.name === Config.autokick.notify_channel
+                    channel.id === Config.autokick.notify_channel || channel.name === Config.autokick.notify_channel
                 );
 
                 if (!notifyChannel || !notifyChannel.isTextBased()) {
@@ -76,20 +76,20 @@ export const AutoKick = class {
                     return;
                 }
                 const autoKickEmbed = new EmbedBuilder()
-                    .setColor('#ED4245')
-                    .setAuthor({
-                        name: member.user.tag,
-                        iconURL: member.user.displayAvatarURL()
-                    })
-                    .setThumbnail(member.user.displayAvatarURL())
-                    .addFields({
-                        name: '\u200B',
-                        value: `<@${member.user.id}> triggered auto kick.`
-                    })
-                    .setTimestamp()
-                    .setFooter({
-                        text: 'SUDO'
-                    });
+                .setColor('#ED4245')
+                .setAuthor({
+                    name: member.user.tag,
+                    iconURL: member.user.displayAvatarURL()
+                })
+                .setThumbnail(member.user.displayAvatarURL())
+                .addFields({
+                    name: '\u200B',
+                    value: `<@${member.user.id}> triggered auto kick.`
+                })
+                .setTimestamp()
+                .setFooter({
+                    text: 'SUDO'
+                });
 
                 await notifyChannel.send({
                     embeds: [autoKickEmbed]

@@ -456,16 +456,16 @@
         "enabled": true,
         "messages": [
             {
-                "channel_name": "1277642830462062627",
-                "threshold": 6,
-                "bot_message": "**please keep the chat to minimum**\n check the rules in channel's description for more info",
-                "enabled": false
-            },
-            {
                 "channel_name": "1277642830462062631",
                 "threshold": 6,
                 "bot_message": "**please keep the chat to minimum**\n check the rules in channel's description for more info",
-                "enabled": false
+                "enabled": true
+            },
+            {
+                "channel_name": "1277642830462062627",
+                "threshold": 6,
+                "bot_message": "**please keep the chat to minimum**\n check the rules in channel's description for more info",
+                "enabled": true
             }
         ]
     }

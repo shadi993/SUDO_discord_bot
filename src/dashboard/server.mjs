@@ -19,6 +19,24 @@ const dashboardFiles = {
 app.use(express.json({ limit: '256kb' }));
 app.use(express.static(path.join(root, 'src/dashboard/dist')));
 
+const getDashboardRedirectUri = request => {
+    const configuredUri = process.env.DISCORD_DASHBOARD_REDIRECT_URI;
+    if (configuredUri) {
+        const configuredUrl = new URL(configuredUri);
+        const requestHost = request.get('host');
+        const isLocalhost = configuredUrl.hostname === 'localhost'
+            || configuredUrl.hostname === '127.0.0.1'
+            || configuredUrl.hostname === '::1';
+        if (!isLocalhost || !requestHost || requestHost.startsWith(`${configuredUrl.hostname}:`)) {
+            return configuredUri;
+        }
+    }
+
+    const forwardedProtocol = request.get('x-forwarded-proto')?.split(',')[0]?.trim();
+    const protocol = forwardedProtocol || request.protocol;
+    return `${protocol}://${request.get('host')}/auth/callback`;
+};
+
 const getCookie = (request, name) => {
     const cookies = request.headers.cookie?.split(';').map(value => value.trim()) || [];
     const cookie = cookies.find(value => value.startsWith(`${name}=`));
@@ -51,8 +69,41 @@ const discordRequest = async (endpoint, options = {}) => {
     return response.json();
 };
 
-const isAdmin = (member, guild) => guild.owner_id === member.user.id
-    || (BigInt(member.permissions) & BigInt(PermissionFlagsBits.Administrator)) !== 0n;
+const isAdmin = (member, guild, roles = []) => {
+    const userId = member?.user?.id;
+    if (!userId || !guild?.id || !guild.owner_id) return false;
+    if (guild.owner_id === userId) return true;
+
+    const administrator = BigInt(PermissionFlagsBits.Administrator);
+    if (member.permissions !== undefined
+        && (typeof member.permissions === 'string' || typeof member.permissions === 'number')
+        && (BigInt(member.permissions) & administrator) !== 0n) {
+        return true;
+    }
+
+    const memberRoleIds = new Set(Array.isArray(member.roles) ? member.roles : []);
+    memberRoleIds.add(guild.id);
+
+    return roles.some(role => {
+        if (!role || !memberRoleIds.has(role.id)) return false;
+        if (typeof role.permissions !== 'string' && typeof role.permissions !== 'number') return false;
+        return (BigInt(role.permissions) & administrator) !== 0n;
+    });
+};
+
+const channelSetting = key => key.toLowerCase().includes('channel') || key.toLowerCase().includes('category');
+
+const replaceChannelNames = (value, channels, key = '') => {
+    if (Array.isArray(value)) return value.map(item => replaceChannelNames(item, channels, key));
+    if (!value || typeof value !== 'object') {
+        if (!channelSetting(key) || typeof value !== 'string') return value;
+        return channels.find(channel => channel.id === value || channel.name === value)?.id || value;
+    }
+    return Object.fromEntries(Object.entries(value).map(([childKey, childValue]) => [
+        childKey,
+        replaceChannelNames(childValue, channels, childKey)
+    ]));
+};
 
 const readConfig = (file) => {
     const config = JSON.parse(fs.readFileSync(path.join(root, dashboardFiles[file]), 'utf8'));
@@ -63,9 +114,9 @@ const readConfig = (file) => {
     return config;
 };
 
-app.get('/auth/login', (_request, response) => {
+app.get('/auth/login', (request, response) => {
     const clientId = process.env.DISCORD_DASHBOARD_CLIENT_ID || process.env.DISCORD_CLIENT_ID;
-    const redirectUri = process.env.DISCORD_DASHBOARD_REDIRECT_URI || 'http://localhost:3000/auth/callback';
+    const redirectUri = getDashboardRedirectUri(request);
     if (!clientId || !process.env.DISCORD_DASHBOARD_CLIENT_SECRET) {
         return response.status(503).send('Dashboard OAuth is not configured. Set the dashboard variables in .env.');
     }
@@ -82,7 +133,7 @@ app.get('/auth/callback', async (request, response) => {
     try {
         if (!request.query.code) return response.status(400).send('Missing OAuth code.');
         const clientId = process.env.DISCORD_DASHBOARD_CLIENT_ID || process.env.DISCORD_CLIENT_ID;
-        const redirectUri = process.env.DISCORD_DASHBOARD_REDIRECT_URI || 'http://localhost:3000/auth/callback';
+        const redirectUri = getDashboardRedirectUri(request);
         const tokenResponse = await fetch('https://discord.com/api/v10/oauth2/token', {
             method: 'POST',
             headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -94,21 +145,32 @@ app.get('/auth/callback', async (request, response) => {
                 redirect_uri: redirectUri
             })
         });
-        if (!tokenResponse.ok) throw new Error('OAuth token exchange failed.');
+        if (!tokenResponse.ok) {
+            const details = await tokenResponse.text();
+            throw new Error(`OAuth token exchange failed (${tokenResponse.status}): ${details}`);
+        }
         const token = await tokenResponse.json();
         const userResponse = await fetch('https://discord.com/api/v10/users/@me', {
             headers: { Authorization: `Bearer ${token.access_token}` }
         });
+        if (!userResponse.ok) {
+            const details = await userResponse.text();
+            throw new Error(`Discord user lookup failed (${userResponse.status}): ${details}`);
+        }
         const user = await userResponse.json();
         const guild = await discordRequest(`/guilds/${process.env.DISCORD_GUILD_ID}`);
         const member = await discordRequest(`/guilds/${process.env.DISCORD_GUILD_ID}/members/${user.id}`);
-        if (!isAdmin({ ...member, user }, guild)) return response.status(403).send('Only Discord server administrators can access this dashboard.');
+        const roles = await discordRequest(`/guilds/${process.env.DISCORD_GUILD_ID}/roles`);
+        if (!isAdmin({ ...member, user }, guild, roles)) {
+            logger.warn(`Dashboard access denied for ${user.id}: member roles=${JSON.stringify(member.roles)}, permissions=${member.permissions ?? 'missing'}, guild=${guild.id}`);
+            return response.status(403).send('Only Discord server administrators can access this dashboard.');
+        }
         const sessionToken = createSession({ id: user.id, username: user.global_name || user.username, avatar: user.avatar });
         response.setHeader('Set-Cookie', `sudo_dashboard_session=${sessionToken}; HttpOnly; SameSite=Lax; Path=/; Max-Age=28800`);
         return response.redirect('/');
     } catch (error) {
-        logger.error(error);
-        return response.status(502).send('Discord login could not be completed.');
+        logger.error(`Discord login failed: ${error.message}`);
+        return response.status(502).send(`Discord login could not be completed: ${error.message}`);
     }
 });
 
@@ -139,7 +201,7 @@ app.get('/api/discord-options', requireAdmin, async (request, response) => {
     const roles = await discordRequest(`/guilds/${process.env.DISCORD_GUILD_ID}/roles`);
     const emojis = await discordRequest(`/guilds/${process.env.DISCORD_GUILD_ID}/emojis`);
     return response.json({
-        channels: guild.filter(channel => channel.type === 0).map(channel => channel.name).sort(),
+        channels: guild.filter(channel => channel.type === 0 || channel.type === 4).map(channel => ({ id: channel.id, name: channel.name, type: channel.type })).sort((a, b) => a.name.localeCompare(b.name)),
         roles: roles.filter(role => role.name !== '@everyone').map(role => role.name).sort(),
         emojis: emojis.filter(emoji => emoji.name).map(emoji => ({
             name: emoji.name,
@@ -163,7 +225,7 @@ app.get('/api/server-status', requireAdmin, async (request, response) => {
     });
 });
 
-app.put('/api/config/:file', requireAdmin, (request, response) => {
+app.put('/api/config/:file', requireAdmin, async (request, response) => {
     const file = request.params.file;
     if (!dashboardFiles[file]) return response.status(404).json({ error: 'Unknown configuration.' });
     if (request.body === null || typeof request.body !== 'object') return response.status(400).json({ error: 'Configuration must be JSON.' });
@@ -171,6 +233,8 @@ app.put('/api/config/:file', requireAdmin, (request, response) => {
     if (file === 'config.json') {
         delete config.general;
         delete config.database;
+        const channels = await discordRequest(`/guilds/${process.env.DISCORD_GUILD_ID}/channels`);
+        Object.assign(config, replaceChannelNames(config, channels.filter(channel => channel.type === 0 || channel.type === 4)));
         for (const value of Object.values(config)) {
             if (value && typeof value === 'object' && !Array.isArray(value) && !Object.hasOwn(value, 'enabled')) {
                 value.enabled = true;
@@ -187,5 +251,6 @@ app.put('/api/config/:file', requireAdmin, (request, response) => {
 export const InitDashboard = () => {
     logger = CreateLogger('Dashboard');
     const port = Number(process.env.DISCORD_DASHBOARD_PORT || 3000);
-    app.listen(port, () => logger.info(`Dashboard available at http://localhost:${port}`));
+    const host = process.env.DISCORD_DASHBOARD_HOST || '0.0.0.0';
+    app.listen(port, host, () => logger.info(`Dashboard available at http://${host}:${port} (${root})`));
 };

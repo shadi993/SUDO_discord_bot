@@ -24,22 +24,22 @@ export const AutoRole = class {
 
         if (!this.listenerAttached) {this.listenerAttached = true;
 
-        DiscordClient.on(
-            Events.GuildMemberUpdate,
-            async (oldMember, newMember) => {
-                try {
-                    this.logger.log('info',`Pending: ${oldMember.pending} -> ${newMember.pending}`
-                    );
+            DiscordClient.on(
+                Events.GuildMemberUpdate,
+                async (oldMember, newMember) => {
+                    try {
+                        this.logger.log('info',`Pending: ${oldMember.pending} -> ${newMember.pending}`
+                        );
 
-                    if (oldMember.pending && !newMember.pending) {
-                        await this.onMemberAcceptedRules(newMember);
+                        if (oldMember.pending && !newMember.pending) {
+                            await this.onMemberAcceptedRules(newMember);
+                        }
+                    } catch (err) {
+                        this.logger.log('error',`GuildMemberUpdate handler failed: ${err.message}`
+                        );
                     }
-                } catch (err) {
-                    this.logger.log('error',`GuildMemberUpdate handler failed: ${err.message}`
-                    );
                 }
-            }
-        );}
+            );}
     }
 
     async onMemberAcceptedRules(member) {
@@ -48,7 +48,7 @@ export const AutoRole = class {
 
             await Promise.all(
                 Config.autorole.assign_on_join.map((roleName) =>
-                    this.assignRoleByName(member, roleName)
+                this.assignRoleByName(member, roleName)
                 )
             );
         } catch (err) {
@@ -68,8 +68,8 @@ export const AutoRole = class {
             }
 
             const freshMember = await member.guild.members
-                .fetch(member.id)
-                .catch(() => null);
+            .fetch(member.id)
+            .catch(() => null);
 
             if (!freshMember) {
                 this.logger.log('warn',`Member ${member.user.tag} no longer exists.`);

@@ -35,15 +35,24 @@ function RoleOption({ option, options, onChange, onDelete }) {
 }
 
 export function RolesEditor({ value, options, onChange }) {
+    const channelValue = panel => options.channels.find(channel => channel.id === panel.channel_name || channel.name === panel.channel_name)?.id || panel.channel_name || '';
+    const channelChoices = panel => {
+        const choices = options.channels.filter(channel => channel.type === 0);
+        const selected = channelValue(panel);
+        if (selected && !choices.some(channel => channel.id === selected)) {
+            choices.unshift(options.channels.find(channel => channel.id === selected) || {id: selected, name: selected});
+        }
+        return choices;
+    };
     const emit = panels => onChange(panels.map((panel, index) => ({ ...panel, id: index })));
     const updatePanel = (index, panel) => emit(value.map((item, itemIndex) => itemIndex === index ? panel : item));
     const addPanel = () => emit([...value, { channel_name: '', title: '', options: [] }]);
     return <div className="array-editor">
         {value.map((panel, index) => <section className="card" key={`role-panel-${index}`}>
             <div className="option-heading"><h3>Role panel {index}</h3><button className="button danger" type="button" onClick={() => emit(value.filter((_, itemIndex) => itemIndex !== index))}>Delete panel</button></div>
-            <div className="field"><label>Channel name</label><select value={panel.channel_name || ''} onChange={event => updatePanel(index, { ...panel, channel_name: event.target.value, id: index })}>
+            <div className="field"><label>Channel</label><select value={channelValue(panel)} onChange={event => updatePanel(index, { ...panel, channel_name: event.target.value, id: index })}>
                 <option value="">Select a Discord channel</option>
-                {options.channels.map(channel => <option key={channel}>{channel}</option>)}
+                {channelChoices(panel).map(channel => <option key={channel.id} value={channel.id}>{channel.name}</option>)}
             </select></div>
             <TextField label="Title" value={panel.title} onChange={title => updatePanel(index, { ...panel, title, id: index })} />
             <div className="field switch"><label>Exclusive group</label><input type="checkbox" checked={Boolean(panel.exclusive_group)} onChange={event => updatePanel(index, { ...panel, exclusive_group: event.target.checked, id: index })} /></div>

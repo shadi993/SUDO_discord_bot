@@ -223,6 +223,7 @@ export const LevelingModule = class {
     constructor() {
         this.#logger = CreateLogger('LevelingModule');
         this.#discordUsersMap = new Map();
+        this.#channelsToIgnore = [];
     }
 
     static calculateLevel(xp) {
