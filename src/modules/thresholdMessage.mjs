@@ -1,12 +1,5 @@
 import { CreateLogger } from '../core/logger.mjs';
 import { Config } from '../core/config.mjs';
-import { findDiscordChannel } from '../core/discord-helpers.mjs';
-
-const containsMediaOrLink = message => (
-    message.attachments.size > 0
-    || message.embeds.length > 0
-    || /https?:\/\/\S+/i.test(message.content || '')
-);
 
 export const ThresholdMessage = class {
     #logger;
@@ -19,7 +12,7 @@ export const ThresholdMessage = class {
         this.#logger = CreateLogger('ThresholdMessage');
         this.#messageCounts = {};
         this.#activeBotMessages = {};
-        this.#activeChannels = new Set();
+        this.#activeCollectors = {};
         this.#config = Config.thresholdMessages?.messages || [];
 
         if (!Array.isArray(this.#config)) {
@@ -58,7 +51,7 @@ export const ThresholdMessage = class {
         if (botMessage) this.#activeBotMessages[channel.id] = botMessage;
     }
 
-    async onDiscordReady(_guild, channels) {
+    async onDiscordReady(guild, channels) {
         if (!Config.thresholdMessages?.enabled) return;
         this.#logger.log('info', 'ThresholdMessage module is ready.');
         for (const entry of this.#config) {
@@ -85,7 +78,8 @@ export const ThresholdMessage = class {
     }
 
     async onDiscordMessage(message) {
-        if (!Config.thresholdMessages?.enabled || !message.guild || message.author.bot) return;
+        if (!Config.thresholdMessages?.enabled) return;
+        if (message.author.bot) return;
 
         const monitoredChannel = this.#config.find(entry =>
             entry.enabled !== false

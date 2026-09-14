@@ -1,6 +1,5 @@
 import { CreateLogger } from '../core/logger.mjs';
 import { Config } from '../core/config.mjs';
-import { findDiscordChannel } from '../core/discord-helpers.mjs';
 
 export const PersistentMessage = class {
     #logger;

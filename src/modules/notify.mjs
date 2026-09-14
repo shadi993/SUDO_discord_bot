@@ -27,7 +27,6 @@ export const NotifyModule = class {
 
     /*eslint no-unused-vars: ["error", {"args": "none"}]*/
     async onDiscordReady(guild, channels, roles) {
-        this.#notifyChannel = findDiscordChannel(channels, Config.notify.channel);
         if (!Config.notify.enabled) return;
         this.#logger.log('info', 'NotifyModule module is ready.');
         this.#logger.log('info', 'NotifyModule registering additional callbacks.');

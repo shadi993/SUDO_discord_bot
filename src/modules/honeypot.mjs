@@ -1,7 +1,6 @@
 import { CreateLogger } from '../core/logger.mjs';
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder } from 'discord.js';
 import { Config } from '../core/config.mjs';
-import { findDiscordChannel } from '../core/discord-helpers.mjs';
 
 export const HoneypotModule = class {
     #logger;

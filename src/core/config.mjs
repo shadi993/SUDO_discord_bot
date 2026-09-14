@@ -28,6 +28,23 @@ const defaultConfig = {
     thresholdMessages: { enabled: false, messages: [] }
 };
 
+const defaultConfig = {
+    leveling: { enabled: true, min_time_between_messages_seconds: 60, announcement_channel_name: '', ignore_channels: [], roles: {} },
+    disboard: { enabled: true, message: 'You can bump again!' },
+    autorole: { enabled: true, assign_on_join: [] },
+    notify: { enabled: true, channel: '' },
+    rank: { enabled: true, channel_allowed: '' },
+    autokick: { enabled: true, account_age_limit: 30, info_enabled: true, info_channel: '' },
+    moderation: { enabled: true, channel_name: '' },
+    ticketSystem: { enabled: true, category_name: '', moderator: '', archives_channel: '' },
+    dob_check: { enabled: true, channel_name: '', moderation_channel: '', verified_role: '', title: '', description: '', button_text: '', button_emoji: '✅', button_style: 'Success' },
+    ban_emoji: { enabled: true, log: true, log_channel: '', emojis: [] },
+    honeypot: { enabled: true, channel_name: '', log_channel_name: '', title: '', description: '', button_text: '', punishment: 'kick' },
+    persistentMessages: { enabled: true, messages: [] },
+    roles: { enabled: true, panels: [] },
+    thresholdMessages: { enabled: true, messages: [] }
+};
+
 /**
  * Load the configuration from the config.json file.
  */
@@ -56,12 +73,6 @@ export const InitConfig = () => {
             value.enabled = true;
             migrated = true;
         }
-
-    }
-
-    if (Config.honeypot && !Object.hasOwn(Config.honeypot, 'enable_honeypot_channel')) {
-        Config.honeypot.enable_honeypot_channel = false;
-        migrated = true;
     }
 
     if (migrated) {
@@ -78,57 +89,10 @@ export const UpdateConfig = (nextConfig) => {
         throw new Error('Config must be an object.');
     }
 
-    if (!Config) {
-        Config = nextConfig;
-        return;
-    }
-
-    const syncValue = (current, next) => {
-        if (Array.isArray(current) && Array.isArray(next)) {
-            current.splice(0, current.length, ...next.map(value => structuredClone(value)));
-            return current;
-        }
-        if (current && next && typeof current === 'object' && typeof next === 'object'
-            && !Array.isArray(current) && !Array.isArray(next)) {
-            for (const key of Object.keys(current)) {
-                if (!Object.hasOwn(next, key)) delete current[key];
-            }
-            for (const [key, value] of Object.entries(next)) {
-                current[key] = Object.hasOwn(current, key)
-                    ? syncValue(current[key], value)
-                    : structuredClone(value);
-            }
-            return current;
-        }
-        return structuredClone(next);
-    };
-
-    syncValue(Config, nextConfig);
-    for (const listener of configUpdateListeners) {
-        Promise.resolve(listener(Config)).catch(error => {
-            console.error(`Failed to apply live configuration update: ${error.message}`);
-        });
-    }
-};
-
-export const MigrateChannelNames = (channels) => {
-    const isChannelKey = key => key.toLowerCase().includes('channel') || key.toLowerCase().includes('category');
-    const migrate = (value, key = '') => {
-        if (Array.isArray(value)) return value.map(item => migrate(item, key));
-        if (!value || typeof value !== 'object') {
-            if (!isChannelKey(key) || typeof value !== 'string') return value;
-            return channels.find(channel => channel.id === value || channel.name === value)?.id || value;
-        }
-        return Object.fromEntries(Object.entries(value).map(([childKey, childValue]) => [
-            childKey,
-            migrate(childValue, childKey)
-        ]));
-    };
-
-    const migrated = migrate(Config);
-    if (JSON.stringify(migrated) !== JSON.stringify(Config)) {
+    if (Config) {
         for (const key of Object.keys(Config)) delete Config[key];
-        Object.assign(Config, migrated);
-        fs.writeFileSync('config.json', `${JSON.stringify(Config, null, 4)}\n`);
+        Object.assign(Config, nextConfig);
+    } else {
+        Config = nextConfig;
     }
 };

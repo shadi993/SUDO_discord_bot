@@ -255,7 +255,7 @@ export const LevelingModule = class {
         this.#discordRoles = roles;
 
         for (const channelName of Config.leveling.ignore_channels ?? []) {
-            const channel = findDiscordChannel(channels, channelName);
+            const channel = channels.find(channel => channel.name === channelName);
             if (channel) {
                 this.#channelsToIgnore.push(channel.id);
             } else {
@@ -269,7 +269,7 @@ export const LevelingModule = class {
             return;
         }
 
-        this.#levelupAnnouncementChannel = findDiscordChannel(channels, Config.leveling.announcement_channel_name);
+        this.#levelupAnnouncementChannel = channels.find(channel => channel.name === Config.leveling.announcement_channel_name);
 
         if (!this.#levelupAnnouncementChannel) {
             this.#logger.log('warn', `Leveling announcement channel ${Config.leveling.announcement_channel_name} was not found in the server. Level-up announcements are disabled until the channel is created or configured.`);

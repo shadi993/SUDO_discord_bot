@@ -50,7 +50,7 @@ export const dashboardLayout = {
             label: 'Ticket system',
             fields: {
                 enabled: {type: 'toggle'},
-                category_name: {type: 'category'},
+                category_name: {type: 'channel'},
                 moderator: {type: 'role'},
                 archives_channel: {type: 'channel'}
             }
@@ -59,7 +59,6 @@ export const dashboardLayout = {
             label: 'DOB check',
             fields: {
                 enabled: {type: 'toggle'},
-                enable_honeypot_channel: {type: 'toggle', label: 'Enable honeypot channel'},
                 channel_name: {type: 'channel'},
                 moderation_channel: {type: 'channel'},
                 verified_role: {type: 'role'},
@@ -67,7 +66,7 @@ export const dashboardLayout = {
                 description: {type: 'text'},
                 button_text: {type: 'text'},
                 button_emoji: {type: 'text'},
-                button_style: {type: 'select', options: ['Primary', 'Secondary', 'Danger', 'Success']}
+                button_style: {type: 'text'}
             }
         },
         ban_emoji: {
@@ -83,7 +82,7 @@ export const dashboardLayout = {
                 title: {type: 'text'},
                 description: {type: 'text'},
                 button_text: {type: 'text'},
-                punishment: {type: 'select', options: ['kick', 'ban']}
+                punishment: {type: 'text'}
             }
         },
         persistentMessages: {

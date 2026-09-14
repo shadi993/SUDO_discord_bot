@@ -1,8 +1,6 @@
 import { Client, GatewayIntentBits, Events ,Partials} from 'discord.js';
 import { Logger } from './logger.mjs';
 import { recordDailyStat } from '../dashboard/stats.mjs';
-import { MigrateChannelNames } from './config.mjs';
-import { RegisterConfigUpdateListener } from './config.mjs';
 
 export var DiscordClient;
 
