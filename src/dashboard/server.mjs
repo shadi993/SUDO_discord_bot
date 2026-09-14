@@ -251,5 +251,6 @@ app.put('/api/config/:file', requireAdmin, async (request, response) => {
 export const InitDashboard = () => {
     logger = CreateLogger('Dashboard');
     const port = Number(process.env.DISCORD_DASHBOARD_PORT || 3000);
-    app.listen(port, () => logger.info(`Dashboard available on port ${port} (${root})`));
+    const host = process.env.DISCORD_DASHBOARD_HOST || '0.0.0.0';
+    app.listen(port, host, () => logger.info(`Dashboard available at http://${host}:${port} (${root})`));
 };
