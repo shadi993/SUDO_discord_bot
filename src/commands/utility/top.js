@@ -1,6 +1,7 @@
 import { SlashCommandBuilder, EmbedBuilder } from 'discord.js';
 import { PostCountDboEntity } from '../../core/database.mjs';
 import { Config } from '../../core/config.mjs';
+import { isAllowedChannel } from '../../core/discord-helpers.mjs';
 
 export const data = new SlashCommandBuilder()
     .setName('top')
@@ -9,9 +10,10 @@ export const data = new SlashCommandBuilder()
 export async function execute(interaction) {
     if (!Config.rank.enabled) return interaction.reply({ content: 'Rank commands are disabled.', ephemeral: true });
     const allowedChannel = Config.rank.channel_allowed;
+    const targetChannel = interaction.guild.channels.cache.find(channel => channel.id === allowedChannel || channel.name === allowedChannel);
 
-    if (interaction.channel.name !== allowedChannel) {
-        return interaction.reply({ content: `You can only use this command in the #${allowedChannel} channel.`, ephemeral: true });
+    if (!targetChannel || !isAllowedChannel(interaction.channel, allowedChannel, interaction.guild.channels.cache)) {
+        return interaction.reply({ content: `You can only use this command in the #${targetChannel?.name || allowedChannel} channel.`, ephemeral: true });
     }
 
     const topUsers = await PostCountDboEntity.findAll({

@@ -1,6 +1,7 @@
 import { SlashCommandBuilder } from 'discord.js';
 import { PostCountDboEntity } from '../../../core/database.mjs';
 import { Config } from '../../../core/config.mjs';
+import { isAllowedChannel } from '../../../core/discord-helpers.mjs';
 
 export const data = new SlashCommandBuilder()
     .setName('daily')
@@ -9,15 +10,15 @@ export const data = new SlashCommandBuilder()
 export async function execute(interaction) {
     if (!Config.rank.enabled) return interaction.reply({ content: 'Rank commands are disabled.', ephemeral: true });
     const targetChannelName = Config.rank.channel_allowed;
-    const targetChannel = interaction.guild.channels.cache.find(channel => channel.name === targetChannelName);
+    const targetChannel = interaction.guild.channels.cache.find(channel => channel.id === targetChannelName || channel.name === targetChannelName);
 
     if (!targetChannel) {
         await interaction.reply({ content: `Channel **${targetChannelName}** not found.`, ephemeral: true });
         return;
     }
 
-    if (interaction.channel.id !== targetChannel.id) {
-        await interaction.reply({ content: `You can only use this command in **${targetChannelName}** channel.`, ephemeral: true });
+    if (!isAllowedChannel(interaction.channel, targetChannelName, interaction.guild.channels.cache)) {
+        await interaction.reply({ content: `You can only use this command in **${targetChannel.name}** channel.`, ephemeral: true });
         return;
     }
 
