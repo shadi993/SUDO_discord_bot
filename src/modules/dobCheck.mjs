@@ -480,7 +480,8 @@ export const DobCheck = class {
 
         const moderationChannel = this.#discordChannels.find(
             (channel) =>
-            channel.name === config.moderation_channel
+            channel.name === config.moderation_channel ||
+            channel.id === config.moderation_channel
         );
 
         if (!moderationChannel) {
