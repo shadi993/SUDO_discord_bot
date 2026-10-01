@@ -33,3 +33,6 @@ wrangler.toml
 
 # Used by docker for its data volumes (database)
 data/
+
+# related to the SUDO bot
+config.json
