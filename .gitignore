@@ -36,3 +36,4 @@ data/
 
 # related to the SUDO bot
 config.json
+userid_levels.json
