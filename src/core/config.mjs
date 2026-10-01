@@ -11,11 +11,32 @@ export const RegisterConfigUpdateListener = listener => {
     return () => configUpdateListeners.delete(listener);
 };
 
+const createNotificationEvents = () => Object.fromEntries(Object.entries({
+    members: ['member_joined', 'member_left', 'member_kicked', 'member_banned', 'member_unbanned', 'member_updated'],
+    messages: ['message_edited', 'message_deleted'],
+    voice: ['voice_joined', 'voice_left', 'voice_moved'],
+    channels: ['channel_created', 'channel_deleted', 'channel_updated'],
+    threads: ['thread_created', 'thread_deleted', 'thread_updated']
+}).map(([group, events]) => [
+    group,
+    Object.fromEntries(events.map(event => [event, { enabled: true, channel: '' }]))
+]));
+const createNotificationEventGroup = (defaults, fallbackChannel) => Object.fromEntries(
+    Object.entries(defaults).map(([event, settings]) => [
+        event,
+        { ...structuredClone(settings), channel: fallbackChannel || '' }
+    ])
+);
+
 const defaultConfig = {
     leveling: { enabled: false, min_time_between_messages_seconds: 60, announcement_channel_name: '', ignore_channels: [], roles: {} },
     disboard: { enabled: false, message: 'You can bump again!' },
     autorole: { enabled: false, assign_on_join: [] },
-    notify: { enabled: false, channel: '' },
+    notify: {
+        enabled: false,
+        channel: '',
+        events: createNotificationEvents()
+    },
     rank: { enabled: false, channel_allowed: '' },
     autokick: { enabled: false, account_age_limit: 30, info_enabled: true, info_channel: '' },
     moderation: { enabled: false, channel_name: '' },
@@ -62,6 +83,52 @@ export const InitConfig = () => {
     if (Config.honeypot && !Object.hasOwn(Config.honeypot, 'enable_honeypot_channel')) {
         Config.honeypot.enable_honeypot_channel = false;
         migrated = true;
+    }
+
+    if (!Config.notify || typeof Config.notify !== 'object' || Array.isArray(Config.notify)) {
+        Config.notify = structuredClone(defaultConfig.notify);
+        migrated = true;
+    } else if (!Config.notify.events || typeof Config.notify.events !== 'object' || Array.isArray(Config.notify.events)) {
+        Config.notify.events = Object.fromEntries(Object.entries(defaultConfig.notify.events).map(([group, defaults]) => [
+            group,
+            createNotificationEventGroup(defaults, Config.notify.channel)
+        ]));
+        migrated = true;
+    } else {
+        for (const [group, groupDefaults] of Object.entries(defaultConfig.notify.events)) {
+            if (!Config.notify.events[group] || typeof Config.notify.events[group] !== 'object' || Array.isArray(Config.notify.events[group])) {
+                Config.notify.events[group] = createNotificationEventGroup(groupDefaults, Config.notify.channel);
+                migrated = true;
+                continue;
+            }
+            for (const [event, eventDefaults] of Object.entries(groupDefaults)) {
+                const configured = Config.notify.events[group][event];
+                if (typeof configured === 'boolean') {
+                    Config.notify.events[group][event] = {
+                        enabled: configured,
+                        channel: Config.notify.channel || ''
+                    };
+                    migrated = true;
+                    continue;
+                }
+                if (!configured || typeof configured !== 'object' || Array.isArray(configured)) {
+                    Config.notify.events[group][event] = {
+                        ...structuredClone(eventDefaults),
+                        channel: Config.notify.channel || ''
+                    };
+                    migrated = true;
+                    continue;
+                }
+                if (typeof configured.enabled !== 'boolean') {
+                    configured.enabled = eventDefaults.enabled;
+                    migrated = true;
+                }
+                if (typeof configured.channel !== 'string') {
+                    configured.channel = Config.notify.channel || '';
+                    migrated = true;
+                }
+            }
+        }
     }
 
     if (migrated) {

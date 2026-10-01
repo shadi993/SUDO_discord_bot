@@ -11,7 +11,7 @@ import { findDiscordChannel } from '../core/discord-helpers.mjs';
  */
 export const NotifyModule = class {
     #logger;
-    #notifyChannel;
+    #channels;
     #eventsRegistered;
     //#guild;
 
@@ -25,9 +25,40 @@ export const NotifyModule = class {
         return this.onDiscordReady(guild, channels, roles);
     }
 
+    #getEventSettings(event) {
+        const events = Config.notify.events || {};
+        const group = Object.values(events).find(settings => settings && typeof settings === 'object'
+            && !Array.isArray(settings) && Object.hasOwn(settings, event));
+        return events[event] ?? group?.[event];
+    }
+
+    #getEventChannel(event) {
+        if (!Config.notify.enabled) return undefined;
+        const settings = this.#getEventSettings(event);
+        if (settings === false || (settings && typeof settings === 'object' && settings.enabled === false)) return undefined;
+        const configuredChannel = settings && typeof settings === 'object' ? settings.channel : '';
+        const channelId = configuredChannel || Config.notify.channel;
+        if (!channelId) return undefined;
+        const channel = findDiscordChannel([...(this.#channels?.values() || [])], channelId);
+        if (!channel) {
+            this.#logger.log('warn', `Notification destination channel "${channelId}" for ${event} was not found.`);
+        }
+        return channel;
+    }
+
+    #isEventEnabled(event) {
+        return Boolean(this.#getEventChannel(event));
+    }
+
+    async #sendNotification(event, message) {
+        const channel = this.#getEventChannel(event);
+        if (!channel) return;
+        await channel.send(message);
+    }
+
     /*eslint no-unused-vars: ["error", {"args": "none"}]*/
     async onDiscordReady(guild, channels, roles) {
-        this.#notifyChannel = findDiscordChannel(channels, Config.notify.channel);
+        this.#channels = channels;
         if (!Config.notify.enabled) return;
         this.#logger.log('info', 'NotifyModule module is ready.');
         this.#logger.log('info', 'NotifyModule registering additional callbacks.');
@@ -36,7 +67,7 @@ export const NotifyModule = class {
         //this.#guild = guild;
 
         DiscordClient.on(Events.GuildMemberAdd, async (member) => {
-            if (!Config.notify.enabled || !this.#notifyChannel) return;
+            if (!this.#isEventEnabled('member_joined')) return;
             this.#logger.log('info', `New member joined: ${member.user.tag}`);
             const newJoinEmbed = new EmbedBuilder()
             .setColor('#57F287')
@@ -49,11 +80,28 @@ export const NotifyModule = class {
             .setTimestamp()
             .setFooter({ text: 'SUDO' })
 
-            await this.#notifyChannel.send({ embeds: [newJoinEmbed] });
+            await this.#sendNotification('member_joined', { embeds: [newJoinEmbed] });
         });
 
         DiscordClient.on(Events.GuildMemberRemove, async (member) => {
-            if (!Config.notify.enabled || !this.#notifyChannel) return;
+            if (!Config.notify.enabled
+                || (!this.#isEventEnabled('member_left') && !this.#isEventEnabled('member_kicked'))) return;
+
+            const findRecentAuditEntry = async type => {
+                try {
+                    const logs = await member.guild.fetchAuditLogs({ limit: 5, type });
+                    return logs.entries.find(entry => entry.target?.id === member.id && Date.now() - entry.createdTimestamp < 10_000);
+                } catch (error) {
+                    this.#logger.log('warn', `Failed to identify why ${member.user.tag} left: ${error.message}`);
+                    return null;
+                }
+            };
+            const kickEntry = await findRecentAuditEntry(AuditLogEvent.MemberKick);
+            const banEntry = kickEntry ? null : await findRecentAuditEntry(AuditLogEvent.MemberBanAdd);
+            if (banEntry) return;
+            const wasKicked = Boolean(kickEntry);
+            if (!this.#isEventEnabled(wasKicked ? 'member_kicked' : 'member_left')) return;
+
             this.#logger.log('info', `Member left: ${member.user.tag}`);
 
             const joinedAt = member.joinedTimestamp
@@ -66,18 +114,22 @@ export const NotifyModule = class {
             .setAuthor({ name: `${member.user.tag}`, iconURL: member.user.displayAvatarURL() })
             .setThumbnail(member.user.displayAvatarURL())
             .addFields(
-                { name: '\u200B', value: `<@${member.user.id}> has left the server.` },
+                { name: '\u200B', value: wasKicked ? `<@${member.user.id}> was kicked from the server.` : `<@${member.user.id}> has left the server.` },
                 { name: 'Joined Server At', value: joinedAt},
                 { name: 'Left Server At', value: leftAt}
             )
             .setTimestamp()
             .setFooter({ text: 'SUDO' });
 
-            await this.#notifyChannel.send({ embeds: [leftServerEmbed] });
+            if (kickEntry?.executor) {
+                leftServerEmbed.addFields({ name: 'Kicked By', value: `${kickEntry.executor.tag} (<@${kickEntry.executor.id}>)` });
+            }
+
+            await this.#sendNotification(wasKicked ? 'member_kicked' : 'member_left', { embeds: [leftServerEmbed] });
         });
 
         DiscordClient.on(Events.MessageDelete, async (message) => {
-            if (!Config.notify.enabled || !this.#notifyChannel) return;
+            if (!this.#isEventEnabled('message_deleted')) return;
             try {
                 // If the message is partial, attempt to fetch it
                 if (message.partial) {
@@ -118,7 +170,7 @@ export const NotifyModule = class {
                     deletedMessageEmbed.addFields({ name: 'Attachments:', value: attachmentURLs });
                 }
 
-                await this.#notifyChannel.send({ embeds: [deletedMessageEmbed] });
+                await this.#sendNotification('message_deleted', { embeds: [deletedMessageEmbed] });
             } catch (error) {
                 this.#logger.log('error', `Error handling message deletion: ${error.message}`);
             }
@@ -134,7 +186,7 @@ export const NotifyModule = class {
         }
 
         DiscordClient.on(Events.MessageUpdate, async (oldMessage, newMessage) => {
-            if (!Config.notify.enabled || !this.#notifyChannel) return;
+            if (!this.#isEventEnabled('message_edited')) return;
             try {
                 if (oldMessage.partial) await oldMessage.fetch().catch(() => null);
                 if (newMessage.partial) await newMessage.fetch().catch(() => null);
@@ -191,7 +243,7 @@ export const NotifyModule = class {
                     });
                 }
 
-                await this.#notifyChannel.send({ embeds: [embed] });
+                await this.#sendNotification('message_edited', { embeds: [embed] });
             } catch (error) {
                 this.#logger.error('Error in MessageUpdate event:', error);
             }
@@ -199,6 +251,7 @@ export const NotifyModule = class {
 
 
         DiscordClient.on(Events.GuildMemberUpdate, async (oldMember, newMember) => {
+            if (!this.#isEventEnabled('member_updated')) return;
             this.#logger.log('info', `Member updated: ${oldMember.user.tag} -> ${newMember.user.tag}`);
 
 
@@ -253,11 +306,12 @@ export const NotifyModule = class {
             }
 
             if (embed.data.fields && embed.data.fields.length > 0) {
-                await this.#notifyChannel.send({ embeds: [embed] });
+                await this.#sendNotification('member_updated', { embeds: [embed] });
             }
         });
 
         DiscordClient.on(Events.GuildBanAdd, async (ban) => {
+            if (!this.#isEventEnabled('member_banned')) return;
             const {guild,user}=ban;
             this.#logger.log('info', `User banned: ${user.tag}`);
 
@@ -283,11 +337,12 @@ export const NotifyModule = class {
             .setTimestamp()
             .setFooter({ text: 'SUDO' })
 
-            await this.#notifyChannel.send({ embeds: [bannedEmbed] });
+            await this.#sendNotification('member_banned', { embeds: [bannedEmbed] });
         });
 
         DiscordClient.on(Events.GuildBanRemove, async (ban) => {
             try {
+                if (!this.#isEventEnabled('member_unbanned')) return;
                 if (!ban || !ban.user) {
                     this.#logger.log('warn', 'GuildBanRemove event triggered, but ban or ban.user is undefined.');
                     return;
@@ -305,11 +360,7 @@ export const NotifyModule = class {
                 .setTimestamp()
                 .setFooter({ text: 'SUDO' });
 
-                if (this.#notifyChannel) {
-                    await this.#notifyChannel.send({ embeds: [unbannedEmbed] });
-                } else {
-                    this.#logger.log('warn', 'Notify channel is not set.');
-                }
+                await this.#sendNotification('member_unbanned', { embeds: [unbannedEmbed] });
             } catch (error) {
                 this.#logger.log('error', 'Error handling GuildBanRemove event:', error);
             }
@@ -320,9 +371,10 @@ export const NotifyModule = class {
         });
 
         DiscordClient.on(Events.VoiceStateUpdate, async (oldState, newState) => {
+            if (!Config.notify.enabled) return;
 
             // User joined a voice channel
-            if (!oldState.channelId && newState.channelId) {
+            if (!oldState.channelId && newState.channelId && this.#isEventEnabled('voice_joined')) {
                 this.#logger.log('info', `${oldState.member.user.displayName} joined the voice channel: ${newState.channel.name}`);
                 const voiceStateEmbed = new EmbedBuilder()
                 .setColor('#57F287')
@@ -331,11 +383,11 @@ export const NotifyModule = class {
                 .setTimestamp()
                 .setFooter({ text: 'SUDO' });
 
-                await this.#notifyChannel.send({ embeds: [voiceStateEmbed]});
+                await this.#sendNotification('voice_joined', { embeds: [voiceStateEmbed]});
             }
 
             // User left a voice channel
-            if (oldState.channelId && !newState.channelId) {
+            if (oldState.channelId && !newState.channelId && this.#isEventEnabled('voice_left')) {
                 this.#logger.log('info', `${oldState.member.user.displayName} left the voice channel: ${oldState.channel.name}`);
                 const voiceStateEmbed = new EmbedBuilder()
                 .setColor('#ED4245')
@@ -344,11 +396,12 @@ export const NotifyModule = class {
                 .setTimestamp()
                 .setFooter({ text: 'SUDO' });
 
-                await this.#notifyChannel.send({ embeds: [voiceStateEmbed]});
+                await this.#sendNotification('voice_left', { embeds: [voiceStateEmbed]});
             }
 
             // User moved to another voice channel
-            if (oldState.channelId && newState.channelId && oldState.channelId !== newState.channelId) {
+            if (oldState.channelId && newState.channelId && oldState.channelId !== newState.channelId
+                && this.#isEventEnabled('voice_moved')) {
                 this.#logger.log('info', `${oldState.member.user.displayName} moved from ${oldState.channel.name} to ${newState.channel.name}`);
                 const voiceStateEmbed = new EmbedBuilder()
                 .setColor('#E67E22')
@@ -357,11 +410,12 @@ export const NotifyModule = class {
                 .setTimestamp()
                 .setFooter({ text: 'SUDO' });
 
-                await this.#notifyChannel.send({ embeds: [voiceStateEmbed]});
+                await this.#sendNotification('voice_moved', { embeds: [voiceStateEmbed]});
             }
         });
 
         DiscordClient.on(Events.ThreadCreate, async (thread) => {
+            if (!this.#isEventEnabled('thread_created')) return;
 
             const creator = await thread.fetchOwner()
             const threadCreateEmbed = new EmbedBuilder()
@@ -373,10 +427,11 @@ export const NotifyModule = class {
             .setFooter({ text: 'SUDO' });
 
 
-            await this.#notifyChannel.send({ embeds: [threadCreateEmbed] });
+            await this.#sendNotification('thread_created', { embeds: [threadCreateEmbed] });
         });
 
         DiscordClient.on(Events.ThreadDelete, async (thread) => {
+            if (!this.#isEventEnabled('thread_deleted')) return;
 
             const fetchedLogs = await thread.guild.fetchAuditLogs({
                 limit: 1,
@@ -397,10 +452,11 @@ export const NotifyModule = class {
             .setTimestamp()
             .setFooter({ text: 'SUDO' });
 
-            await this.#notifyChannel.send({ embeds: [threadDeleteEmbed] });
+            await this.#sendNotification('thread_deleted', { embeds: [threadDeleteEmbed] });
         });
 
         DiscordClient.on(Events.ThreadUpdate, async (oldThread, newThread) => {
+            if (!this.#isEventEnabled('thread_updated')) return;
 
             const fetchedLogs = await newThread.guild.fetchAuditLogs({
                 limit: 1,
@@ -421,10 +477,11 @@ export const NotifyModule = class {
             .setTimestamp()
             .setFooter({ text: 'SUDO' });
 
-            await this.#notifyChannel.send({ embeds: [threadUpdateEmbed] });
+            await this.#sendNotification('thread_updated', { embeds: [threadUpdateEmbed] });
         });
 
         DiscordClient.on(Events.ChannelCreate, async (channel) => {
+            if (!this.#isEventEnabled('channel_created')) return;
             const fetchedLogs = await channel.guild.fetchAuditLogs({
                 limit: 1,
                 type: AuditLogEvent.ChannelCreate,
@@ -448,10 +505,11 @@ export const NotifyModule = class {
             .setTimestamp()
             .setFooter({ text: 'SUDO' });
 
-            await this.#notifyChannel.send({ embeds: [embed] });
+            await this.#sendNotification('channel_created', { embeds: [embed] });
         });
 
         DiscordClient.on(Events.ChannelDelete, async (channel) => {
+            if (!this.#isEventEnabled('channel_deleted')) return;
             const fetchedLogs = await channel.guild.fetchAuditLogs({
                 limit: 1,
                 type: AuditLogEvent.ChannelDelete,
@@ -475,10 +533,11 @@ export const NotifyModule = class {
             .setTimestamp()
             .setFooter({ text: 'SUDO' });
 
-            await this.#notifyChannel.send({ embeds: [embed] });
+            await this.#sendNotification('channel_deleted', { embeds: [embed] });
         });
 
         DiscordClient.on(Events.ChannelUpdate, async (oldChannel, newChannel) => {
+            if (!this.#isEventEnabled('channel_updated')) return;
             const fetchedLogs = await newChannel.guild.fetchAuditLogs({
                 limit: 1,
                 type: AuditLogEvent.ChannelUpdate,
@@ -564,7 +623,7 @@ export const NotifyModule = class {
 
             // Send the embed if there are any updates
             if (embed.data.fields.length > 0) {
-                await this.#notifyChannel.send({ embeds: [embed] });
+                await this.#sendNotification('channel_updated', { embeds: [embed] });
             }
         });
 

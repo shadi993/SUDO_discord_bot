@@ -27,7 +27,57 @@ export const dashboardLayout = {
         },
         notify: {
             label: 'Notifications',
-            fields: {enabled: {type: 'toggle'}, channel: {type: 'channel'}}
+            fields: {
+                enabled: {type: 'toggle', label: 'Enable notifications'},
+                channel: {type: 'channel', label: 'Default notification channel'},
+                events: {
+                    label: 'Notification events',
+                    fields: {
+                        members: {
+                            label: 'Members',
+                            fields: {
+                                member_joined: {label: 'Member joined', fields: {enabled: {type: 'toggle', label: 'Enabled'}, channel: {type: 'channel', label: 'Destination channel', placeholder: 'Use default notification channel'}}},
+                                member_left: {label: 'Member left', fields: {enabled: {type: 'toggle', label: 'Enabled'}, channel: {type: 'channel', label: 'Destination channel', placeholder: 'Use default notification channel'}}},
+                                member_kicked: {label: 'Member kicked', fields: {enabled: {type: 'toggle', label: 'Enabled'}, channel: {type: 'channel', label: 'Destination channel', placeholder: 'Use default notification channel'}}},
+                                member_banned: {label: 'Member banned', fields: {enabled: {type: 'toggle', label: 'Enabled'}, channel: {type: 'channel', label: 'Destination channel', placeholder: 'Use default notification channel'}}},
+                                member_unbanned: {label: 'Member unbanned', fields: {enabled: {type: 'toggle', label: 'Enabled'}, channel: {type: 'channel', label: 'Destination channel', placeholder: 'Use default notification channel'}}},
+                                member_updated: {label: 'Member updated', fields: {enabled: {type: 'toggle', label: 'Enabled'}, channel: {type: 'channel', label: 'Destination channel', placeholder: 'Use default notification channel'}}}
+                            }
+                        },
+                        messages: {
+                            label: 'Messages',
+                            fields: {
+                                message_edited: {label: 'Message edited', fields: {enabled: {type: 'toggle', label: 'Enabled'}, channel: {type: 'channel', label: 'Destination channel', placeholder: 'Use default notification channel'}}},
+                                message_deleted: {label: 'Message deleted', fields: {enabled: {type: 'toggle', label: 'Enabled'}, channel: {type: 'channel', label: 'Destination channel', placeholder: 'Use default notification channel'}}}
+                            }
+                        },
+                        voice: {
+                            label: 'Voice channels',
+                            fields: {
+                                voice_joined: {label: 'Member joined voice channel', fields: {enabled: {type: 'toggle', label: 'Enabled'}, channel: {type: 'channel', label: 'Destination channel', placeholder: 'Use default notification channel'}}},
+                                voice_left: {label: 'Member left voice channel', fields: {enabled: {type: 'toggle', label: 'Enabled'}, channel: {type: 'channel', label: 'Destination channel', placeholder: 'Use default notification channel'}}},
+                                voice_moved: {label: 'Member moved voice channel', fields: {enabled: {type: 'toggle', label: 'Enabled'}, channel: {type: 'channel', label: 'Destination channel', placeholder: 'Use default notification channel'}}}
+                            }
+                        },
+                        channels: {
+                            label: 'Channels',
+                            fields: {
+                                channel_created: {label: 'Channel created', fields: {enabled: {type: 'toggle', label: 'Enabled'}, channel: {type: 'channel', label: 'Destination channel', placeholder: 'Use default notification channel'}}},
+                                channel_deleted: {label: 'Channel deleted', fields: {enabled: {type: 'toggle', label: 'Enabled'}, channel: {type: 'channel', label: 'Destination channel', placeholder: 'Use default notification channel'}}},
+                                channel_updated: {label: 'Channel updated', fields: {enabled: {type: 'toggle', label: 'Enabled'}, channel: {type: 'channel', label: 'Destination channel', placeholder: 'Use default notification channel'}}}
+                            }
+                        },
+                        threads: {
+                            label: 'Threads',
+                            fields: {
+                                thread_created: {label: 'Thread created', fields: {enabled: {type: 'toggle', label: 'Enabled'}, channel: {type: 'channel', label: 'Destination channel', placeholder: 'Use default notification channel'}}},
+                                thread_deleted: {label: 'Thread deleted', fields: {enabled: {type: 'toggle', label: 'Enabled'}, channel: {type: 'channel', label: 'Destination channel', placeholder: 'Use default notification channel'}}},
+                                thread_updated: {label: 'Thread updated', fields: {enabled: {type: 'toggle', label: 'Enabled'}, channel: {type: 'channel', label: 'Destination channel', placeholder: 'Use default notification channel'}}}
+                            }
+                        }
+                    }
+                }
+            }
         },
         rank: {
             label: 'Rank',

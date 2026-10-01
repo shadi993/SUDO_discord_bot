@@ -41,7 +41,87 @@
     },
     "notify": {
         "enabled": true,
-        "channel": "1277642830784889025"
+        "channel": "1277642830784889025",
+        "events": {
+            "members": {
+                "member_joined": {
+                    "enabled": true,
+                    "channel": "1277642830784889025"
+                },
+                "member_left": {
+                    "enabled": true,
+                    "channel": "1277642830784889025"
+                },
+                "member_kicked": {
+                    "enabled": true,
+                    "channel": "1277642830784889025"
+                },
+                "member_banned": {
+                    "enabled": true,
+                    "channel": "1277642830784889025"
+                },
+                "member_unbanned": {
+                    "enabled": true,
+                    "channel": "1277642830784889025"
+                },
+                "member_updated": {
+                    "enabled": true,
+                    "channel": "1277642830784889025"
+                }
+            },
+            "messages": {
+                "message_edited": {
+                    "enabled": true,
+                    "channel": "1277642830784889025"
+                },
+                "message_deleted": {
+                    "enabled": true,
+                    "channel": "1277642830784889025"
+                }
+            },
+            "voice": {
+                "voice_joined": {
+                    "enabled": true,
+                    "channel": "1277642830784889025"
+                },
+                "voice_left": {
+                    "enabled": true,
+                    "channel": "1277642830784889025"
+                },
+                "voice_moved": {
+                    "enabled": true,
+                    "channel": "1277642830784889025"
+                }
+            },
+            "channels": {
+                "channel_created": {
+                    "enabled": true,
+                    "channel": "1277642830784889025"
+                },
+                "channel_deleted": {
+                    "enabled": true,
+                    "channel": "1277642830784889025"
+                },
+                "channel_updated": {
+                    "enabled": true,
+                    "channel": "1277642830784889025"
+                }
+            },
+            "threads": {
+                "thread_created": {
+                    "enabled": true,
+                    "channel": "1277642830784889025"
+                },
+                "thread_deleted": {
+                    "enabled": true,
+                    "channel": "1277642830784889025"
+                },
+                "thread_updated": {
+                    "enabled": true,
+                    "channel": "1277642830784889025"
+                }
+            }
+        }
     },
     "rank": {
         "enabled": true,

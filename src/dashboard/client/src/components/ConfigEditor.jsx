@@ -65,7 +65,7 @@ function Field({ name, value, root, options, roleField = false, definition = {},
     };
     const fieldType = definition.type || (typeof value === 'boolean' ? 'toggle' : undefined);
     if (fieldType === 'toggle') {
-        return <div className="field switch"><label>{pretty(name)}</label><input type="checkbox" defaultChecked={value} onChange={event => update(event.target.checked)} /></div>;
+        return <div className="field switch"><label>{definition.label || pretty(name)}</label><input type="checkbox" defaultChecked={value} onChange={event => update(event.target.checked)} /></div>;
     }
     if (fieldType === 'select') {
         const choices = definition.options || [];
@@ -113,11 +113,11 @@ function Field({ name, value, root, options, roleField = false, definition = {},
             entries.forEach(([level, role]) => { value[level] = role; });
             onRefresh();
         };
-        return <section className="card nested-card"><h3>{pretty(name)}</h3>{Object.entries(value).map(([childName, childValue]) => <div className="level-row" key={childName}>
-            {isLevelRoles ? <input className="level-number" type="number" min="0" defaultValue={childName} aria-label={`Level number for ${childValue}`} onBlur={event => updateLevel(childName, event.target.value)} /> : <label>{pretty(childName)}</label>}
-            {isLevelRoles ? <RoleSelect value={childValue} options={options} onChange={nextValue => { value[childName] = nextValue; onRefresh(); }} /> : <Field name={childName} value={childValue} root={value} options={options} roleField={roleField} onRefresh={onRefresh} />}
+        return <section className="card nested-card"><h3>{definition.label || pretty(name)}</h3>{Object.entries(value).map(([childName, childValue]) => isLevelRoles ? <div className="level-row" key={childName}>
+            <input className="level-number" type="number" min="0" defaultValue={childName} aria-label={`Level number for ${childValue}`} onBlur={event => updateLevel(childName, event.target.value)} />
+            <RoleSelect value={childValue} options={options} onChange={nextValue => { value[childName] = nextValue; onRefresh(); }} />
             {isLevelRoles && <button className="button danger" type="button" onClick={() => { delete value[childName]; onRefresh(); }}>Delete</button>}
-        </div>)}{isLevelRoles && <button className="button ghost" onClick={() => { const level = window.prompt('New level number:'); if (level && /^\d+$/.test(level) && !(level in value)) { value[level] = ''; onRefresh(); } }}>Add level</button>}</section>;
+        </div> : <Field key={childName} name={childName} value={childValue} root={value} options={options} roleField={roleField} definition={definition.fields?.[childName] || {}} onRefresh={onRefresh} />)}{isLevelRoles && <button className="button ghost" onClick={() => { const level = window.prompt('New level number:'); if (level && /^\d+$/.test(level) && !(level in value)) { value[level] = ''; onRefresh(); } }}>Add level</button>}</section>;
     }
     const isChannel = definition.type === 'channel' || name.toLowerCase().includes('channel') || name.toLowerCase().includes('category');
     const isRole = definition.type === 'role' || roleField || name.toLowerCase().includes('role') || name.toLowerCase().includes('moderator');
@@ -125,7 +125,7 @@ function Field({ name, value, root, options, roleField = false, definition = {},
         ? channelChoices(options, definition.type === 'category' ? 'category' : 'channel', value)
         : isRole ? options.roles : [];
     const selectedChannel = isChannel ? channelValue(value, options) : '';
-    return <div className="field"><label>{definition.label || pretty(name)}</label>{choices.length ? (isRole ? <RoleSelect value={value} options={options} onChange={update} /> : <select value={selectedChannel} onChange={event => update(event.target.value)}>{choices.map(option => <option key={option.id} value={option.id}>{option.name}</option>)}</select>) : <input type={definition.type === 'number' || typeof value === 'number' ? 'number' : 'text'} value={value ?? ''} onChange={event => update(definition.type === 'number' || typeof value === 'number' ? Number(event.target.value) : event.target.value)} />}</div>;
+    return <div className="field"><label>{definition.label || pretty(name)}</label>{choices.length ? (isRole ? <RoleSelect value={value} options={options} onChange={update} /> : <select value={selectedChannel} onChange={event => update(event.target.value)}><option value="">{definition.placeholder || 'Select a Discord channel'}</option>{choices.map(option => <option key={option.id} value={option.id}>{option.name}</option>)}</select>) : <input type={definition.type === 'number' || typeof value === 'number' ? 'number' : 'text'} value={value ?? ''} onChange={event => update(definition.type === 'number' || typeof value === 'number' ? Number(event.target.value) : event.target.value)} />}</div>;
 }
 
 export function ConfigEditor({ config, options, section, onSave }) {
