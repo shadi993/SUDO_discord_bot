@@ -40,6 +40,27 @@ export const InitCommands = async (client) => {
     }
 
     client.on(Events.InteractionCreate, async interaction => {
+        if (interaction.isButton()) {
+            for (const command of client.commands.values()) {
+                if (!command.handleComponentInteraction) continue;
+
+                try {
+                    if (await command.handleComponentInteraction(interaction)) {
+                        return;
+                    }
+                } catch (error) {
+                    Logger.log('error', `There was an error while handling a button interaction: ${error}`);
+                    if (interaction.replied || interaction.deferred) {
+                        await interaction.followUp({ content: 'There was an error while processing this button!', ephemeral: true });
+                    } else {
+                        await interaction.reply({ content: 'There was an error while processing this button!', ephemeral: true });
+                    }
+                    return;
+                }
+            }
+            return;
+        }
+
         if (!interaction.isChatInputCommand()) return;
         const command = interaction.client.commands.get(interaction.commandName);
 

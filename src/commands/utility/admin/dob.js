@@ -1,4 +1,4 @@
-import {SlashCommandBuilder,EmbedBuilder,PermissionFlagsBits,} from 'discord.js';
+import {ActionRowBuilder,ButtonBuilder,ButtonStyle,ComponentType,EmbedBuilder,PermissionFlagsBits,SlashCommandBuilder} from 'discord.js';
 import * as fs from 'node:fs';
 import { AgeVerificationDboEntity } from '../../../core/database.mjs';
 
@@ -264,6 +264,61 @@ export async function execute(interaction) {
                 });
             }
 
+            const confirmationRow = new ActionRowBuilder()
+                .addComponents(
+                    new ButtonBuilder()
+                        .setCustomId('dob-delete-confirm')
+                        .setLabel('Delete record')
+                        .setStyle(ButtonStyle.Danger),
+                    new ButtonBuilder()
+                        .setCustomId('dob-delete-cancel')
+                        .setLabel('Cancel')
+                        .setStyle(ButtonStyle.Secondary)
+                );
+
+            const confirmationMessage = await interaction.editReply({
+                content:
+                    `Are you sure you want to permanently delete ${target.tag}'s DOB verification record?`,
+                components: [confirmationRow],
+            });
+
+            const collector =
+                confirmationMessage.createMessageComponentCollector({
+                    componentType: ComponentType.Button,
+                    filter: button =>
+                        button.user.id === interaction.user.id,
+                    max: 1,
+                    time: 30_000,
+                });
+
+            let decisionReceived = false;
+            const decision = await new Promise((resolve, reject) => {
+                collector.once('collect', button => {
+                    button.deferUpdate().then(
+                        () => {
+                            decisionReceived = true;
+                            resolve(button.customId);
+                        },
+                        reject
+                    );
+                });
+
+                collector.once('end', (_, reason) => {
+                    if (!decisionReceived && reason === 'time') {
+                        resolve(null);
+                    }
+                });
+            });
+
+            if (decision !== 'dob-delete-confirm') {
+                return await interaction.editReply({
+                    content: decision === 'dob-delete-cancel'
+                        ? 'DOB record deletion cancelled.'
+                        : 'DOB record deletion cancelled because the confirmation timed out.',
+                    components: [],
+                });
+            }
+
              // Save the old values for the moderation log before deleting the database row.
             const oldDob =
                 verification.dob;
@@ -344,10 +399,8 @@ async function sendChangeLog(
         }
 
         const moderationChannel =
-            interaction.guild.channels.cache.find(
-                channel =>
-                    channel.name ===
-                    config.moderation_channel
+            interaction.guild.channels.cache.get(
+                config.moderation_channel
             );
 
         if (!moderationChannel) {
@@ -433,10 +486,8 @@ async function sendDeleteLog(
         }
 
         const moderationChannel =
-            interaction.guild.channels.cache.find(
-                channel =>
-                    channel.name ===
-                    config.moderation_channel
+            interaction.guild.channels.cache.get(
+                config.moderation_channel
             );
 
         if (!moderationChannel) {
