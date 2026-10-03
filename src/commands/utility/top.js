@@ -8,12 +8,18 @@ export const data = new SlashCommandBuilder()
     .setDescription('Show the top 10 members with the highest level');
 
 export async function execute(interaction) {
-    if (!Config.rank.enabled) return interaction.reply({ content: 'Rank commands are disabled.', ephemeral: true });
-    const allowedChannel = Config.rank.channel_allowed;
-    const targetChannel = interaction.guild.channels.cache.find(channel => channel.id === allowedChannel || channel.name === allowedChannel);
+    if (!Config.leveling.rank_enabled) return interaction.reply({ content: 'Rank commands are disabled.', ephemeral: true });
+    if (Config.leveling.rank_top_channel_enabled) {
+        const allowedChannel = Config.leveling.rank_top_channel;
+        const targetChannel = interaction.guild.channels.cache.find(channel => channel.id === allowedChannel || channel.name === allowedChannel);
 
-    if (!targetChannel || !isAllowedChannel(interaction.channel, allowedChannel, interaction.guild.channels.cache)) {
-        return interaction.reply({ content: `You can only use this command in the #${targetChannel?.name || allowedChannel} channel.`, ephemeral: true });
+        if (!targetChannel) {
+            return interaction.reply({ content: `Channel **${allowedChannel}** not found.`, ephemeral: true });
+        }
+
+        if (!isAllowedChannel(interaction.channel, allowedChannel, interaction.guild.channels.cache)) {
+            return interaction.reply({ content: `You can only use /rank and /top in **${targetChannel.name}** channel.`, ephemeral: true });
+        }
     }
 
     const topUsers = await PostCountDboEntity.findAll({

@@ -29,7 +29,7 @@ const createNotificationEventGroup = (defaults, fallbackChannel) => Object.fromE
 );
 
 const defaultConfig = {
-    leveling: { enabled: false, min_time_between_messages_seconds: 60, announcement_channel_name: '', ignore_channels: [], roles: {} },
+    leveling: { enabled: false, min_time_between_messages_seconds: 60, announcement_channel_name: '', ignore_channels: [], roles: {}, rank_enabled: false, rank_top_channel_enabled: false, rank_top_channel: '' },
     disboard: { enabled: false, message: 'You can bump again!' },
     autorole: { enabled: false, assign_on_join: [] },
     notify: {
@@ -37,7 +37,6 @@ const defaultConfig = {
         channel: '',
         events: createNotificationEvents()
     },
-    rank: { enabled: false, channel_allowed: '' },
     autokick: { enabled: false, account_age_limit: 30, info_enabled: true, info_channel: '' },
     moderation: { enabled: false, channel_name: '' },
     ticketSystem: { enabled: false, category_name: '', moderator: '', archives_channel: '' },
@@ -129,6 +128,35 @@ export const InitConfig = () => {
                 }
             }
         }
+    }
+
+    const hasLevelingConfig = Config.leveling && typeof Config.leveling === 'object' && !Array.isArray(Config.leveling);
+    if (!hasLevelingConfig) {
+        Config.leveling = structuredClone(defaultConfig.leveling);
+        migrated = true;
+    }
+
+    const legacyRankEnabled = typeof Config.rank?.enabled === 'boolean'
+        ? Config.rank.enabled
+        : defaultConfig.leveling.rank_enabled;
+    const legacyRankChannel = typeof Config.rank?.channel_allowed === 'string'
+        ? Config.rank.channel_allowed
+        : '';
+    if (!hasLevelingConfig || typeof Config.leveling.rank_enabled !== 'boolean') {
+        Config.leveling.rank_enabled = legacyRankEnabled;
+        migrated = true;
+    }
+    if (!hasLevelingConfig || !Object.hasOwn(Config.leveling, 'rank_top_channel')) {
+        Config.leveling.rank_top_channel = legacyRankChannel;
+        migrated = true;
+    }
+    if (!hasLevelingConfig || typeof Config.leveling.rank_top_channel_enabled !== 'boolean') {
+        Config.leveling.rank_top_channel_enabled = Boolean(legacyRankChannel);
+        migrated = true;
+    }
+    if (Object.hasOwn(Config, 'rank')) {
+        delete Config.rank;
+        migrated = true;
     }
 
     if (migrated) {

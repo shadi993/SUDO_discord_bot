@@ -11,9 +11,12 @@ export const dashboardLayout = {
             label: 'Leveling',
             fields: {
                 enabled: {type: 'toggle'},
+                rank_enabled: {type: 'toggle', label: 'Enable /rank and /top commands'},
                 min_time_between_messages_seconds: {type: 'number', label: 'Minimum time between messages (seconds)'},
                 announcement_channel_name: {type: 'channel'},
                 ignore_channels: {type: 'channels'},
+                rank_top_channel_enabled: {type: 'toggle', label: 'Allow /rank and /top in channel'},
+                rank_top_channel: {type: 'channel', label: 'Allowed channel for /rank and /top'},
                 roles: {type: 'level-roles'}
             }
         },
@@ -78,10 +81,6 @@ export const dashboardLayout = {
                     }
                 }
             }
-        },
-        rank: {
-            label: 'Rank',
-            fields: {enabled: {type: 'toggle'}, channel_allowed: {type: 'channel'}}
         },
         autokick: {
             label: 'Auto kick',

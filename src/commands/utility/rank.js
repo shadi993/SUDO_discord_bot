@@ -10,18 +10,20 @@ export const data = new SlashCommandBuilder()
     .addUserOption(option => option.setName('target').setDescription('The user to view').setRequired(false));
 
 export async function execute(interaction) {
-    if (!Config.rank.enabled) return interaction.reply({ content: 'Rank commands are disabled.', ephemeral: true });
-    const targetChannelName = Config.rank.channel_allowed;
-    const targetChannel = interaction.guild.channels.cache.find(channel => channel.id === targetChannelName || channel.name === targetChannelName);
+    if (!Config.leveling.rank_enabled) return interaction.reply({ content: 'Rank commands are disabled.', ephemeral: true });
+    if (Config.leveling.rank_top_channel_enabled) {
+        const targetChannelName = Config.leveling.rank_top_channel;
+        const targetChannel = interaction.guild.channels.cache.find(channel => channel.id === targetChannelName || channel.name === targetChannelName);
 
-    if (!targetChannel) {
-        await interaction.reply({ content: `Channel **${targetChannelName}** not found.`, ephemeral: true });
-        return;
-    }
+        if (!targetChannel) {
+            await interaction.reply({ content: `Channel **${targetChannelName}** not found.`, ephemeral: true });
+            return;
+        }
 
-    if (!isAllowedChannel(interaction.channel, targetChannelName, interaction.guild.channels.cache)) {
-        await interaction.reply({ content: `You can only use this command in **${targetChannel.name}** channel.`, ephemeral: true });
-        return;
+        if (!isAllowedChannel(interaction.channel, targetChannelName, interaction.guild.channels.cache)) {
+            await interaction.reply({ content: `You can only use /rank and /top in **${targetChannel.name}** channel.`, ephemeral: true });
+            return;
+        }
     }
 
     const target = interaction.options.getUser('target') || interaction.user;
