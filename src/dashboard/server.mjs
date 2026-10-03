@@ -203,6 +203,7 @@ app.get('/api/discord-options', requireAdmin, async (request, response) => {
     return response.json({
         channels: guild.filter(channel => channel.type === 0 || channel.type === 4).map(channel => ({ id: channel.id, name: channel.name, type: channel.type })).sort((a, b) => a.name.localeCompare(b.name)),
         roles: roles.filter(role => role.name !== '@everyone').map(role => role.name).sort(),
+        roleOptions: roles.filter(role => role.name !== '@everyone').map(role => ({ id: role.id, name: role.name })).sort((a, b) => a.name.localeCompare(b.name)),
         emojis: emojis.filter(emoji => emoji.name).map(emoji => ({
             name: emoji.name,
             value: `:${emoji.name}:`,

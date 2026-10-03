@@ -40,7 +40,7 @@ const defaultConfig = {
     autokick: { enabled: false, account_age_limit: 30, info_enabled: true, info_channel: '' },
     moderation: { enabled: false, channel_name: '' },
     ticketSystem: { enabled: false, category_name: '', moderator: '', archives_channel: '' },
-    dob_check: { enabled: false, channel_name: '', moderation_channel: '', verified_role: '', title: '', description: '', button_text: '', button_emoji: '✅', button_style: 'Success' },
+    dob_check: { enabled: false, channel_name: '', moderation_channel: '', verified_role: '', info_moderator_role: '', change_moderator_role: '', delete_moderator_role: '', title: '', description: '', button_text: '', button_emoji: '✅', button_style: 'Success' },
     ban_emoji: { enabled: false, log: true, log_channel: '', emojis: [] },
     honeypot: { enabled: false, enable_honeypot_channel: false, channel_name: '', log_channel_name: '', title: '', description: '', button_text: '', punishment: 'kick' },
     persistentMessages: { enabled: false, messages: [] },
@@ -126,6 +126,18 @@ export const InitConfig = () => {
                     configured.channel = Config.notify.channel || '';
                     migrated = true;
                 }
+            }
+        }
+    }
+
+    if (!Config.dob_check || typeof Config.dob_check !== 'object' || Array.isArray(Config.dob_check)) {
+        Config.dob_check = structuredClone(defaultConfig.dob_check);
+        migrated = true;
+    } else {
+        for (const key of ['info_moderator_role', 'change_moderator_role', 'delete_moderator_role']) {
+            if (typeof Config.dob_check[key] !== 'string') {
+                Config.dob_check[key] = '';
+                migrated = true;
             }
         }
     }

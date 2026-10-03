@@ -55,7 +55,7 @@ export const data = new SlashCommandBuilder()
                     .setRequired(true)
             )
     )
-    .setDefaultMemberPermissions(PermissionFlagsBits.Administrator);
+    .setDefaultMemberPermissions(PermissionFlagsBits.KickMembers);
 
 export async function execute(interaction) {
     const subcommand = interaction.options.getSubcommand();
@@ -71,6 +71,28 @@ export async function execute(interaction) {
                 content: 'This command can only be used inside a server.',
             });
         }
+
+        const config = JSON.parse(fs.readFileSync('config.json', 'utf8')).dob_check;
+        const roleSetting = {
+            info: 'info_moderator_role',
+            change: 'change_moderator_role',
+            delete: 'delete_moderator_role'
+        }[subcommand];
+        const configuredRole = roleSetting ? config?.[roleSetting] : '';
+        const memberRoles = interaction.member?.roles;
+        const hasConfiguredRole = configuredRole && (
+            memberRoles?.cache?.has(configuredRole)
+            || (Array.isArray(memberRoles) && memberRoles.includes(configuredRole))
+        );
+        const isAdministrator = interaction.guild.ownerId === interaction.user.id
+            || interaction.memberPermissions?.has(PermissionFlagsBits.Administrator);
+
+        if (!isAdministrator && !hasConfiguredRole) {
+            return await interaction.editReply({
+                content: 'You do not have permission to use this DOB command.',
+            });
+        }
+
         // dob info
         if (subcommand === 'info') {
             const verification =

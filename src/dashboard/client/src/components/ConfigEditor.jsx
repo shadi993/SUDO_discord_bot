@@ -5,10 +5,11 @@ import { getSectionLayout } from '../layout.config.js';
 
 const pretty = value => value.replaceAll('_', ' ').replaceAll('-', ' ');
 
-function RoleSelect({ value, options, onChange }) {
+function RoleSelect({ value, options, onChange, roleIds = false }) {
+    const roles = roleIds ? options.roleOptions : options.roles.map(role => ({ id: role, name: role }));
     return <select value={value || ''} onChange={event => onChange(event.target.value)}>
         <option value="">Select a Discord role</option>
-        {options.roles.map(role => <option key={role} value={role}>{role}</option>)}
+        {roles.map(role => <option key={role.id} value={role.id}>{role.name}</option>)}
     </select>;
 }
 
@@ -120,12 +121,13 @@ function Field({ name, value, root, options, roleField = false, definition = {},
         </div> : <Field key={childName} name={childName} value={childValue} root={value} options={options} roleField={roleField} definition={definition.fields?.[childName] || {}} onRefresh={onRefresh} />)}{isLevelRoles && <button className="button ghost" onClick={() => { const level = window.prompt('New level number:'); if (level && /^\d+$/.test(level) && !(level in value)) { value[level] = ''; onRefresh(); } }}>Add level</button>}</section>;
     }
     const isChannel = definition.type === 'channel' || name.toLowerCase().includes('channel') || name.toLowerCase().includes('category');
-    const isRole = definition.type === 'role' || roleField || name.toLowerCase().includes('role') || name.toLowerCase().includes('moderator');
+    const isRoleId = definition.type === 'role-id';
+    const isRole = definition.type === 'role' || isRoleId || roleField || name.toLowerCase().includes('role') || name.toLowerCase().includes('moderator');
     const choices = isChannel
         ? channelChoices(options, definition.type === 'category' ? 'category' : 'channel', value)
-        : isRole ? options.roles : [];
+        : isRoleId ? options.roleOptions : isRole ? options.roles : [];
     const selectedChannel = isChannel ? channelValue(value, options) : '';
-    return <div className="field"><label>{definition.label || pretty(name)}</label>{choices.length ? (isRole ? <RoleSelect value={value} options={options} onChange={update} /> : <select value={selectedChannel} onChange={event => update(event.target.value)}><option value="">{definition.placeholder || 'Select a Discord channel'}</option>{choices.map(option => <option key={option.id} value={option.id}>{option.name}</option>)}</select>) : <input type={definition.type === 'number' || typeof value === 'number' ? 'number' : 'text'} value={value ?? ''} onChange={event => update(definition.type === 'number' || typeof value === 'number' ? Number(event.target.value) : event.target.value)} />}</div>;
+    return <div className="field"><label>{definition.label || pretty(name)}</label>{choices.length ? (isRole ? <RoleSelect value={value} options={options} roleIds={isRoleId} onChange={update} /> : <select value={selectedChannel} onChange={event => update(event.target.value)}><option value="">{definition.placeholder || 'Select a Discord channel'}</option>{choices.map(option => <option key={option.id} value={option.id}>{option.name}</option>)}</select>) : <input type={definition.type === 'number' || typeof value === 'number' ? 'number' : 'text'} value={value ?? ''} onChange={event => update(definition.type === 'number' || typeof value === 'number' ? Number(event.target.value) : event.target.value)} />}</div>;
 }
 
 export function ConfigEditor({ config, options, section, onSave }) {
@@ -144,5 +146,5 @@ export function ConfigEditor({ config, options, section, onSave }) {
     }
     const entries = Object.entries(sectionConfig);
     const refresh = () => setDraft(previousDraft => structuredClone(previousDraft));
-    return <><section className="card"><h3>{layout.label || section?.replaceAll('_', ' ') || 'Settings'}</h3>{entries.map(([name, value]) => <Field key={name} name={name} value={value} root={sectionConfig} options={options} definition={layout.fields[name] || {}} roleField={section === 'leveling' && name === 'roles'} onRefresh={refresh} />)}</section>{section === 'moderation' && <p className="muted config-note">Used for logging <code>/kick</code>, <code>/ban</code>, <code>/info</code>, and <code>/warn</code> actions.</p>}<div className="save-row"><button className="button primary" onClick={() => onSave(draft)}>Save changes</button></div></>;
+    return <><section className="card"><h3>{layout.label || section?.replaceAll('_', ' ') || 'Settings'}</h3>{entries.map(([name, value]) => <Field key={name} name={name} value={value} root={sectionConfig} options={options} definition={layout.fields[name] || {}} roleField={section === 'leveling' && name === 'roles'} onRefresh={refresh} />)}</section>{section === 'moderation' && <p className="muted config-note">Used for logging <code>/kick</code>, <code>/ban</code>, <code>/info</code>, and <code>/warn</code> actions.</p>}{section === 'dob_check' && <p className="muted config-note">Choose a moderator role for each command. Server administrators can always use these commands; leaving a role unselected keeps that command administrator-only.</p>}<div className="save-row"><button className="button primary" onClick={() => onSave(draft)}>Save changes</button></div></>;
 }
