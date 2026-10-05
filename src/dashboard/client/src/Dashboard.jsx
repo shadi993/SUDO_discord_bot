@@ -4,6 +4,7 @@ import { ConfigEditor } from './components/ConfigEditor.jsx';
 import { Sidebar } from './components/Sidebar.jsx';
 import { LoginScreen } from './components/LoginScreen.jsx';
 import { ServerStatus } from './components/ServerStatus.jsx';
+import { BotProfileEditor } from './components/BotProfileEditor.jsx';
 
 const getNextStatusUpdate = () => {
     const nextUpdate = new Date();
@@ -109,8 +110,8 @@ export function Dashboard() {
     return <div className="shell">
         <Sidebar configs={configs} active={active} onSelect={(file, section) => setActive({ file, section })} />
         <main className="main">
-            <header className="topbar"><div><p className="eyebrow">ADMIN CONSOLE</p><h2>{active.file === '__status__' ? 'Server status' : active.section?.replaceAll('_', ' ')}</h2></div><div className="account"><span>{session.user.username}</span><button className="button ghost" onClick={exportConfig}>Export config</button><label className="button ghost" htmlFor="config-import">Import config</label><input id="config-import" type="file" accept="application/json" hidden onChange={importConfig} /><button className="button ghost" onClick={async () => { await api('/auth/logout', { method: 'POST' }); location.reload(); }}>Log out</button></div></header>
-            <section className="content">{active.file === '__status__' && status ? <ServerStatus status={status} onRefresh={() => refreshStatus().catch(nextError => setError(nextError.message))} /> : current && <ConfigEditor key={`${active.file}:${active.section || 'root'}`} config={current} section={active.section} options={options} onSave={save} />}{error && <p className="error">{error}</p>}</section>
+            <header className="topbar"><div><p className="eyebrow">ADMIN CONSOLE</p><h2>{active.file === '__status__' ? 'Server status' : active.file === '__bot_profile__' ? 'Bot profile' : active.section?.replaceAll('_', ' ')}</h2></div><div className="account"><span>{session.user.username}</span><button className="button ghost" onClick={exportConfig}>Export config</button><label className="button ghost" htmlFor="config-import">Import config</label><input id="config-import" type="file" accept="application/json" hidden onChange={importConfig} /><button className="button ghost" onClick={async () => { await api('/auth/logout', { method: 'POST' }); location.reload(); }}>Log out</button></div></header>
+            <section className="content">{active.file === '__status__' && status ? <ServerStatus status={status} onRefresh={() => refreshStatus().catch(nextError => setError(nextError.message))} /> : active.file === '__bot_profile__' ? <BotProfileEditor api={api} /> : current && <ConfigEditor key={`${active.file}:${active.section || 'root'}`} config={current} section={active.section} options={options} onSave={save} />}{error && <p className="error">{error}</p>}</section>
         </main>
         {notice && <div className="toast">{notice}</div>}
     </div>;

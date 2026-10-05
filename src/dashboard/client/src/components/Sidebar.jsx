@@ -23,6 +23,9 @@ export function Sidebar({ configs, active, onSelect }) {
                 <button className={`nav-button ${active.file === '__status__' ? 'active' : ''}`} onClick={() => onSelect('__status__', null)}>
                     Server status
                 </button>
+                <button className={`nav-button ${active.file === '__bot_profile__' ? 'active' : ''}`} onClick={() => onSelect('__bot_profile__', null)}>
+                    Bot profile
+                </button>
                 {tabs.map(tab => (
                     <button
                         className={`nav-button ${active.file === tab.file && active.section === tab.section ? 'active' : ''}`}

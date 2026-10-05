@@ -18,6 +18,7 @@ import { DobCheck } from './modules/dobCheck.mjs';
 import { BanEmoji } from './modules/banEmoji.mjs';
 import { InitDashboard } from './dashboard/server.mjs';
 import { migrateLegacyStats } from './dashboard/stats.mjs';
+import { BotProfileModule } from './modules/botProfile.mjs';
 
 dotenv.config();
 InitConfig();
@@ -37,6 +38,8 @@ RegisterDiscordModule(new TicketSystem());
 RegisterDiscordModule(new HoneypotModule());
 RegisterDiscordModule(new DobCheck());
 RegisterDiscordModule(new BanEmoji());
+const botProfileModule = new BotProfileModule();
+RegisterDiscordModule(botProfileModule);
 
 InitCommands(DiscordClient);
-InitDashboard();
+InitDashboard({ botProfileModule });

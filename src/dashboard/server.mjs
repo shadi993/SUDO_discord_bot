@@ -4,6 +4,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import url from 'node:url';
 import { PermissionFlagsBits } from 'discord.js';
+import { BotProfileInputError } from '../modules/botProfile.mjs';
 import { UpdateConfig } from '../core/config.mjs';
 import { CreateLogger } from '../core/logger.mjs';
 import { getDailyStats, recordDailyMemberCount } from './stats.mjs';
@@ -16,7 +17,7 @@ const dashboardFiles = {
     'config.json': 'config.json'
 };
 
-app.use(express.json({ limit: '256kb' }));
+app.use(express.json({ limit: '24mb' }));
 app.use(express.static(path.join(root, 'src/dashboard/dist')));
 
 const getDashboardRedirectUri = request => {
@@ -226,6 +227,39 @@ app.get('/api/server-status', requireAdmin, async (request, response) => {
     });
 });
 
+let botProfileModule;
+
+app.get('/api/bot-profile', requireAdmin, (request, response) => {
+    if (!botProfileModule?.isReady()) {
+        return response.status(503).json({ error: 'Bot profile is not ready until the Discord client is connected.' });
+    }
+    return response.json(botProfileModule.getProfile());
+});
+
+app.put('/api/bot-profile', requireAdmin, async (request, response) => {
+    if (!botProfileModule?.isReady()) {
+        return response.status(503).json({ error: 'Bot profile is not ready until the Discord client is connected.' });
+    }
+    try {
+        return response.json(await botProfileModule.updateProfile(request.body));
+    } catch (error) {
+        logger.error(`Bot profile update failed: ${error.message}`);
+        return response.status(error instanceof BotProfileInputError ? 400 : 502).json({ error: error.message });
+    }
+});
+
+app.post('/api/bot-profile/reset', requireAdmin, async (request, response) => {
+    if (!botProfileModule?.isReady()) {
+        return response.status(503).json({ error: 'Bot profile is not ready until the Discord client is connected.' });
+    }
+    try {
+        return response.json(await botProfileModule.resetImage(request.body?.image));
+    } catch (error) {
+        logger.error(`Bot profile reset failed: ${error.message}`);
+        return response.status(error instanceof BotProfileInputError ? 400 : 502).json({ error: error.message });
+    }
+});
+
 app.put('/api/config/:file', requireAdmin, async (request, response) => {
     const file = request.params.file;
     if (!dashboardFiles[file]) return response.status(404).json({ error: 'Unknown configuration.' });
@@ -249,8 +283,9 @@ app.put('/api/config/:file', requireAdmin, async (request, response) => {
     return response.json({ saved: true, config });
 });
 
-export const InitDashboard = () => {
+export const InitDashboard = ({ botProfileModule: profileModule } = {}) => {
     logger = CreateLogger('Dashboard');
+    botProfileModule = profileModule;
     const port = Number(process.env.DISCORD_DASHBOARD_PORT || 3000);
     const host = process.env.DISCORD_DASHBOARD_HOST || '0.0.0.0';
     app.listen(port, host, () => logger.info(`Dashboard available at http://${host}:${port} (${root})`));
