@@ -59,19 +59,19 @@ export const AutoKick = class {
             }
 
             // AutoKick info
-            if (Config.autokick.info_enbaled !== true){
+            if (Config.autokick.info_enabled !== true){
                 return;
             }
             try {
                 const notifyChannel = member.guild.channels.cache.find(
                     channel =>
-                    channel.id === Config.autokick.notify_channel || channel.name === Config.autokick.notify_channel
+                    channel.id === Config.autokick.info_channel || channel.name === Config.autokick.info_channel
                 );
 
                 if (!notifyChannel || !notifyChannel.isTextBased()) {
                     this.#logger.log(
                         'error',
-                        `AutoKick notification channel "${Config.autokick.notify_channel}" not found or is not a text channel.`
+                        `AutoKick notification channel "${Config.autokick.info_channel}" not found or is not a text channel.`
                     );
                     return;
                 }
