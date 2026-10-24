@@ -8,8 +8,7 @@ import { BotProfileEditor } from './components/BotProfileEditor.jsx';
 
 const getNextStatusUpdate = () => {
     const nextUpdate = new Date();
-    nextUpdate.setHours(1, 0, 0, 0);
-    if (nextUpdate.getTime() <= Date.now()) nextUpdate.setDate(nextUpdate.getDate() + 1);
+    nextUpdate.setUTCHours(24, 0, 0, 0);
     return nextUpdate.getTime();
 };
 

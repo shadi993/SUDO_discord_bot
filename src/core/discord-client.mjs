@@ -1,6 +1,6 @@
 import { Client, GatewayIntentBits, Events ,Partials} from 'discord.js';
 import { Logger } from './logger.mjs';
-import { recordDailyStat } from '../dashboard/stats.mjs';
+import { recordDailyMemberCount, recordDailyStat } from '../dashboard/stats.mjs';
 import { MigrateChannelNames } from './config.mjs';
 import { RegisterConfigUpdateListener } from './config.mjs';
 
@@ -9,6 +9,29 @@ export var DiscordClient;
 var DiscordGuild;
 var DiscordChannels;
 var DiscordRoles;
+
+const recordGuildMemberCount = async guild => {
+    if (guild.id !== process.env.DISCORD_GUILD_ID) return;
+    try {
+        await recordDailyMemberCount(guild.memberCount);
+    } catch (error) {
+        Logger.log('error', `Failed to record daily member count: ${error.message}`);
+    }
+};
+
+const scheduleDailyMemberCount = guild => {
+    const now = new Date();
+    const nextMidnightUtc = new Date(Date.UTC(
+        now.getUTCFullYear(),
+        now.getUTCMonth(),
+        now.getUTCDate() + 1
+    ));
+    const timer = setTimeout(async () => {
+        await recordGuildMemberCount(guild);
+        scheduleDailyMemberCount(guild);
+    }, nextMidnightUtc.getTime() - now.getTime());
+    timer.unref();
+};
 
 /**
  * Initialize the Discord client. This will log in the bot and set up the event handlers.
@@ -49,9 +72,11 @@ export const InitDiscordClient = () => {
 
         Logger.log('debug', 'Fetching guild...');
         DiscordClient.guilds.fetch(process.env.DISCORD_GUILD_ID)
-        .then((guild) => {
+        .then(async (guild) => {
             Logger.log('debug', `Guild loaded: ${guild.name}`);
             DiscordGuild = guild;
+            await recordGuildMemberCount(guild);
+            scheduleDailyMemberCount(guild);
 
             Logger.log('debug', 'Fetching channels...');
             guild.channels.fetch()
@@ -118,16 +143,22 @@ export const InitDiscordClient = () => {
         }
     });
 
-    DiscordClient.on(Events.GuildMemberAdd, async () => {
+    DiscordClient.on(Events.GuildMemberAdd, async member => {
         try {
-            await recordDailyStat('joins');
+            await Promise.all([
+                recordDailyStat('joins'),
+                recordDailyMemberCount(member.guild.memberCount)
+            ]);
         } catch (error) {
             Logger.log('error', `Failed to record member join statistic: ${error.message}`);
         }
     });
-    DiscordClient.on(Events.GuildMemberRemove, async () => {
+    DiscordClient.on(Events.GuildMemberRemove, async member => {
         try {
-            await recordDailyStat('leaves');
+            await Promise.all([
+                recordDailyStat('leaves'),
+                recordDailyMemberCount(member.guild.memberCount)
+            ]);
         } catch (error) {
             Logger.log('error', `Failed to record member leave statistic: ${error.message}`);
         }

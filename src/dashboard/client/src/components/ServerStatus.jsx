@@ -69,9 +69,8 @@ export function ServerStatus({ status, onRefresh }) {
     const [period, setPeriod] = useState('week');
     const [now, setNow] = useState(Date.now());
     const [refreshing, setRefreshing] = useState(false);
-    const nextUpdate = new Date();
-    nextUpdate.setHours(1, 0, 0, 0);
-    if (nextUpdate.getTime() <= now) nextUpdate.setDate(nextUpdate.getDate() + 1);
+    const nextUpdate = new Date(now);
+    nextUpdate.setUTCHours(24, 0, 0, 0);
 
     useEffect(() => {
         const timer = setInterval(() => setNow(Date.now()), 1000);
@@ -95,7 +94,7 @@ export function ServerStatus({ status, onRefresh }) {
     }, [period, status.daily]);
     const toChart = key => data.map(day => ({ date: day.date, label: formatChartDate(day.date), value: day[key] || 0 }));
     return <div className="status-page">
-        <div className="status-controls">{periods.map(option => <button key={option} className={`button ${period === option ? 'primary' : 'ghost'}`} onClick={() => setPeriod(option)}>{option}</button>)}<span className="status-next-update">Next update at 01:00 ({formatCountdown(nextUpdate.getTime() - now)})</span><button className="button ghost" onClick={refreshNow} disabled={refreshing}>{refreshing ? 'Updating…' : 'Grab data now'}</button></div>
+        <div className="status-controls">{periods.map(option => <button key={option} className={`button ${period === option ? 'primary' : 'ghost'}`} onClick={() => setPeriod(option)}>{option}</button>)}<span className="status-next-update">Next daily snapshot at 00:00 UTC ({formatCountdown(nextUpdate.getTime() - now)})</span><button className="button ghost" onClick={refreshNow} disabled={refreshing}>{refreshing ? 'Updating…' : 'Grab data now'}</button></div>
         <div className="status-cards"><div className="card stat-card"><span>Members</span><strong>{status.memberCount.toLocaleString()}</strong></div><div className="card stat-card"><span>Online now</span><strong>{status.onlineCount.toLocaleString()}</strong></div><div className="card stat-card"><span>Tracked days</span><strong>{data.length}</strong></div></div>
         <Chart title="Messages" data={toChart('messages')} color="#d32b52" />
         <Chart title="Member count" data={toChart('member_count')} color="#65b7e8" totalMode="latest" />
