@@ -8,18 +8,26 @@ export const data = new SlashCommandBuilder()
     .setDescription('Claim your daily points.');
 
 export async function execute(interaction) {
-     if (!Config.leveling.rank_enabled) return interaction.reply({ content: 'Rank commands are disabled.', ephemeral: true });
-    const targetChannelName = Config.leveling.channel_allowed;
-    const targetChannel = interaction.guild.channels.cache.find(channel => channel.id === targetChannelName || channel.name === targetChannelName);
+    if (!Config.leveling.rank_enabled) return interaction.reply({ content: 'Rank commands are disabled.', ephemeral: true });
+    if (Config.leveling.rank_top_channel_enabled) {
+        const targetChannelName = Config.leveling.rank_top_channel;
 
-    if (!targetChannel) {
-        await interaction.reply({ content: `Channel **${targetChannelName}** not found.`, ephemeral: true });
-        return;
-    }
+        if (!targetChannelName) {
+            await interaction.reply({ content: 'The allowed channel for /rank and /top is not configured.', ephemeral: true });
+            return;
+        }
 
-    if (!isAllowedChannel(interaction.channel, targetChannelName, interaction.guild.channels.cache)) {
-        await interaction.reply({ content: `You can only use this command in **${targetChannel.name}** channel.`, ephemeral: true });
-        return;
+        const targetChannel = interaction.guild.channels.cache.find(channel => channel.id === targetChannelName || channel.name === targetChannelName);
+
+        if (!targetChannel) {
+            await interaction.reply({ content: `Channel **${targetChannelName}** not found.`, ephemeral: true });
+            return;
+        }
+
+        if (!isAllowedChannel(interaction.channel, targetChannelName, interaction.guild.channels.cache)) {
+            await interaction.reply({ content: `You can only use this command in **${targetChannel.name}** channel.`, ephemeral: true });
+            return;
+        }
     }
 
     const userId = interaction.user.id;
