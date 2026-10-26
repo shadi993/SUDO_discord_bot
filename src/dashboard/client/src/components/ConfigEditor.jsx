@@ -24,11 +24,15 @@ function channelOptionLabel(option) {
 function channelChoices(options, type, currentValue) {
     const expectedType = type === 'category' ? 4 : 0;
     const choices = options.channels.filter(channel => channel.type === expectedType);
-    const rawValue = typeof currentValue === 'string' ? currentValue : currentValue?.id || '';
-    const currentId = options.channels.find(channel => channel.id === rawValue || channel.name === rawValue)?.id || rawValue;
-    if (currentId && !choices.some(channel => channel.id === currentId)) {
-        const configured = options.channels.find(channel => channel.id === currentId);
-        choices.unshift(configured || {id: currentId, name: currentId, type: expectedType});
+    const configuredValues = (Array.isArray(currentValue) ? currentValue : [currentValue])
+        .map(value => typeof value === 'string' ? value : value?.id || '')
+        .filter(Boolean);
+    for (const rawValue of configuredValues) {
+        const configured = options.channels.find(channel => channel.id === rawValue || channel.name === rawValue);
+        const currentId = configured?.id || rawValue;
+        if (!choices.some(channel => channel.id === currentId)) {
+            choices.unshift(configured || {id: currentId, name: `${currentId} (not found)`, type: expectedType});
+        }
     }
     return choices;
 }
@@ -76,7 +80,7 @@ function Field({ name, value, root, options, roleField = false, definition = {},
         </select></div>;
     }
     if (fieldType === 'channels' || fieldType === 'roles') {
-        const choices = fieldType === 'channels' ? channelChoices(options, 'channel') : options.roles;
+        const choices = fieldType === 'channels' ? channelChoices(options, 'channel', value) : options.roles;
         return <div className="field"><label>{pretty(name)}</label><MultiChoice value={value} choices={choices} isChannel={fieldType === 'channels'} onChange={update} /></div>;
     }
     if (Array.isArray(value)) {
